@@ -1,0 +1,21 @@
+# dependencies and build output
+node_modules/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+
+# secrets and local settings
+.env*
+.vercel/
+
+# editor and OS files
+.DS_Store
+.vscode/
+.idea/
+
+# kept on this computer only
+docs/session-history/
+docs/source-documents/
+docs/plans/superseded/
