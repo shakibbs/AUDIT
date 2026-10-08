@@ -25,8 +25,13 @@ official APIs. Dialer and messaging logs (access Level 1) are the minimum for
 monitoring. Uploads are an optional fallback. Anything CiV cannot verify takes
 a worst-case value, and nothing the client merely states can raise a score.
 
-This repository holds the **v3.0 document set** (2026-10-07). v3 is applied
-on top of v1.1: anything v3 does not mention stands as written in v1.1.
+This repository holds the **v3.0 document set** (2026-10-07) and the
+**client portal** (`frontend/`). v3 is applied on top of v1.1: anything v3
+does not mention stands as written in v1.1.
+
+**Two repos, fully separate.** The Django backend lives in its own repo:
+**[shakibbs/Audit-backend](https://github.com/shakibbs/Audit-backend)**. The
+portal and the backend talk only over `/api`.
 
 ## Document map
 
@@ -47,6 +52,8 @@ on top of v1.1: anything v3 does not mention stands as written in v1.1.
 | [docs/ai-usage.md](docs/ai-usage.md) | Owner, product, engineering | Every place CiV uses AI: what it reads, which model, accuracy gates, privacy, cost per client |
 | [docs/feature-list.md](docs/feature-list.md) | Owner, product | Every feature by ID (F01–F72, plus **[v3]** additions from F73), with a Now / Later recommendation and the owner's decisions |
 | [docs/plans/2026-10-01-00-roadmap.md](docs/plans/2026-10-01-00-roadmap.md) | Engineering, product | Module order aligned to v3's six phases and gates **[v3]**, rules every plan follows, open decisions |
+| [docs/plans/2026-10-09-02-backend-login.md](docs/plans/2026-10-09-02-backend-login.md) | Engineering | Backend login system: CiV admin login separate from the client login API (built 2026-10-09) |
+| [docs/plans/2026-10-09-03-admin-connections.md](docs/plans/2026-10-09-03-admin-connections.md) | Engineering | Client API connections in the admin panel (built 2026-10-09) |
 | [docs/plans/superseded/](docs/plans/superseded/) `2026-10-03-01a … 01d` | Engineering | The earlier seven-page frontend plans, kept for reference |
 | [docs/design-reference/complyiv-portal-audit.html](docs/design-reference/complyiv-portal-audit.html) | Engineering, design | The 15-page portal file the rebuilt frontend follows |
 | [docs/design-reference/portal-prototype.dc.html](docs/design-reference/portal-prototype.dc.html) | Engineering, design | Source of the earlier CiV Audit Portal Prototype (Sep 29, 2026) |
@@ -66,8 +73,8 @@ on top of v1.1: anything v3 does not mention stands as written in v1.1.
 | Stored-data scope (D18) | **[v3] Decided by the owner 2026-10-07:** CiV holds analyzed data and fingerprints only, never CRM or other client records. Open with counsel: what the evidence file and certification pack contain |
 | Pilot client (decision D3) | **[v3]** Open. Falcon Risk's pilot insureds (3–5 companies) are now the first candidates. Connector build order depends on it |
 | Implementation plan | **[v3]** Roadmap realigned to v3's six phases and gates; later modules are planned when reached |
-| Frontend | **Module 1 built 2026-10-04** in `frontend/` (Next.js + TypeScript): the portal pages covering the 55 "Now" features, against a mock API. It follows **v1.1** and has **not yet been updated for v3**; [CHANGELOG-v3 §14](docs/specs/CHANGELOG-v3.md) lists what it would need (step 1b, awaiting the owner's yes) |
-| Backend | Not started (`backend/`, Django + DRF, PostgreSQL, Redis, Celery). Hosting deferred until the project is complete |
+| Frontend | Built in `frontend/` (Next.js + TypeScript): the portal pages, Owner / Underwriter view, insurer pages. Roles are **Admin** and **Member** (2026-10-09). Sign-in, reset, invites and Users use the real backend when `BACKEND_URL` is set; every other page still uses sample data. See [frontend/README.md](frontend/README.md) |
+| Backend | **Started 2026-10-09** in its own repo, [Audit-backend](https://github.com/shakibbs/Audit-backend): login system, CiV admin panel styled like the portal, client API connections. Real connectors and live sync are next. Hosting deferred until the project is complete |
 | Provisional rulebook | Defined (section 4 of the rulebook). Lets engineering build and test before counsel sets final values |
 
 ## Conventions every document follows
@@ -116,7 +123,8 @@ points in the counsel brief are proposals for counsel to verify.
 ```
 Audit/
 ├── README.md
-├── frontend/              Next.js + TypeScript portal (module 1, built 2026-10-04 on v1.1)
+├── frontend/              Next.js + TypeScript client portal
+│                          (backend: separate repo shakibbs/Audit-backend)
 └── docs/
     ├── BRD.md
     ├── architecture.md
@@ -136,6 +144,8 @@ Audit/
     │   └── CiV Automated TCPA Audit System — Engineering Spec v3.pdf
     ├── plans/
     │   ├── 2026-10-01-00-roadmap.md
+    │   ├── 2026-10-09-02-backend-login.md
+    │   ├── 2026-10-09-03-admin-connections.md
     │   └── superseded/    earlier seven-page frontend plans (01a–01d)
     ├── design-reference/
     │   ├── complyiv-portal-audit.html
@@ -149,5 +159,5 @@ Audit/
 
 Documents carry a version in their header. A change to a legal value is a new
 rulebook version with an effective date, never an edit in place; old versions
-stay so past results reproduce. Version control for this folder is not set up
-yet; it will be added later.
+stay so past results reproduce. This repo (docs + portal) and the backend repo
+are versioned separately on GitHub.

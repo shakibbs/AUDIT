@@ -2,7 +2,7 @@
 
 Next.js + TypeScript portal for the Comply iV Automated TCPA Audit System.
 
-The backend lives in its own repo: **[shakibbs/Audit-backend](https://github.com/shakibbs/Audit-backend)**.
+Docs are in `../docs/`. The backend lives in its own repo: **[shakibbs/Audit-backend](https://github.com/shakibbs/Audit-backend)**.
 The two repos never import from each other; they talk only over `/api`.
 
 ## Run
@@ -71,5 +71,5 @@ Litigation Intelligence.
 
 ## Hosting (Vercel)
 
-`vercel.json` is in this folder, which is the repo root, so Vercel's **Root Directory** setting stays empty.
+`vercel.json` is in this folder; set Vercel's **Root Directory** to `frontend`.
 Set `BACKEND_URL` in Vercel's environment variables once the backend is hosted.

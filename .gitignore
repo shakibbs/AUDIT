@@ -19,3 +19,6 @@ coverage/
 docs/session-history/
 docs/source-documents/
 docs/plans/superseded/
+
+# the backend has its own repo: github.com/shakibbs/Audit-backend
+backend/
