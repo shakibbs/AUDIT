@@ -1,28 +1,30 @@
 'use client';
 
-import { useActions, useAlerts, useConsent, useHealth, useMetrics, useScore, useSession } from '@/api/queries';
+import { useActions, useAlerts, useConsent, useHealth, useInsured, useMetrics, useScore, useSession } from '@/api/queries';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { StatusMixCard } from '@/screens/consent/StatusMixCard';
+import { CompactFactors } from '@/screens/insurer/CompactFactors';
 import { usePortal } from '@/state/PortalContext';
+import { AttentionBanner } from './AttentionBanner';
 import { DataHealthCard } from './DataHealthCard';
-import { FamilyScores } from './FamilyScores';
 import { KeyNumbers } from './KeyNumbers';
 import { ScoreCard } from './ScoreCard';
 import { ScoreTrendCard } from './ScoreTrendCard';
 import { TopActions } from './TopActions';
 import { UrgentAlertsCard } from './UrgentAlertsCard';
 
-/** The dashboard: consent and domains and data health first, then the score, what needs attention, and the key numbers. */
+/** The dashboard: the score first, then data health, consent and the six exposure factors, what needs attention, and the key numbers. */
 export function OverviewScreen() {
-  const { period } = usePortal();
+  const { period, insuredId } = usePortal();
   const score = useScore(period);
   const metrics = useMetrics(period);
   const actions = useActions();
   const alerts = useAlerts();
   const consent = useConsent();
   const health = useHealth();
+  const insured = useInsured(insuredId);
   const months = useSession().data?.periods ?? [];
   const index = Math.max(0, months.findIndex((p) => p.id === period));
   const since = months[index + 1]?.label.slice(0, 3) ?? 'last month';
@@ -32,11 +34,13 @@ export function OverviewScreen() {
       <Loader query={score}>
         {(s) => (
           <div className="flex flex-col gap-5">
+            <AttentionBanner score={s} alerts={alerts.data} actions={actions.data} health={health.data} />
+
             <section>
-              <SectionTitle title="Consent and domains" sub="Permission on record, and the six families of checks" />
-              <div className="grid gap-5 lg:grid-cols-2">
-                {consent.data && <StatusMixCard consent={consent.data} />}
-                <FamilyScores score={s} />
+              <SectionTitle title="Where you stand" sub="Score, what limits it, and how it moved" />
+              <div className="grid items-stretch gap-5 lg:grid-cols-3">
+                <ScoreCard score={s} />
+                <ScoreTrendCard score={s} />
               </div>
             </section>
 
@@ -46,11 +50,12 @@ export function OverviewScreen() {
                 <DataHealthCard health={health.data} />
               </section>
             )}
+
             <section>
-              <SectionTitle title="Where you stand" sub="Score, what limits it, and how it moved" />
-              <div className="grid items-stretch gap-5 lg:grid-cols-3">
-                <ScoreCard score={s} />
-                <ScoreTrendCard score={s} />
+              <SectionTitle title="Consent and domains" sub="Permission on record, and the six exposure factors" />
+              <div className="grid items-stretch gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)]">
+                {consent.data && <StatusMixCard consent={consent.data} className="h-full" />}
+                {insured.data && <div className="min-w-0 overflow-x-auto"><CompactFactors insured={insured.data} className="h-full" /></div>}
               </div>
             </section>
 

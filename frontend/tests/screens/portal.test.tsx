@@ -50,6 +50,15 @@ const SCREENS: [string, React.ReactElement, string | RegExp][] = [
   ['Users & Access', <UsersScreen key="u" />, 'People with access'],
 ];
 
+describe('overview attention bar', () => {
+  it('lists what needs attention in red above the score', async () => {
+    renderScreen(<OverviewScreen />);
+    const bar = await screen.findByRole('alert');
+    expect(within(bar).getByText(/Needs attention/)).toBeInTheDocument();
+    expect(await within(bar).findByText(/high alerts? not reviewed/)).toHaveAttribute('href', '/alerts');
+  });
+});
+
 describe('screens', () => {
   it.each(SCREENS)('%s loads and uses no banned wording', async (title, ui, proof) => {
     const { container } = renderScreen(ui);

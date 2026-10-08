@@ -5,14 +5,14 @@ import { formatCount } from '@/lib/format';
 import { STATUS_COLOR } from '@/lib/status';
 
 /** Share of contacts in each consent status. */
-export function StatusMixCard({ consent }: { consent: ConsentSummary }) {
+export function StatusMixCard({ consent, className = '' }: { consent: ConsentSummary; className?: string }) {
   const verified = consent.mix.find((m) => m.status === 'VERIFIED');
   return (
-    <Card title="Consent status mix" sub={`${formatCount(consent.contacts)} contacts this period`}>
+    <Card title="Consent status mix" sub={`${formatCount(consent.contacts)} contacts this period`} className={className}>
       <div className="flex flex-wrap items-center gap-6">
         <Donut label="Consent status mix" centre={`${verified?.share.toFixed(0) ?? 0}%`} centreLabel="Verified"
           segments={consent.mix.map((m) => ({ label: m.status, value: m.count, color: STATUS_COLOR[m.status], display: `${m.share.toFixed(0)}%` }))} />
-        <ul className="m-0 flex min-w-[220px] flex-1 list-none flex-col gap-2.5 p-0">
+        <ul className="m-0 flex min-w-[180px] flex-1 list-none flex-col gap-3 p-0">
           {consent.mix.map((m) => (
             <li key={m.status} className="flex items-center gap-3 text-[12.5px]">
               <span className="h-2.5 w-2.5 flex-none rounded-[3px]" style={{ background: STATUS_COLOR[m.status] }} />
