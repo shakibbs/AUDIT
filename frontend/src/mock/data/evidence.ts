@@ -118,8 +118,8 @@ export const position: Position = {
 export const KNOWN_HASH = sha('4f9c', 'a71e');
 
 export const legalHolds: LegalHold[] = [
-  { id: 'lh-1', scope: 'number', target: '(480) •••-0923', reason: 'Demand letter received 22 Sep', setBy: 'M. Okafor (Legal)', setOn: '2026-09-22', releasedOn: null },
-  { id: 'lh-2', scope: 'vendor', target: 'Vendor E · sub-ID 7', reason: 'Vendor dispute', setBy: 'Dana Reyes (Owner)', setOn: '2026-09-15', releasedOn: '2026-09-26' },
+  { id: 'lh-1', scope: 'number', target: '(480) •••-0923', reason: 'Demand letter received 22 Sep', setBy: 'M. Okafor (Admin, lawyer)', setOn: '2026-09-22', releasedOn: null },
+  { id: 'lh-2', scope: 'vendor', target: 'Vendor E · sub-ID 7', reason: 'Vendor dispute', setBy: 'Dana Reyes (Admin)', setOn: '2026-09-15', releasedOn: '2026-09-26' },
 ];
 
 export const evidenceFiles: Record<string, EvidenceFile> = {

@@ -13,7 +13,7 @@ import { PortfolioScreen } from '@/screens/insurer/PortfolioScreen';
 import { navState } from '../nav';
 import { renderScreen } from '../utils';
 
-const asUnderwriter = () => mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'underwriter' } });
+const asUnderwriter = () => mockApi({ method: 'POST', path: '/session/view-as', body: { view: 'underwriter' } });
 
 const SCREENS: [string, React.ReactElement, string | RegExp][] = [
   ['Portfolio', <PortfolioScreen key="p" />, 'Meridian Benefits Agency'],

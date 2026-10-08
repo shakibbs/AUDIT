@@ -34,12 +34,20 @@ describe('mock API', () => {
     expect(june.history).toHaveLength(1);
   });
 
-  it('hides internal runs and rulebook impact from a client owner, and shows them to CiV staff', () => {
-    expect(get<Session>('/session').runs).toHaveLength(1);
-    expect(get<Rulebook>('/rulebook').impact).toHaveLength(0);
+  it('never shows internal runs or rulebook impact in the portal, even to a client Admin', () => {
+    for (const role of ['admin', 'member']) {
+      mockApi({ method: 'POST', path: '/session/view-as', body: { role } });
+      expect(get<Session>('/session').runs).toHaveLength(1);
+      expect(get<Rulebook>('/rulebook').impact).toHaveLength(0);
+    }
+  });
+
+  it('lets only an Admin change people, and keeps one Admin', () => {
+    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member' } });
+    expect(mockApi({ method: 'POST', path: '/users', body: { email: 'x@y.example' } }).status).toBe(403);
     mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'admin' } });
-    expect(get<Session>('/session').runs).toHaveLength(2);
-    expect(get<Rulebook>('/rulebook').impact.length).toBeGreaterThan(0);
+    expect(mockApi({ method: 'DELETE', path: '/users/u-1' }).status).toBe(400);
+    expect(mockApi({ method: 'PATCH', path: '/users/u-3', body: { isCounsel: true } }).status).toBe(200);
   });
 
   it('refuses data after sign-out and restores it after sign-in', () => {
@@ -76,7 +84,7 @@ describe('mock API', () => {
     expect(mockApi({ method: 'GET', path: '/insureds/sunpath' }).status).toBe(200);
     expect(mockApi({ method: 'GET', path: '/insureds/meridian' }).status).toBe(403);
     expect(mockApi({ method: 'GET', path: '/litigation' }).status).toBe(403);
-    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'underwriter' } });
+    mockApi({ method: 'POST', path: '/session/view-as', body: { view: 'underwriter' } });
     for (const path of ['/contacts', '/actions', '/alerts', '/evidence/%2B14805550923', '/sources', '/users', '/access-log']) {
       expect(mockApi({ method: 'GET', path }).status).toBe(403);
     }

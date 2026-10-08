@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUsers } from '@/api/queries';
+import { useSession, useUsers } from '@/api/queries';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { Seg } from '@/components/ui/Seg';
@@ -14,6 +14,7 @@ const TABS = [{ id: 'people', label: 'People' }, { id: 'log', label: 'Access log
 export function UsersScreen() {
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('people');
   const users = useUsers();
+  const admin = useSession().data?.role === 'admin';
   return (
     <>
       <PageHead eyebrow="Account" title="Users & Access" sub="Who can see this portal, what each person can do, and a record of what was viewed and exported.">
@@ -21,7 +22,7 @@ export function UsersScreen() {
       </PageHead>
       {tab === 'log' ? <AccessLog /> : (
         <div className="flex flex-col gap-5">
-          <InviteForm />
+          {admin && <InviteForm />}
           <Loader query={users}>{(list) => <UserTable users={list} />}</Loader>
         </div>
       )}

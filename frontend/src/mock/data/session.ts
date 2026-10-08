@@ -7,7 +7,7 @@ export const session: Session = {
   signedIn: true,
   userId: 'u-1', name: 'Dana Reyes', initials: 'DR', email: 'dana.reyes@sunpath.example',
   clientId: 'sunpath', clientName: 'SunPath Residential Solar', vertical: 'Solar',
-  role: 'owner', engagementMode: 'direct', plan: 'Growth', orgKind: 'client',
+  role: 'admin', isCounsel: false, view: 'owner', engagementMode: 'direct', plan: 'Growth', orgKind: 'client',
   sampleData: true, updatedAt: '2026-09-30T04:10:00Z',
   periods: [
     { id: '2026-09', label: 'Sep 2026' }, { id: '2026-08', label: 'Aug 2026' },

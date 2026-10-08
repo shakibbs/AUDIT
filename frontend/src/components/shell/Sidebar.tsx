@@ -10,7 +10,7 @@ import { NAV, SHARED_WITH_INSURER, UNDERWRITER_NAV } from './nav';
 /** Fixed left menu. The client sees its own pages plus what is shared with its insurer; the underwriter sees insurer pages only. */
 export function Sidebar({ session, open, onNavigate }: { session: Session; open: boolean; onNavigate: () => void }) {
   const pathname = usePathname();
-  const underwriter = session.role === 'underwriter';
+  const underwriter = session.view === 'underwriter';
   const groups = underwriter ? UNDERWRITER_NAV : [...NAV, SHARED_WITH_INSURER];
   // Counts are client data; an underwriter never loads them.
   const actions = useActions();

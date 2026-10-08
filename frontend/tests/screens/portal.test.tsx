@@ -91,8 +91,8 @@ describe('shell', () => {
     expect(screen.queryByText('page body')).not.toBeInTheDocument();
   });
 
-  it('locks an operations user out when the engagement is counsel-directed', async () => {
-    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'operations', engagementMode: 'counsel_directed' } });
+  it('locks a Member who is not the lawyer out when the engagement is counsel-directed', async () => {
+    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member', isCounsel: false, engagementMode: 'counsel_directed' } });
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
     expect(await screen.findByText('This engagement is counsel-directed')).toBeInTheDocument();
     expect(screen.queryByText('page body')).not.toBeInTheDocument();
@@ -185,14 +185,16 @@ describe('interactions', () => {
     await waitFor(() => expect(screen.queryByText('new.person@sunpath.example')).not.toBeInTheDocument());
   });
 
-  it('shows rulebook impact only to CiV staff', async () => {
-    const { unmount } = renderScreen(<RulebookScreen />);
+  it('lets a lawyer Member in when the engagement is counsel-directed', async () => {
+    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member', isCounsel: true, engagementMode: 'counsel_directed' } });
+    renderScreen(<PortalShell><p>page body</p></PortalShell>);
+    expect(await screen.findByText('page body')).toBeInTheDocument();
+  });
+
+  it('never shows rulebook impact in the portal; CiV staff see it in the admin panel', async () => {
+    renderScreen(<RulebookScreen />);
     expect(await screen.findByText('Settings in force')).toBeInTheDocument();
     expect(screen.queryByText('Rulebook impact')).not.toBeInTheDocument();
-    unmount();
-    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'admin' } });
-    renderScreen(<RulebookScreen />);
-    expect(await screen.findByText('Rulebook impact')).toBeInTheDocument();
   });
 
   it('signs in and goes to the overview', async () => {

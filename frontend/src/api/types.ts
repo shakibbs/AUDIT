@@ -1,7 +1,10 @@
 // The frontend's contract with the backend. Every shape a screen reads is defined here.
 // Feature IDs (F01…) refer to docs/feature-list.md.
 
-export type Role = 'owner' | 'legal' | 'operations' | 'read_only' | 'counsel_guest' | 'admin' | 'counsel' | 'engineer' | 'underwriter';
+/** A client user's role. CiV staff never use the portal; they use the CiV admin panel. */
+export type Role = 'admin' | 'member';
+/** What the portal shows: the client's own pages, or what its insurer's underwriter sees. A view, not a role. */
+export type View = 'owner' | 'underwriter';
 export type EngagementMode = 'direct' | 'counsel_directed';
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'F';
 export type Tier = 1 | 2 | 3 | 4;
@@ -11,7 +14,6 @@ export type Basis = 'robocall_marketing' | 'robocall_informational' | 'dnc_liste
 export type Family = 'Permission' | 'Who you contact' | 'How you contact' | 'Stopping' | 'Records' | 'Company controls';
 export type Plan = 'Starter' | 'Growth' | 'Scale' | 'Enterprise';
 
-export const INTERNAL_ROLES: Role[] = ['admin', 'counsel', 'engineer'];
 export const FAMILIES: Family[] = ['Permission', 'Who you contact', 'How you contact', 'Stopping', 'Records', 'Company controls'];
 export const DISCLOSURE = 'Comply iV measures and records. It operates no controls, sits in no call path and makes no compliance decisions. Findings are measurements, not legal advice.';
 
@@ -30,8 +32,8 @@ export interface Session {
   signedIn: boolean;
   userId: string; name: string; initials: string; email: string;
   clientId: string; clientName: string; vertical: string;
-  role: Role; engagementMode: EngagementMode; plan: Plan;
-  /** 'insurer' when an underwriter is signed in: they see insurer pages, never a client's records. */
+  role: Role; isCounsel: boolean; view: View; engagementMode: EngagementMode; plan: Plan;
+  /** 'insurer' in the underwriter view: insurer pages only, never a client's records. */
   orgKind: 'client' | 'insurer';
   sampleData: boolean; updatedAt: string;
   periods: Period[]; runs: Run[];
@@ -247,7 +249,7 @@ export interface Settings {
   agreements: Agreement[]; usage: PlanUsage;
 }
 
-export interface User { id: string; name: string; email: string; role: Role; status: 'active' | 'invited'; lastSeen: string | null; scope: string | null }
+export interface User { id: string; name: string; email: string; role: Role; isCounsel: boolean; status: 'active' | 'invited'; lastSeen: string | null }
 export interface AccessEntry { at: string; actor: string; role: Role; action: string; object: string }
 
 export interface SearchHit { kind: 'domain' | 'metric' | 'number' | 'vendor' | 'page' | 'insured'; id: string; label: string; hint: string }

@@ -1,49 +1,75 @@
 # CiV client portal (frontend)
 
-Next.js + TypeScript portal for the Comply iV Automated TCPA Audit System. It runs against a mock API until the Django backend exists.
+Next.js + TypeScript portal for the Comply iV Automated TCPA Audit System.
 
-Design source: `../docs/design-reference/complyiv-portal-audit.html`. Feature source: `../docs/feature-list.md` (the 55 "Now" features).
+The backend lives in its own repo: **[shakibbs/Audit-backend](https://github.com/shakibbs/Audit-backend)**.
+The two repos never import from each other; they talk only over `/api`.
 
 ## Run
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000 — sample data, signed in as the owner
+npm run dev        # http://localhost:3000
 npm test           # unit and screen tests
 npm run typecheck
 npm run lint
 npm run build
 ```
 
-Any email and password signs in. The account menu has a "Sample data · view as" control to see the portal as another role or in counsel-directed mode.
+### Sample data or the real backend
+
+- **Sample data only (default):** any email and password signs in; every page uses the mock API in `src/mock/`.
+- **With the Django backend:** create `.env.local` with
+
+  ```
+  BACKEND_URL=http://localhost:8000
+  ```
+
+  and restart `npm run dev`. Sign-in, sign-out, password reset, invites and the Users page then go to Django.
+  Every other page still shows sample data until its backend module is built.
+
+## Users and views
+
+- **Roles:** client users are **Admin** or **Member**, plus an "is our lawyer" mark. In lawyer-only
+  (counsel-directed) mode, a Member who is not the lawyer sees a locked page.
+- **Owner / Underwriter** is a **view switch** in the top bar, not a role. Underwriter view shows the
+  insurer pages: `/portfolio`, `/exposure`, `/integrity`, `/attestation`, `/litigation`, `/uw-export`,
+  `/rulebook`, `/regulatory`. The owner never sees dollar figures.
+- Access is enforced in the shell (`src/lib/views.ts`) and in the API (403s). CiV staff never use this
+  portal; they use the CiV admin panel in the backend.
+- The account menu's "Sample data · view as" control switches role, lawyer mark and counsel-directed mode.
 
 ## Layout
 
 | Path | What it holds |
 |---|---|
 | `src/app/(portal)/*/page.tsx` | One route per page; each only renders its screen |
-| `src/app/sign-in` | Sign-in and password reset |
-| `src/app/api/[...path]/route.ts` | Serves `/api/*` from the mock (replaced by Django later) |
+| `src/app/sign-in` | Sign-in, password reset, new password and invite links |
+| `src/app/api/[...path]/route.ts` | Serves `/api/*`: login endpoints to Django when `BACKEND_URL` is set, the rest from the mock |
+| `src/server/` | Forwarding to Django (`backend.ts`) and session merge (`mergeSession.ts`) |
 | `src/screens/<page>/` | One folder per page; one component per file |
 | `src/components/ui` | Shared building blocks (cards, pills, drawer, tabs) |
-| `src/components/charts` | Hand-drawn SVG/HTML charts (gauge, trend line, bars, donut, columns, coverage strip) |
+| `src/components/charts` | Hand-drawn SVG/HTML charts |
 | `src/components/shell` | Sidebar, top bar, search, banners, drawer host |
 | `src/components/drawers` | Detail panels: domain, metric, contact, action, vendor |
 | `src/api/types.ts` | **The contract with the backend** |
 | `src/api/queries.ts` | One hook per endpoint |
+| `src/api/client.ts` | Fetch wrapper (sends the CSRF token Django needs) |
 | `src/mock/` | `api.ts` (the mock) and `data/` (fixtures) |
 | `src/lib/wording.ts` | Banned-wording guard; tests scan every screen and fixture |
-| `tests/` | Mock API tests and screen tests (MSW routes `/api/*` to the same mock) |
-
-## Owner and Underwriter views
-
-With sample data, a **View as Owner · Underwriter** switch sits in the top bar (it calls `POST /api/session/view-as`).
-
-- **Owner**: every client page, plus *Shared with your insurer*: `/integrity`, `/attestation`, `/uw-export` for its own company, with no dollar figures.
-- **Underwriter** (`role: 'underwriter'`, `orgKind: 'insurer'`): `/portfolio`, `/exposure`, `/integrity`, `/attestation`, `/litigation`, `/uw-export`, `/rulebook`, `/regulatory`, across five insured companies (`src/mock/data/insurer.ts`).
-- Access is enforced twice: `src/lib/views.ts` blocks pages in the shell, and the mock API answers 403 for client data to an underwriter and for other companies to a client. The Django API must do the same with row-level security.
-- Exposure Indicator v2.2 math is in `src/lib/exposure.ts`; loss model v0 (used for the portfolio's chance of a suit and expected loss; no page of its own) in `src/lib/lossModel.ts`.
+| `src/lib/exposure.ts`, `src/lib/lossModel.ts` | Exposure Indicator v2.2 and loss model v0 math |
+| `tests/` | Mock API tests and screen tests |
 
 ## Pages
 
-Your position: Overview, Audit Scorecard, Action Queue, Alerts · Evidence: Contact Ledger, Consent Integrity, Revocation Integrity, Evidence Vault, evidence file per number · Intelligence: Contact Conduct, Lead Provenance, Vendor Ledger, Metrics Library · Disclosure: Source Registry (with upload centre), Reports & Exports · Engagement: Scope & Boundaries, Rulebook, Regulatory Changes · Account: Setup & Readiness, Settings, Users & Access.
+Your position: Overview, Audit Scorecard, Action Queue, Alerts · Evidence: Contact Ledger, Consent
+Integrity, Revocation Integrity, Evidence Vault, evidence file per number · Intelligence: Contact Conduct,
+Lead Provenance, Vendor Ledger · Disclosure: Source Registry, Reports & Exports · Engagement: Rulebook,
+Regulatory Changes · Account: Setup & Readiness, Settings, Users & Access · Shared with your insurer:
+Data Integrity, Risk Attestation, Underwriting Export · Underwriter view: Portfolio, Exposure Indicator,
+Litigation Intelligence.
+
+## Hosting (Vercel)
+
+`vercel.json` is in this folder, which is the repo root, so Vercel's **Root Directory** setting stays empty.
+Set `BACKEND_URL` in Vercel's environment variables once the backend is hosted.

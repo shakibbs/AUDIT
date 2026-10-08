@@ -57,19 +57,19 @@ export const settings: Settings = {
 };
 
 export const users: User[] = [
-  { id: 'u-1', name: 'Dana Reyes', email: 'dana.reyes@sunpath.example', role: 'owner', status: 'active', lastSeen: '2026-09-30T08:41:00Z', scope: null },
-  { id: 'u-2', name: 'M. Okafor', email: 'm.okafor@sunpath.example', role: 'legal', status: 'active', lastSeen: '2026-09-29T17:05:00Z', scope: null },
-  { id: 'u-3', name: 'Priya Nair', email: 'priya.nair@sunpath.example', role: 'operations', status: 'active', lastSeen: '2026-09-30T07:58:00Z', scope: null },
-  { id: 'u-4', name: 'Marcus Lee', email: 'marcus.lee@sunpath.example', role: 'operations', status: 'active', lastSeen: '2026-09-29T13:22:00Z', scope: null },
-  { id: 'u-5', name: 'J. Alvarez', email: 'jalvarez@outsidecounsel.example', role: 'counsel_guest', status: 'invited', lastSeen: null, scope: 'Read-only · Jul–Sep 2026' },
+  { id: 'u-1', name: 'Dana Reyes', email: 'dana.reyes@sunpath.example', role: 'admin', isCounsel: false, status: 'active', lastSeen: '2026-09-30T08:41:00Z' },
+  { id: 'u-2', name: 'M. Okafor', email: 'm.okafor@sunpath.example', role: 'admin', isCounsel: true, status: 'active', lastSeen: '2026-09-29T17:05:00Z' },
+  { id: 'u-3', name: 'Priya Nair', email: 'priya.nair@sunpath.example', role: 'member', isCounsel: false, status: 'active', lastSeen: '2026-09-30T07:58:00Z' },
+  { id: 'u-4', name: 'Marcus Lee', email: 'marcus.lee@sunpath.example', role: 'member', isCounsel: false, status: 'active', lastSeen: '2026-09-29T13:22:00Z' },
+  { id: 'u-5', name: 'J. Alvarez', email: 'jalvarez@outsidecounsel.example', role: 'member', isCounsel: true, status: 'invited', lastSeen: null },
 ];
 
 export const accessLog: AccessEntry[] = [
-  { at: '2026-09-30T08:41:00Z', actor: 'Dana Reyes', role: 'owner', action: 'Viewed', object: 'Overview' },
-  { at: '2026-09-30T07:58:00Z', actor: 'Priya Nair', role: 'operations', action: 'Updated', object: 'Action 1 · status to In progress' },
-  { at: '2026-09-29T17:05:00Z', actor: 'M. Okafor', role: 'legal', action: 'Exported', object: 'Evidence file · (480) •••-0923' },
-  { at: '2026-09-29T17:01:00Z', actor: 'M. Okafor', role: 'legal', action: 'Viewed', object: 'Evidence file · (480) •••-0923' },
-  { at: '2026-09-29T13:22:00Z', actor: 'Marcus Lee', role: 'operations', action: 'Added a note', object: 'Action 4 · finding contested' },
-  { at: '2026-09-28T16:20:00Z', actor: 'Priya Nair', role: 'operations', action: 'Uploaded', object: 'internal-dnc-2026-09-28.csv' },
-  { at: '2026-09-22T10:14:00Z', actor: 'M. Okafor', role: 'legal', action: 'Set legal hold', object: '(480) •••-0923' },
+  { at: '2026-09-30T08:41:00Z', actor: 'Dana Reyes', role: 'admin', action: 'Viewed', object: 'Overview' },
+  { at: '2026-09-30T07:58:00Z', actor: 'Priya Nair', role: 'member', action: 'Updated', object: 'Action 1 · status to In progress' },
+  { at: '2026-09-29T17:05:00Z', actor: 'M. Okafor', role: 'admin', action: 'Exported', object: 'Evidence file · (480) •••-0923' },
+  { at: '2026-09-29T17:01:00Z', actor: 'M. Okafor', role: 'admin', action: 'Viewed', object: 'Evidence file · (480) •••-0923' },
+  { at: '2026-09-29T13:22:00Z', actor: 'Marcus Lee', role: 'member', action: 'Added a note', object: 'Action 4 · finding contested' },
+  { at: '2026-09-28T16:20:00Z', actor: 'Priya Nair', role: 'member', action: 'Uploaded', object: 'internal-dnc-2026-09-28.csv' },
+  { at: '2026-09-22T10:14:00Z', actor: 'M. Okafor', role: 'admin', action: 'Set legal hold', object: '(480) •••-0923' },
 ];

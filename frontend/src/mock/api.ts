@@ -1,5 +1,5 @@
 // In-memory stand-in for the Django API. One pure function serves the dev route handler and the tests.
-import { INTERNAL_ROLES, type DataHealth, type EngagementMode, type HashCheck, type Role, type SearchHit, type Session } from '@/api/types';
+import type { DataHealth, EngagementMode, HashCheck, Role, SearchHit, Session, View } from '@/api/types';
 import { gradeOf } from '@/lib/format';
 import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
@@ -27,12 +27,11 @@ export function resetMock(): void {
 
 const ok = (body: unknown): MockResponse => ({ status: 200, body });
 const fail = (status: number, detail: string): MockResponse => ({ status, body: { detail } });
-const isInternal = (role: Role) => INTERNAL_ROLES.includes(role);
 
 function visibleSession(): Session {
   const s = db.session;
-  const runs = isInternal(s.role) ? s.runs : s.runs.filter((r) => r.outputVisibility === 'client');
-  if (s.role === 'underwriter') {
+  const runs = s.runs.filter((r) => r.outputVisibility === 'client');
+  if (s.view === 'underwriter') {
     return { ...s, runs: [], orgKind: 'insurer', userId: 'u-uw', name: 'J. Merchant', initials: 'JM', email: 'j.merchant@falconrisk.example',
       clientId: 'falcon', clientName: 'Falcon Risk Services', vertical: 'Underwriting pilot · 5 insureds' };
   }
@@ -71,7 +70,7 @@ function search(q: string): SearchHit[] {
   if (needle.length < 2) return [];
   const has = (...parts: (string | null)[]) => parts.some((p) => p?.toLowerCase().includes(needle));
   const digits = needle.replace(/\D/g, '');
-  if (db.session.role === 'underwriter') {
+  if (db.session.view === 'underwriter') {
     return [
       ...insureds.filter((i) => has(i.name, i.industry)).map((i): SearchHit => ({ kind: 'insured', id: i.id, label: i.name, hint: 'Insured' })),
       ...INSURER_PAGES.filter(([, label]) => has(label)).map(([id, label]): SearchHit => ({ kind: 'page', id, label, hint: 'Page' })),
@@ -94,7 +93,7 @@ function log(action: string, object: string): void {
 
 function read(path: string, q: Record<string, string>): MockResponse {
   const seg = path.split('/').filter(Boolean);
-  const underwriter = db.session.role === 'underwriter';
+  const underwriter = db.session.view === 'underwriter';
   if (underwriter && !UNDERWRITER_READS.includes(seg[0])) return fail(403, 'Not available in the underwriter view.');
   const i = periodIndex(q.period);
   switch (seg[0]) {
@@ -128,7 +127,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'sources': return ok(sources);
     case 'uploads': return ok(db.uploads);
     case 'reports': return ok({ types: reportTypes, runs: db.reportRuns });
-    case 'rulebook': return ok(isInternal(db.session.role) ? rulebook : { ...rulebook, impact: [] });
+    case 'rulebook': return ok({ ...rulebook, impact: [] });
     case 'reg-changes': return ok(db.regChanges);
     case 'readiness': return ok(db.readiness);
     case 'settings': return ok(db.settings);
@@ -155,9 +154,12 @@ function read(path: string, q: Record<string, string>): MockResponse {
   }
 }
 
+const LAST_ADMIN = 'A company needs at least one active Admin.';
+const otherAdmin = (id: string) => db.users.some((u) => u.id !== id && u.role === 'admin' && u.status === 'active');
+
 function write(method: string, path: string, body: Record<string, unknown>): MockResponse {
   const seg = path.split('/').filter(Boolean);
-  if (db.session.role === 'underwriter' && seg[0] !== 'session') return fail(403, 'The underwriter view is read-only.');
+  if (db.session.view === 'underwriter' && seg[0] !== 'session') return fail(403, 'The underwriter view is read-only.');
   // "/session/sign-in" names its verb second; "/alerts/al-1/review" names it third, after the id.
   const verb = seg[0] === 'session' ? seg[1] : seg[2];
   const key = `${method} ${seg[0]}${verb ? `/${verb}` : ''}`;
@@ -169,9 +171,11 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
     }
     case 'POST session/sign-out': db.session.signedIn = false; return ok(visibleSession());
     case 'POST session/reset': return ok({ sent: true });
-    // Sample data only: lets a reviewer see the portal as another role or engagement mode.
+    // Sample data only: switch the view, or see the portal as another role or engagement mode.
     case 'POST session/view-as': {
+      if (body.view) db.session.view = body.view as View;
       if (body.role) db.session.role = body.role as Role;
+      if (typeof body.isCounsel === 'boolean') db.session.isCounsel = body.isCounsel;
       if (body.engagementMode) db.session.engagementMode = body.engagementMode as EngagementMode;
       return ok(visibleSession());
     }
@@ -239,22 +243,28 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       return ok(n);
     }
     case 'POST users': {
+      if (db.session.role !== 'admin') return fail(403, 'Only an Admin can do this.');
       if (!body.email) return fail(400, 'Enter an email address.');
-      const user = { id: `u-${db.users.length + 1}`, name: String(body.name || body.email), email: String(body.email), role: body.role as Role, status: 'invited' as const, lastSeen: null, scope: body.role === 'counsel_guest' ? String(body.scope || 'Read-only · Sep 2026') : null };
+      const user = { id: `inv-${db.users.length + 1}`, name: String(body.name || body.email), email: String(body.email), role: (body.role as Role) || 'member', isCounsel: Boolean(body.isCounsel), status: 'invited' as const, lastSeen: null };
       db.users.push(user);
       log('Invited', user.email);
       return ok(user);
     }
     case 'PATCH users': {
       const user = db.users.find((u) => u.id === seg[1]);
+      if (db.session.role !== 'admin') return fail(403, 'Only an Admin can do this.');
       if (!user) return fail(404, 'User not found.');
-      user.role = body.role as Role;
+      if (body.role === 'member' && user.role === 'admin' && !otherAdmin(user.id)) return fail(400, LAST_ADMIN);
+      if (body.role) user.role = body.role as Role;
+      if (typeof body.isCounsel === 'boolean') user.isCounsel = body.isCounsel;
       return ok(user);
     }
     case 'DELETE users': {
       const user = db.users.find((u) => u.id === seg[1]);
+      if (db.session.role !== 'admin') return fail(403, 'Only an Admin can do this.');
       if (!user) return fail(404, 'User not found.');
-      if (user.role === 'owner') return fail(400, 'The owner cannot be removed.');
+      if (user.id === db.session.userId) return fail(400, 'You cannot turn off your own access.');
+      if (user.role === 'admin' && !otherAdmin(user.id)) return fail(400, LAST_ADMIN);
       db.users = db.users.filter((u) => u.id !== seg[1]);
       log('Removed access', user.email);
       return ok({ removed: true });

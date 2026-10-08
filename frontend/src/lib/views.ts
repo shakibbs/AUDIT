@@ -1,4 +1,4 @@
-import type { Role } from '@/api/types';
+import type { View } from '@/api/types';
 
 /** Pages an underwriter may open. Everything else belongs to the client. */
 export const UNDERWRITER_PATHS = ['/portfolio', '/exposure', '/integrity', '/attestation', '/litigation', '/uw-export', '/rulebook', '/regulatory'];
@@ -9,8 +9,8 @@ const matches = (pathname: string, paths: string[]) => paths.some((p) => pathnam
 
 export type ViewBlock = 'none' | 'client-page' | 'insurer-page';
 
-/** Whether this role may open this page, and if not, why. */
-export function viewBlock(role: Role, pathname: string): ViewBlock {
-  if (role === 'underwriter') return matches(pathname, UNDERWRITER_PATHS) ? 'none' : 'client-page';
+/** Whether this view may open this page, and if not, why. */
+export function viewBlock(view: View, pathname: string): ViewBlock {
+  if (view === 'underwriter') return matches(pathname, UNDERWRITER_PATHS) ? 'none' : 'client-page';
   return matches(pathname, INSURER_ONLY_PATHS) ? 'insurer-page' : 'none';
 }

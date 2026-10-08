@@ -10,10 +10,10 @@ const OPTIONS = [{ id: 'owner', label: 'Owner' }, { id: 'underwriter', label: 'U
 export function ViewAsSwitch({ session }: { session: Session }) {
   const send = useSend();
   const router = useRouter();
-  const current = session.role === 'underwriter' ? 'underwriter' : 'owner';
+  const current = session.view;
   function choose(id: (typeof OPTIONS)[number]['id']) {
     if (id === current) return;
-    send.mutate({ method: 'POST', path: '/session/view-as', body: { role: id } }, { onSuccess: () => router.push(id === 'underwriter' ? '/portfolio' : '/') });
+    send.mutate({ method: 'POST', path: '/session/view-as', body: { view: id } }, { onSuccess: () => router.push(id === 'underwriter' ? '/portfolio' : '/') });
   }
   return (
     <div className="flex items-center gap-2">

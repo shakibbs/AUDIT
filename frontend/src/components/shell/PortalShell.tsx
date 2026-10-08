@@ -31,8 +31,9 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   if (signedOut) return null;
 
   const s = session.data;
-  const locked = s.engagementMode === 'counsel_directed' && s.role === 'operations';
-  const block = viewBlock(s.role, pathname);
+  // Lawyer-only mode: findings and alerts reach only Admins and users marked as the company's lawyer.
+  const locked = s.engagementMode === 'counsel_directed' && s.role === 'member' && !s.isCounsel;
+  const block = viewBlock(s.view, pathname);
   return (
     <PortalProvider>
       <DrawerProvider>

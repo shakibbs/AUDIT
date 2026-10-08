@@ -9,6 +9,6 @@ const OWN_COMPANY = 'sunpath';
 export function useViewer() {
   const session = useSession().data;
   const { insuredId } = usePortal();
-  const underwriter = session?.role === 'underwriter';
+  const underwriter = session?.view === 'underwriter';
   return { underwriter, insuredId: underwriter ? insuredId : OWN_COMPANY, eyebrow: underwriter ? 'Falcon Risk · underwriting' : 'Shared with your insurer' };
 }
