@@ -1,20 +1,17 @@
 'use client';
 
 import type { Metric } from '@/api/types';
-import { Sparkline } from '@/components/charts/Sparkline';
+import { KeyNumberCard } from '@/screens/overview/KeyNumberCard';
 import { useDrawer } from '@/state/DrawerContext';
 
-/** One metric as a tile: value, four-month trend and a one-line note. Opens the metric panel. */
-export function MetricTile({ metric }: { metric: Metric }) {
+/** One metric as a card: value, four-month trend, change since last month, and a one-line note. Opens the metric panel. */
+export function MetricTile({ metric, since }: { metric: Metric; since: string }) {
   const { open } = useDrawer();
+  const unit = metric.unit === '%' ? '%' : metric.unit === 'h' ? ' h' : '';
+  const hasTrend = !metric.notMeasured && metric.value !== null && metric.history.filter((v) => v !== null).length >= 2;
   return (
-    <button type="button" className="card kpi" onClick={() => open('metric', metric.code)}>
-      <span className="kpi-tag flex items-center justify-between"><span>{metric.name}</span><span className="mono normal-case tracking-normal">{metric.code}</span></span>
-      <span className="flex items-end justify-between gap-2">
-        {metric.notMeasured ? <span className="pill pill-gray">Not measured</span> : <span className="kpi-val !text-[24px]">{metric.display}</span>}
-        {!metric.notMeasured && <Sparkline values={metric.history} width={70} height={24} />}
-      </span>
-      <span className="kpi-foot">{metric.notMeasured ?? metric.note}</span>
-    </button>
+    <KeyNumberCard tag={metric.name} code={metric.code} value={metric.notMeasured ? 'Not measured' : metric.display}
+      trend={hasTrend ? { values: metric.history, better: metric.better, unit, since } : undefined}
+      foot={metric.notMeasured ?? metric.note} onClick={() => open('metric', metric.code)} />
   );
 }

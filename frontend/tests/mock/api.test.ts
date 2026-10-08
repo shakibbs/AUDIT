@@ -6,7 +6,7 @@ import { mockApi } from '@/mock/api';
 const get = <T,>(path: string, query: Record<string, string> = {}) => mockApi({ method: 'GET', path, query }).body as T;
 
 const READS = ['/session', '/score', '/domains', '/actions', '/alerts', '/contacts', '/consent', '/consent-pages', '/revocation', '/vault', '/position', '/legal-holds',
-  '/evidence/%2B14805550923', '/metrics', '/conduct', '/leads', '/vendors', '/sources', '/uploads', '/reports', '/rulebook', '/reg-changes', '/readiness', '/settings', '/users', '/access-log'];
+  '/evidence/%2B14805550923', '/metrics', '/conduct', '/leads', '/vendors', '/sources', '/uploads', '/reports', '/rulebook', '/reg-changes', '/readiness', '/settings', '/users', '/access-log', '/health'];
 
 describe('mock API', () => {
   it.each(READS)('GET %s answers and uses no banned wording', (path) => {

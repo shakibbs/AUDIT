@@ -7,11 +7,8 @@ import { Kpi } from '@/components/ui/Kpi';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { formatCount, formatDate, formatDateTime } from '@/lib/format';
-import { HashVerify } from './HashVerify';
 import { LegalHolds } from './LegalHolds';
 import { PositionLookup } from './PositionLookup';
-
-const SAMPLE_HASH = `4f9c${'0'.repeat(56)}a71e`;
 
 export function VaultScreen() {
   const vault = useVault();
@@ -30,7 +27,6 @@ export function VaultScreen() {
               <CoverageStrip coverage={v.coverage} />
             </Card>
             <PositionLookup />
-            <HashVerify sample={SAMPLE_HASH} />
             <LegalHolds />
           </div>
         )}

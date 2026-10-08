@@ -3,7 +3,7 @@
 import type { Contact } from '@/api/types';
 import { Empty } from '@/components/ui/Empty';
 import { StatusChip } from '@/components/ui/StatusChip';
-import { formatDateTime, formatTiers } from '@/lib/format';
+import { formatDateTime } from '@/lib/format';
 import { useDrawer } from '@/state/DrawerContext';
 
 /** Calls and texts, newest first. Selecting a row opens the contact panel. */
@@ -13,7 +13,7 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="tbl">
-        <thead><tr><th>When (UTC)</th><th>Number</th><th>Channel</th><th>Category</th><th>Status</th><th>Reason</th><th>Flags from other domains</th><th>Evidence</th></tr></thead>
+        <thead><tr><th>When (UTC)</th><th>Number</th><th>Channel</th><th>Category</th><th>Status</th><th>Reason</th><th>Flags from other domains</th></tr></thead>
         <tbody>
           {contacts.map((c) => (
             <tr key={c.id} className="clickrow" onClick={() => open('contact', c.id)}>
@@ -24,7 +24,6 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
               <td><StatusChip status={c.status} /></td>
               <td className="min-w-[220px]"><span className="mono text-[11px] text-txt-2">{c.code}</span><div className="tiny">{c.reasonText}</div></td>
               <td>{c.flags.length ? c.flags.map((f) => <span key={f} className="flag">{f}</span>) : <span className="text-txt-3">—</span>}</td>
-              <td className="whitespace-nowrap text-[12px] text-txt-2">{formatTiers(c.tiers)}</td>
             </tr>
           ))}
         </tbody>

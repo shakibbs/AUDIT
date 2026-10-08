@@ -46,18 +46,18 @@ describe('view switch', () => {
     localStorage.removeItem('civ-view');
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
     const nav = await screen.findByRole('navigation', { name: 'Main' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(20);
+    expect(within(nav).getAllByRole('link')).toHaveLength(18);
     await user.click(screen.getByRole('button', { name: 'Simple' }));
     expect(within(nav).getAllByRole('link').map((l) => l.textContent?.replace(/\d+ open$|\d+$/, '').trim())).toEqual(['Home', 'Urgent alerts', 'Things to fix', 'Reports']);
     expect(localStorage.getItem('civ-view')).toBe('simple');
     await user.click(screen.getByRole('button', { name: 'Full' }));
-    expect(within(nav).getAllByRole('link')).toHaveLength(20);
+    expect(within(nav).getAllByRole('link')).toHaveLength(18);
   });
 
   it('marks a Full-view page when the portal is in Simple view', async () => {
     const user = userEvent.setup();
     localStorage.setItem('civ-view', 'simple');
-    navState.pathname = '/metrics';
+    navState.pathname = '/vendors';
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
     expect(await screen.findByText(/This page is part of/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Switch to Full view' }));

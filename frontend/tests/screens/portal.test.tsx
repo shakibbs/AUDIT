@@ -12,13 +12,11 @@ import { ConsentScreen } from '@/screens/consent/ConsentScreen';
 import { EvidenceFileScreen } from '@/screens/evidence/EvidenceFileScreen';
 import { LeadsScreen } from '@/screens/leads/LeadsScreen';
 import { LedgerScreen } from '@/screens/ledger/LedgerScreen';
-import { MetricsScreen } from '@/screens/metrics/MetricsScreen';
 import { OverviewScreen } from '@/screens/overview/OverviewScreen';
 import { RegulatoryScreen } from '@/screens/regulatory/RegulatoryScreen';
 import { ReportsScreen } from '@/screens/reports/ReportsScreen';
 import { RevocationScreen } from '@/screens/revocation/RevocationScreen';
 import { RulebookScreen } from '@/screens/rulebook/RulebookScreen';
-import { ScopeScreen } from '@/screens/scope/ScopeScreen';
 import { ScorecardScreen } from '@/screens/scorecard/ScorecardScreen';
 import { SettingsScreen } from '@/screens/settings/SettingsScreen';
 import { SetupScreen } from '@/screens/setup/SetupScreen';
@@ -32,21 +30,19 @@ import { renderScreen } from '../utils';
 
 // Every screen, the text that proves it loaded its data, and its page title.
 const SCREENS: [string, React.ReactElement, string | RegExp][] = [
-  ['Overview', <OverviewScreen key="o" />, 'Do these first'],
+  ['Overview', <OverviewScreen key="o" />, 'Things to fix'],
   ['Audit Scorecard', <ScorecardScreen key="s" />, 'Domain register'],
   ['Action Queue', <ActionsScreen key="a" />, 'Queue'],
   ['Alerts', <AlertsScreen key="al" />, 'Inbox'],
-  ['Contact Ledger', <LedgerScreen key="l" />, '(916) •••-4471'],
   ['Consent Integrity', <ConsentScreen key="c" />, 'Most common reasons'],
+  ['Contact Ledger', <LedgerScreen key="l" />, '(916) •••-4471'],
   ['Revocation Integrity', <RevocationScreen key="r" />, 'Opt-out test matrix'],
   ['Evidence Vault', <VaultScreen key="v" />, 'Position lookup'],
   ['Contact Conduct', <ConductScreen key="cc" />, 'Contacts by hour of day'],
   ['Lead Provenance', <LeadsScreen key="lp" />, 'Most frequent signals'],
   ['Vendor Ledger', <VendorsScreen key="vl" />, 'Vendor scores'],
-  ['Metrics Library', <MetricsScreen key="m" />, 'Consent Coverage'],
   ['Source Registry', <SourcesScreen key="sr" />, 'Upload centre'],
   ['Reports & Exports', <ReportsScreen key="re" />, 'Bulk evidence export'],
-  ['Scope & Boundaries', <ScopeScreen key="sc" />, 'Comply iV never'],
   ['Rulebook', <RulebookScreen key="rb" />, 'Settings in force'],
   ['Regulatory Changes', <RegulatoryScreen key="rc" />, /FCC adopts/],
   ['Setup & Readiness', <SetupScreen key="su" />, 'What each check found'],
@@ -73,7 +69,7 @@ describe('shell', () => {
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
     expect(await screen.findByText('page body')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(20);
+    expect(within(nav).getAllByRole('link')).toHaveLength(18);
     expect(await within(nav).findByLabelText('10 open')).toBeInTheDocument();
     expect(screen.getByText('Sample data')).toBeInTheDocument();
     expect(screen.getByText(/Comply iV is not a law firm/)).toBeInTheDocument();
@@ -134,20 +130,18 @@ describe('interactions', () => {
     expect(screen.getByText('(480) •••-0923')).toBeInTheDocument();
   });
 
+  it('has no Evidence column in the ledger', async () => {
+    renderScreen(<LedgerScreen />);
+    expect(await screen.findByText('(916) •••-4471')).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Evidence' })).not.toBeInTheDocument();
+  });
+
   it('marks an alert as reviewed', async () => {
     const user = userEvent.setup();
     renderScreen(<AlertsScreen />);
     const before = (await screen.findAllByRole('button', { name: 'Mark as reviewed' })).length;
     await user.click(screen.getAllByRole('button', { name: 'Mark as reviewed' })[0]);
     await waitFor(() => expect(screen.getAllByRole('button', { name: 'Mark as reviewed' })).toHaveLength(before - 1));
-  });
-
-  it('verifies a fingerprint in the vault', async () => {
-    const user = userEvent.setup();
-    renderScreen(<VaultScreen />);
-    await user.click(await screen.findByRole('button', { name: 'Use a sample fingerprint' }));
-    await user.click(screen.getByRole('button', { name: 'Verify' }));
-    expect(await screen.findByText('Matches a stored record')).toBeInTheDocument();
   });
 
   it('sets and releases a legal hold', async () => {

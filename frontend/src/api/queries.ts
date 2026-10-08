@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiSend } from './client';
 import type {
-  AccessEntry, Action, Alert, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
+  AccessEntry, Action, DataHealth, Alert, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
   Metric, Position, Readiness, RegChange, ReportRun, ReportType, Revocation, Rulebook, ScoreSummary, SearchHit, Session, Settings,
   Source, Upload, User, VaultStats, VendorSummary,
 } from './types';
@@ -40,6 +40,7 @@ export const useReadiness = () => useGet<Readiness>('/readiness');
 export const useSettings = () => useGet<Settings>('/settings');
 export const useUsers = () => useGet<User[]>('/users');
 export const useAccessLog = () => useGet<AccessEntry[]>('/access-log');
+export const useHealth = () => useGet<DataHealth>('/health');
 export const useSearch = (q: string) => useGet<SearchHit[]>('/search', { q }, q.trim().length >= 2);
 
 export interface SendArgs { method: 'POST' | 'PATCH' | 'DELETE'; path: string; body?: unknown }

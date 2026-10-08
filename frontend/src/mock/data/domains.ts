@@ -62,6 +62,12 @@ export const score: ScoreSummary = {
   projected: { score: 84.9, grade: 'B', actions: 5, clearsCap: true },
   previous: 79.6,
   evidenceCoverage: 0.82,
+  confirmedScore: 78.9,
+  caps: [
+    { name: 'Hard cap', held: true, detail: '11.2% of contacts that need proof have none or conflicting proof (limit 10%). Overall grade held at C.' },
+    { name: 'Contact-after-stop cap', held: true, detail: '14 contacts after an opt-out. Opt-out handling (REV) is held at D.' },
+    { name: 'Coverage cap', held: false, detail: 'Evidence coverage is 82%, above the 60% floor.' },
+  ],
   families: FAMILIES.map((family) => ({ family, score: familyScore(family) })),
   history: [
     { period: '2026-06', label: 'Jun', score: 68.4, grade: 'D', event: 'Engagement began; first full audit' },

@@ -11,8 +11,8 @@ export const NAV: NavGroup[] = [
     { href: '/alerts', label: 'Alerts', icon: 'bell', badge: 'alerts' },
   ] },
   { title: 'Evidence', items: [
-    { href: '/ledger', label: 'Contact Ledger', icon: 'book' },
     { href: '/consent', label: 'Consent Integrity', icon: 'check-circle' },
+    { href: '/ledger', label: 'Contact Ledger', icon: 'book' },
     { href: '/revocation', label: 'Revocation Integrity', icon: 'undo' },
     { href: '/vault', label: 'Evidence Vault', icon: 'lock' },
   ] },
@@ -20,14 +20,12 @@ export const NAV: NavGroup[] = [
     { href: '/conduct', label: 'Contact Conduct', icon: 'phone' },
     { href: '/leads', label: 'Lead Provenance', icon: 'funnel' },
     { href: '/vendors', label: 'Vendor Ledger', icon: 'building' },
-    { href: '/metrics', label: 'Metrics Library', icon: 'bars' },
   ] },
   { title: 'Disclosure', items: [
     { href: '/sources', label: 'Source Registry', icon: 'database' },
     { href: '/reports', label: 'Reports & Exports', icon: 'file' },
   ] },
   { title: 'Engagement', items: [
-    { href: '/scope', label: 'Scope & Boundaries', icon: 'target' },
     { href: '/rulebook', label: 'Rulebook', icon: 'sliders' },
     { href: '/regulatory', label: 'Regulatory Changes', icon: 'landmark' },
   ] },

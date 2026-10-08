@@ -47,7 +47,8 @@ function history(value: number | null, better: Metric['better'], seed: number): 
   if (value === null) return [null, null, null, null];
   const step = Math.max(Math.abs(value) * 0.04, 0.4) * (1 + (seed % 3) * 0.25);
   const dir = better === 'lower' ? 1 : -1;
-  return [3, 2, 1, 0].map((k) => Math.round((value + dir * step * k) * 10) / 10);
+  // Uneven steps so sample trends look like real months, not a ruler line.
+  return [3.2, 1.4, 1.1, 0].map((k) => Math.round((value + dir * step * k) * 10) / 10);
 }
 
 export const metrics: Metric[] = ROWS.map(([code, name, group, value, display, note, definition, source, unit, better, evidence, notMeasured], i) => ({

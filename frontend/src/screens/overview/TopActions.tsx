@@ -10,9 +10,9 @@ import { useDrawer } from '@/state/DrawerContext';
 /** The three highest-ranked open actions. */
 export function TopActions({ actions }: { actions: Action[] }) {
   const { open } = useDrawer();
-  const top = actions.filter((a) => a.status !== 'resolved').slice(0, 3);
+  const top = actions.filter((a) => a.status !== 'resolved').slice(0, 4);
   return (
-    <Card title="Do these first" sub="Highest-ranked open actions" flush right={<Link href="/actions" className="text-[12.5px] font-semibold">Full queue</Link>}>
+    <Card title="Things to fix" sub="Highest-ranked open problems" flush right={<Link href="/actions" className="text-[12.5px] font-semibold">Full queue</Link>}>
       {top.map((a) => (
         <button key={a.id} type="button" className="row-item" onClick={() => open('action', a.id)}>
           <span className="rank">{a.rank}</span>

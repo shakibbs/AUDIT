@@ -1,6 +1,6 @@
 'use client';
 
-import { useConduct, useMetrics } from '@/api/queries';
+import { useConduct, useMetrics, useSession } from '@/api/queries';
 import { BarList } from '@/components/charts/BarList';
 import { Columns } from '@/components/charts/Columns';
 import { Legend } from '@/components/charts/Legend';
@@ -15,6 +15,9 @@ export function ConductScreen() {
   const { period } = usePortal();
   const conduct = useConduct();
   const metrics = useMetrics(period);
+  const months = useSession().data?.periods ?? [];
+  const index = Math.max(0, months.findIndex((p) => p.id === period));
+  const since = months[index + 1]?.label.slice(0, 3) ?? 'last month';
   return (
     <>
       <PageHead eyebrow="Intelligence" title="Contact Conduct" sub="How contacts were made: hours, frequency, abandoned calls, disclosures and caller ID." />
@@ -22,7 +25,7 @@ export function ConductScreen() {
         {(c) => (
           <div className="flex flex-col gap-5">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {c.metrics.map((code) => { const m = metrics.data?.find((x) => x.code === code); return m ? <MetricTile key={code} metric={m} /> : null; })}
+              {c.metrics.map((code) => { const m = metrics.data?.find((x) => x.code === code); return m ? <MetricTile key={code} metric={m} since={since} /> : null; })}
             </div>
             <Card title="Contacts by hour of day" sub="Recipient local time">
               <Columns label="Contacts by recipient local hour" height={170} columns={c.hoursOfDay.map((h) => ({ label: h.hour, value: h.count, display: `${formatCount(h.count)} contacts`, flagged: h.outside, note: h.outside ? 'Outside the federal 8am–9pm window' : undefined }))} />

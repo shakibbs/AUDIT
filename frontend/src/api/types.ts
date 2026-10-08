@@ -51,8 +51,22 @@ export interface ScoreSummary {
   previous: number;
   /** Share of the score backed by proof CiV checked itself, 0–1 (shown beside every score). */
   evidenceCoverage: number;
+  /** Score using only Rulebook values marked Set; the figure that holds if the Rulebook is challenged. */
+  confirmedScore: number;
+  /** The three grade caps, in the order they apply. */
+  caps: CapStatus[];
   families: { family: Family; score: number | null }[];
   history: ScorePoint[];
+}
+
+export interface CapStatus { name: string; held: boolean; detail: string }
+
+/** Is the data behind the score complete, fresh and checked? */
+export interface DataHealth {
+  accessLevel: number; accessLabel: string; lastChangeAt: string;
+  sources: { live: number; stale: number; notSupplied: number; total: number };
+  recordsCompleteness: number; completenessFloor: number;
+  conversationReview: { reviewed: number; optOutsFound: number; missed: number; notMarkedFirstCheck: number };
 }
 
 export interface Domain {

@@ -1,5 +1,5 @@
 // In-memory stand-in for the Django API. One pure function serves the dev route handler and the tests.
-import { INTERNAL_ROLES, type EngagementMode, type HashCheck, type Role, type SearchHit, type Session } from '@/api/types';
+import { INTERNAL_ROLES, type DataHealth, type EngagementMode, type HashCheck, type Role, type SearchHit, type Session } from '@/api/types';
 import { gradeOf } from '@/lib/format';
 import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
@@ -46,6 +46,7 @@ function scoreFor(period: string | undefined) {
   const point = score.history[i];
   return {
     ...score, score: point.score, grade: point.grade, rawGrade: gradeOf(point.score), cap: null,
+    confirmedScore: Math.round((point.score - 1.7) * 10) / 10, caps: [],
     previous: i > 0 ? score.history[i - 1].score : point.score, history: score.history.slice(0, i + 1),
     families: score.families.map((f) => ({ ...f, score: f.score === null ? null : Math.round((f.score - (score.score - point.score)) * 10) / 10 })),
   };
@@ -56,7 +57,7 @@ function search(q: string): SearchHit[] {
   if (needle.length < 2) return [];
   const has = (...parts: (string | null)[]) => parts.some((p) => p?.toLowerCase().includes(needle));
   const digits = needle.replace(/\D/g, '');
-  const pages: [string, string][] = [['/', 'Overview'], ['/scorecard', 'Audit Scorecard'], ['/actions', 'Action Queue'], ['/alerts', 'Alerts'], ['/ledger', 'Contact Ledger'], ['/consent', 'Consent Integrity'], ['/revocation', 'Revocation Integrity'], ['/vault', 'Evidence Vault'], ['/conduct', 'Contact Conduct'], ['/leads', 'Lead Provenance'], ['/vendors', 'Vendor Ledger'], ['/metrics', 'Metrics Library'], ['/sources', 'Source Registry'], ['/reports', 'Reports & Exports'], ['/scope', 'Scope & Boundaries'], ['/rulebook', 'Rulebook'], ['/regulatory', 'Regulatory Changes'], ['/setup', 'Setup & Readiness'], ['/settings', 'Settings'], ['/users', 'Users & Access']];
+  const pages: [string, string][] = [['/', 'Overview'], ['/scorecard', 'Audit Scorecard'], ['/actions', 'Action Queue'], ['/alerts', 'Alerts'], ['/ledger', 'Contact Ledger'], ['/consent', 'Consent Integrity'], ['/revocation', 'Revocation Integrity'], ['/vault', 'Evidence Vault'], ['/conduct', 'Contact Conduct'], ['/leads', 'Lead Provenance'], ['/vendors', 'Vendor Ledger'], ['/sources', 'Source Registry'], ['/reports', 'Reports & Exports'], ['/rulebook', 'Rulebook'], ['/regulatory', 'Regulatory Changes'], ['/setup', 'Setup & Readiness'], ['/settings', 'Settings'], ['/users', 'Users & Access']];
   return [
     ...domains.filter((d) => has(d.code, d.name)).map((d): SearchHit => ({ kind: 'domain', id: d.code, label: d.name, hint: `Domain ${d.code}` })),
     ...metrics.filter((m) => has(m.code, m.name)).map((m): SearchHit => ({ kind: 'metric', id: m.code, label: m.name, hint: `Metric ${m.code}` })),
@@ -111,6 +112,15 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'users': return ok(db.users);
     case 'access-log': return ok(db.accessLog);
     case 'search': return ok(search(q.q ?? ''));
+    case 'health': {
+      const health: DataHealth = {
+        accessLevel: 4, accessLabel: 'Level 4 · dialer, texting, certificates, lead feed and CRM connected', lastChangeAt: '2026-09-30T08:52:00Z',
+        sources: { live: sources.filter((x) => x.status === 'current').length, stale: sources.filter((x) => x.status === 'stale').length, notSupplied: sources.filter((x) => x.status === 'not_supplied').length, total: sources.length },
+        recordsCompleteness: 0.94, completenessFloor: 0.9,
+        conversationReview: { reviewed: 6820, optOutsFound: 41, missed: 6, notMarkedFirstCheck: 11 },
+      };
+      return ok(health);
+    }
     default: return fail(404, `No mock for GET ${path}`);
   }
 }
