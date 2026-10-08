@@ -1,7 +1,7 @@
 // The frontend's contract with the backend. Every shape a screen reads is defined here.
 // Feature IDs (F01…) refer to docs/feature-list.md.
 
-export type Role = 'owner' | 'legal' | 'operations' | 'read_only' | 'counsel_guest' | 'admin' | 'counsel' | 'engineer';
+export type Role = 'owner' | 'legal' | 'operations' | 'read_only' | 'counsel_guest' | 'admin' | 'counsel' | 'engineer' | 'underwriter';
 export type EngagementMode = 'direct' | 'counsel_directed';
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'F';
 export type Tier = 1 | 2 | 3 | 4;
@@ -31,6 +31,8 @@ export interface Session {
   userId: string; name: string; initials: string; email: string;
   clientId: string; clientName: string; vertical: string;
   role: Role; engagementMode: EngagementMode; plan: Plan;
+  /** 'insurer' when an underwriter is signed in: they see insurer pages, never a client's records. */
+  orgKind: 'client' | 'insurer';
   sampleData: boolean; updatedAt: string;
   periods: Period[]; runs: Run[];
 }
@@ -248,4 +250,36 @@ export interface Settings {
 export interface User { id: string; name: string; email: string; role: Role; status: 'active' | 'invited'; lastSeen: string | null; scope: string | null }
 export interface AccessEntry { at: string; actor: string; role: Role; action: string; object: string }
 
-export interface SearchHit { kind: 'domain' | 'metric' | 'number' | 'vendor' | 'page'; id: string; label: string; hint: string }
+export interface SearchHit { kind: 'domain' | 'metric' | 'number' | 'vendor' | 'page' | 'insured'; id: string; label: string; hint: string }
+
+// ----- Insurer view (buyers: insurers and acquirers) -----
+export type SourceGrade = 'A' | 'B' | 'C' | 'D' | 'S' | 'N';
+
+/** One reading of the six exposure factors (0–100, higher = more exposed) and the three pressure multipliers. */
+export interface ExposureReading { factors: number[]; venue: number; targeting: number; volume: number; source: string }
+
+export interface Insured {
+  id: string; name: string; industry: string; contactsPerMonth: number; selfReported: boolean;
+  asOf: string | null; sheetHash: string | null; monitoring: string; signedBy: string | null;
+  consentProof: number | null; marketingShare: number | null; prerecordedShare: number | null; smsShare: number | null;
+  purchasedShare: number | null; vendors: number; vendorTermsShare: number | null;
+  optOutMedianHours: number | null; optOutFailShare: number | null; contactsAfterOptOut: number | null; reAdded: number | null;
+  internalListContacts: number | null; rndExposure: number | null; reassignedCheckRate: number | null; litigatorContacts: number | null;
+  manualImportShare: number | null; evidenceFoundShare: number | null;
+  praStates: number; priorStated: number; priorDocket: number; openMatters: number;
+  coverage: number; completeness: number | null; unknownCallerIds: number | null;
+  basisMix: { grade: SourceGrade; share: number }[];
+  conflicts: { stated: string; observed: string; treatment: string; ref: string }[];
+  statements: string[];
+  reconciliation: { label: string; against: string; records: string; total: string; ratio: number | null; result: 'consistent' | 'flag'; source: string }[];
+  controls: { policy: boolean; trainingCurrency: number | null; optOutTests90d: number; fingerprinted: number };
+  exposure: { inside: ExposureReading | null; outside: ExposureReading | null; why: { venue: string; targeting: string; volume: string } };
+}
+
+export interface LitigationStats {
+  headline: { label: string; value: string; note: string; status: 'Verified' | 'Estimate'; source: string; url: string | null }[];
+  classByYear: { label: string; count: number }[];
+  costs: { label: string; value: string; status: 'Statute' | 'Verified' | 'Estimate' }[];
+  claimTypes: { type: string; hook: string; direction: string }[];
+  study: { step: string; how: string; cost: string }[];
+}

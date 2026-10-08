@@ -35,9 +35,14 @@ Any email and password signs in. The account menu has a "Sample data · view as"
 | `src/lib/wording.ts` | Banned-wording guard; tests scan every screen and fixture |
 | `tests/` | Mock API tests and screen tests (MSW routes `/api/*` to the same mock) |
 
-## Simple and Full view
+## Owner and Underwriter views
 
-A switch in the top bar changes the whole portal. **Simple view** has four pages (Home, Urgent alerts, Things to fix, Reports) in plain words; **Full view** has every page. New users start in Full view; the choice is kept in the browser (`civ-view`), and `?view=simple` or `?view=full` in a link sets it. The four shared routes render `src/screens/simple/*` or the full screen through `ViewSwitch`.
+With sample data, a **View as Owner · Underwriter** switch sits in the top bar (it calls `POST /api/session/view-as`).
+
+- **Owner**: every client page, plus *Shared with your insurer*: `/integrity`, `/attestation`, `/uw-export` for its own company, with no dollar figures.
+- **Underwriter** (`role: 'underwriter'`, `orgKind: 'insurer'`): `/portfolio`, `/exposure`, `/integrity`, `/attestation`, `/litigation`, `/uw-export`, `/rulebook`, `/regulatory`, across five insured companies (`src/mock/data/insurer.ts`).
+- Access is enforced twice: `src/lib/views.ts` blocks pages in the shell, and the mock API answers 403 for client data to an underwriter and for other companies to a client. The Django API must do the same with row-level security.
+- Exposure Indicator v2.2 math is in `src/lib/exposure.ts`; loss model v0 (used for the portfolio's chance of a suit and expected loss; no page of its own) in `src/lib/lossModel.ts`.
 
 ## Pages
 

@@ -1,6 +1,6 @@
 import type { IconName } from '@/components/ui/Icon';
 
-export interface NavItem { href: string; label: string; icon: IconName; badge?: 'actions' | 'alerts' | 'urgent' }
+export interface NavItem { href: string; label: string; icon: IconName; badge?: 'actions' | 'alerts' }
 export interface NavGroup { title: string; items: NavItem[] }
 
 export const NAV: NavGroup[] = [
@@ -36,14 +36,25 @@ export const NAV: NavGroup[] = [
   ] },
 ];
 
-/** The short menu shown in Simple view: only the most important pages. */
-export const SIMPLE_NAV: NavGroup[] = [
-  { title: 'Simple view', items: [
-    { href: '/', label: 'Home', icon: 'grid' },
-    { href: '/alerts', label: 'Urgent alerts', icon: 'bell', badge: 'urgent' },
-    { href: '/actions', label: 'Things to fix', icon: 'list', badge: 'actions' },
-    { href: '/reports', label: 'Reports', icon: 'file' },
+/** Client view: the insurer-facing pages about the client's own company. */
+export const SHARED_WITH_INSURER: NavGroup = { title: 'Shared with your insurer', items: [
+  { href: '/integrity', label: 'Data Integrity', icon: 'shield' },
+  { href: '/attestation', label: 'Risk Attestation', icon: 'clipboard' },
+  { href: '/uw-export', label: 'Underwriting Export', icon: 'download' },
+] };
+
+/** Underwriter view: the insurer's own pages, plus the read-only Engagement pages. */
+export const UNDERWRITER_NAV: NavGroup[] = [
+  { title: 'Falcon Risk · underwriting', items: [
+    { href: '/portfolio', label: 'Portfolio', icon: 'grid' },
+    { href: '/exposure', label: 'Exposure Indicator', icon: 'target' },
+    { href: '/integrity', label: 'Data Integrity', icon: 'shield' },
+    { href: '/attestation', label: 'Risk Attestation', icon: 'clipboard' },
+    { href: '/litigation', label: 'Litigation Intelligence', icon: 'landmark' },
+    { href: '/uw-export', label: 'Underwriting Export', icon: 'download' },
+  ] },
+  { title: 'Engagement', items: [
+    { href: '/rulebook', label: 'Rulebook', icon: 'sliders' },
+    { href: '/regulatory', label: 'Regulatory Changes', icon: 'landmark' },
   ] },
 ];
-
-export const SIMPLE_PATHS = SIMPLE_NAV[0].items.map((item) => item.href);

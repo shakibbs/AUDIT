@@ -6,6 +6,7 @@ import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
 import { domains, score } from './data/domains';
 import { regChanges, rulebook } from './data/engagement';
 import { consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, position, revocation, vault } from './data/evidence';
+import { insureds, litigation } from './data/insurer';
 import { conduct, leads, vendorSummary } from './data/intelligence';
 import { metrics } from './data/metrics';
 import { session } from './data/session';
@@ -30,8 +31,21 @@ const isInternal = (role: Role) => INTERNAL_ROLES.includes(role);
 
 function visibleSession(): Session {
   const s = db.session;
-  return { ...s, runs: isInternal(s.role) ? s.runs : s.runs.filter((r) => r.outputVisibility === 'client') };
+  const runs = isInternal(s.role) ? s.runs : s.runs.filter((r) => r.outputVisibility === 'client');
+  if (s.role === 'underwriter') {
+    return { ...s, runs: [], orgKind: 'insurer', userId: 'u-uw', name: 'J. Merchant', initials: 'JM', email: 'j.merchant@falconrisk.example',
+      clientId: 'falcon', clientName: 'Falcon Risk Services', vertical: 'Underwriting pilot · 5 insureds' };
+  }
+  return { ...s, runs, orgKind: 'client' };
 }
+
+// An underwriter reaches only insurer data: never a client's contacts, findings, alerts or sources (v3 §9a).
+const UNDERWRITER_READS = ['session', 'insureds', 'litigation', 'rulebook', 'reg-changes', 'search'];
+// What a client sees of the insurer side: its own company only.
+const OWN_INSURED = 'sunpath';
+
+const INSURER_PAGES: [string, string][] = [['/portfolio', 'Portfolio'], ['/exposure', 'Exposure Indicator'], ['/integrity', 'Data Integrity'], ['/attestation', 'Risk Attestation'], ['/litigation', 'Litigation Intelligence'], ['/uw-export', 'Underwriting Export'], ['/rulebook', 'Rulebook'], ['/regulatory', 'Regulatory Changes']];
+const SHARED_PAGES: [string, string][] = [['/integrity', 'Data Integrity'], ['/attestation', 'Risk Attestation'], ['/uw-export', 'Underwriting Export']];
 
 // Index of the chosen month in every four-point history; the latest month when absent.
 function periodIndex(period: string | undefined): number {
@@ -57,7 +71,14 @@ function search(q: string): SearchHit[] {
   if (needle.length < 2) return [];
   const has = (...parts: (string | null)[]) => parts.some((p) => p?.toLowerCase().includes(needle));
   const digits = needle.replace(/\D/g, '');
+  if (db.session.role === 'underwriter') {
+    return [
+      ...insureds.filter((i) => has(i.name, i.industry)).map((i): SearchHit => ({ kind: 'insured', id: i.id, label: i.name, hint: 'Insured' })),
+      ...INSURER_PAGES.filter(([, label]) => has(label)).map(([id, label]): SearchHit => ({ kind: 'page', id, label, hint: 'Page' })),
+    ].slice(0, 10);
+  }
   const pages: [string, string][] = [['/', 'Overview'], ['/scorecard', 'Audit Scorecard'], ['/actions', 'Action Queue'], ['/alerts', 'Alerts'], ['/ledger', 'Contact Ledger'], ['/consent', 'Consent Integrity'], ['/revocation', 'Revocation Integrity'], ['/vault', 'Evidence Vault'], ['/conduct', 'Contact Conduct'], ['/leads', 'Lead Provenance'], ['/vendors', 'Vendor Ledger'], ['/sources', 'Source Registry'], ['/reports', 'Reports & Exports'], ['/rulebook', 'Rulebook'], ['/regulatory', 'Regulatory Changes'], ['/setup', 'Setup & Readiness'], ['/settings', 'Settings'], ['/users', 'Users & Access']];
+  pages.push(...SHARED_PAGES);
   return [
     ...domains.filter((d) => has(d.code, d.name)).map((d): SearchHit => ({ kind: 'domain', id: d.code, label: d.name, hint: `Domain ${d.code}` })),
     ...metrics.filter((m) => has(m.code, m.name)).map((m): SearchHit => ({ kind: 'metric', id: m.code, label: m.name, hint: `Metric ${m.code}` })),
@@ -73,6 +94,8 @@ function log(action: string, object: string): void {
 
 function read(path: string, q: Record<string, string>): MockResponse {
   const seg = path.split('/').filter(Boolean);
+  const underwriter = db.session.role === 'underwriter';
+  if (underwriter && !UNDERWRITER_READS.includes(seg[0])) return fail(403, 'Not available in the underwriter view.');
   const i = periodIndex(q.period);
   switch (seg[0]) {
     case 'session': return ok(visibleSession());
@@ -112,6 +135,13 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'users': return ok(db.users);
     case 'access-log': return ok(db.accessLog);
     case 'search': return ok(search(q.q ?? ''));
+    case 'insureds': {
+      if (!seg[1]) return underwriter ? ok(insureds) : fail(403, 'Only the insurer sees its portfolio.');
+      if (!underwriter && seg[1] !== OWN_INSURED) return fail(403, 'You can see only your own company.');
+      const insured = insureds.find((x) => x.id === seg[1]);
+      return insured ? ok(insured) : fail(404, 'Insured not found.');
+    }
+    case 'litigation': return underwriter ? ok(litigation) : fail(403, 'Only the insurer sees this page.');
     case 'health': {
       const health: DataHealth = {
         accessLevel: 4, accessLabel: 'Level 4 · dialer, texting, certificates, lead feed and CRM connected', lastChangeAt: '2026-09-30T08:52:00Z',
@@ -127,6 +157,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
 
 function write(method: string, path: string, body: Record<string, unknown>): MockResponse {
   const seg = path.split('/').filter(Boolean);
+  if (db.session.role === 'underwriter' && seg[0] !== 'session') return fail(403, 'The underwriter view is read-only.');
   // "/session/sign-in" names its verb second; "/alerts/al-1/review" names it third, after the id.
   const verb = seg[0] === 'session' ? seg[1] : seg[2];
   const key = `${method} ${seg[0]}${verb ? `/${verb}` : ''}`;

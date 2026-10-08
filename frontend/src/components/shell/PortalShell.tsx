@@ -1,23 +1,24 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useSession } from '@/api/queries';
+import { viewBlock } from '@/lib/views';
 import { DrawerProvider } from '@/state/DrawerContext';
 import { PortalProvider } from '@/state/PortalContext';
-import { ViewModeProvider } from '@/state/ViewModeContext';
 import { Banners } from './Banners';
 import { Disclaimer } from './Disclaimer';
 import { DrawerHost } from './DrawerHost';
-import { FullOnlyNotice } from './FullOnlyNotice';
 import { Locked } from './Locked';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { ViewBlocked } from './ViewBlocked';
 
 /** Frame around every signed-in page. Sends signed-out visitors to the sign-in page. */
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const session = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const signedOut = session.data ? !session.data.signedIn : false;
 
@@ -31,8 +32,8 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
 
   const s = session.data;
   const locked = s.engagementMode === 'counsel_directed' && s.role === 'operations';
+  const block = viewBlock(s.role, pathname);
   return (
-    <ViewModeProvider>
     <PortalProvider>
       <DrawerProvider>
         <Sidebar session={s} open={menuOpen} onNavigate={() => setMenuOpen(false)} />
@@ -41,14 +42,12 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           <Topbar session={s} onMenu={() => setMenuOpen(true)} />
           <main className="mx-auto max-w-[1320px] px-5 pb-10 pt-7 lg:px-8">
             <Banners session={s} />
-            <FullOnlyNotice />
-            {locked ? <Locked /> : children}
+            {locked ? <Locked /> : block !== 'none' ? <ViewBlocked block={block} /> : children}
             <Disclaimer />
           </main>
         </div>
         <DrawerHost />
       </DrawerProvider>
     </PortalProvider>
-    </ViewModeProvider>
   );
 }

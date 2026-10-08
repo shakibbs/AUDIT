@@ -69,7 +69,7 @@ describe('shell', () => {
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
     expect(await screen.findByText('page body')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(18);
+    expect(within(nav).getAllByRole('link')).toHaveLength(21);
     expect(await within(nav).findByLabelText('10 open')).toBeInTheDocument();
     expect(screen.getByText('Sample data')).toBeInTheDocument();
     expect(screen.getByText(/Comply iV is not a law firm/)).toBeInTheDocument();

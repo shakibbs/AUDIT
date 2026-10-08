@@ -8,7 +8,7 @@ import { Icon } from '@/components/ui/Icon';
 
 const ROLE_LABEL: Record<Role, string> = {
   owner: 'Owner', legal: 'Legal', operations: 'Operations', read_only: 'Read-only', counsel_guest: 'Outside counsel (read-only)',
-  admin: 'CiV admin', counsel: 'CiV counsel', engineer: 'CiV engineer',
+  admin: 'CiV admin', counsel: 'CiV counsel', engineer: 'CiV engineer', underwriter: 'Underwriter · Falcon Risk',
 };
 const VIEW_ROLES: Role[] = ['owner', 'legal', 'operations', 'read_only', 'admin'];
 
@@ -35,9 +35,9 @@ export function UserMenu({ session }: { session: Session }) {
             <div className="text-[13px] font-semibold">{session.name}</div>
             <div className="tiny">{session.email}</div>
           </div>
-          <Link role="menuitem" href="/settings" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-txt no-underline hover:bg-surface-3 hover:no-underline"><Icon name="settings" /> Settings</Link>
-          <Link role="menuitem" href="/users" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-txt no-underline hover:bg-surface-3 hover:no-underline"><Icon name="users" /> Users &amp; Access</Link>
-          {session.sampleData && (
+          {session.role !== 'underwriter' && <><Link role="menuitem" href="/settings" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-txt no-underline hover:bg-surface-3 hover:no-underline"><Icon name="settings" /> Settings</Link>
+          <Link role="menuitem" href="/users" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-txt no-underline hover:bg-surface-3 hover:no-underline"><Icon name="users" /> Users &amp; Access</Link></>}
+          {session.sampleData && session.role !== 'underwriter' && (
             <div className="mt-1 border-t border-line px-3 pb-2 pt-3">
               <div className="kpi-tag mb-2">Sample data · view as</div>
               <label className="label" htmlFor="view-role">Role</label>

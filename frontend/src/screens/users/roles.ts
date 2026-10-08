@@ -2,7 +2,7 @@ import type { Role } from '@/api/types';
 
 export const ROLE_LABEL: Record<Role, string> = {
   owner: 'Owner', legal: 'Legal', operations: 'Operations', read_only: 'Read-only', counsel_guest: 'Outside counsel (read-only)',
-  admin: 'CiV admin', counsel: 'CiV counsel', engineer: 'CiV engineer',
+  admin: 'CiV admin', counsel: 'CiV counsel', engineer: 'CiV engineer', underwriter: 'Underwriter (insurer)',
 };
 
 /** Roles a client can give to its own people. */

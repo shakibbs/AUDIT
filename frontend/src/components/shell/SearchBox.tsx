@@ -6,21 +6,24 @@ import { useSearch } from '@/api/queries';
 import type { SearchHit } from '@/api/types';
 import { Icon } from '@/components/ui/Icon';
 import { useDrawer } from '@/state/DrawerContext';
+import { usePortal } from '@/state/PortalContext';
 
-const KIND_LABEL: Record<SearchHit['kind'], string> = { domain: 'Domain', metric: 'Metric', number: 'Number', vendor: 'Vendor', page: 'Page' };
+const KIND_LABEL: Record<SearchHit['kind'], string> = { domain: 'Domain', metric: 'Metric', number: 'Number', vendor: 'Vendor', page: 'Page', insured: 'Insured' };
 
 /** Finds a domain, metric, phone number, vendor or page from anywhere in the portal. */
-export function SearchBox() {
+export function SearchBox({ placeholder = 'Search domains, metrics, numbers, vendors…' }: { placeholder?: string }) {
   const [q, setQ] = useState('');
   const [focused, setFocused] = useState(false);
   const hits = useSearch(q);
   const router = useRouter();
   const { open } = useDrawer();
+  const { setInsuredId } = usePortal();
 
   function go(hit: SearchHit) {
     setQ('');
     if (hit.kind === 'number') router.push(`/numbers/${encodeURIComponent(hit.id)}`);
     else if (hit.kind === 'page') router.push(hit.id);
+    else if (hit.kind === 'insured') { setInsuredId(hit.id); router.push('/attestation'); }
     else open(hit.kind, hit.id);
   }
 
@@ -28,7 +31,7 @@ export function SearchBox() {
   return (
     <div className="relative min-w-0 max-w-[420px] flex-1">
       <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-txt-3" />
-      <input type="search" role="combobox" aria-expanded={show} aria-controls="search-results" aria-label="Search" placeholder="Search domains, metrics, numbers, vendors…"
+      <input type="search" role="combobox" aria-expanded={show} aria-controls="search-results" aria-label="Search" placeholder={placeholder}
         className="field !pl-9" value={q} onChange={(e) => setQ(e.target.value)} onFocus={() => setFocused(true)} onBlur={() => setTimeout(() => setFocused(false), 150)} />
       {show && (
         <ul id="search-results" role="listbox" className="absolute inset-x-0 top-full z-40 m-0 mt-2 max-h-[360px] list-none overflow-y-auto rounded-xl border border-line bg-surface p-1.5 shadow-lg">

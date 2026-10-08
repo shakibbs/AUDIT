@@ -70,4 +70,22 @@ describe('mock API', () => {
     expect(get<{ found: boolean }>('/hash-check', { hash: `4f9c${'0'.repeat(56)}a71e` }).found).toBe(true);
     expect(get<{ found: boolean }>('/hash-check', { hash: 'abc' }).found).toBe(false);
   });
+
+  it('refuses client records to an underwriter and the insurer book to a client', () => {
+    expect(mockApi({ method: 'GET', path: '/insureds' }).status).toBe(403);
+    expect(mockApi({ method: 'GET', path: '/insureds/sunpath' }).status).toBe(200);
+    expect(mockApi({ method: 'GET', path: '/insureds/meridian' }).status).toBe(403);
+    expect(mockApi({ method: 'GET', path: '/litigation' }).status).toBe(403);
+    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'underwriter' } });
+    for (const path of ['/contacts', '/actions', '/alerts', '/evidence/%2B14805550923', '/sources', '/users', '/access-log']) {
+      expect(mockApi({ method: 'GET', path }).status).toBe(403);
+    }
+    expect(mockApi({ method: 'PATCH', path: '/actions/a-1', body: { status: 'resolved' } }).status).toBe(403);
+    expect(mockApi({ method: 'GET', path: '/insureds' }).status).toBe(200);
+    expect(mockApi({ method: 'GET', path: '/insureds/meridian' }).status).toBe(200);
+    assertNoBannedWordsDeep(mockApi({ method: 'GET', path: '/insureds' }).body, '/insureds');
+    assertNoBannedWordsDeep(mockApi({ method: 'GET', path: '/litigation' }).body, '/litigation');
+    expect(get<Session>('/session')).toMatchObject({ name: 'J. Merchant', orgKind: 'insurer' });
+    expect(get<SearchHit[]>('/search', { q: 'meridian' }).map((h) => h.kind)).toEqual(['insured']);
+  });
 });

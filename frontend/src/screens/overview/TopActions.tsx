@@ -21,7 +21,7 @@ export function TopActions({ actions }: { actions: Action[] }) {
             <span className="tiny block">{a.why}</span>
           </span>
           <span className="hidden items-center gap-2 sm:flex">
-            <DomainCode code={a.domain} />
+            <DomainCode code={a.domain} plain />
             <span className="pill pill-teal">{a.impact}</span>
             <SeverityPill severity={a.severity} />
           </span>

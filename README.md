@@ -44,6 +44,7 @@ on top of v1.1: anything v3 does not mention stands as written in v1.1.
 | [docs/specs/CHANGELOG-v3.md](docs/specs/CHANGELOG-v3.md) **[v3]** | Everyone | What v3 changed (C1–C16), the owner's analyzed-data-only decision, the new build phases, decisions D18–D34, and what the built frontend would need |
 | [docs/specs/CHANGELOG-v1.1.md](docs/specs/CHANGELOG-v1.1.md) | Everyone | Each v1.0 gap and the v1.1 fix, with the owner who still has to approve it |
 | [docs/source-documents/](docs/source-documents/) **[v3]** | Everyone | The original source PDF: *CiV Automated TCPA Audit System — Engineering Spec v3* (Oct 7, 2026) |
+| [docs/ai-usage.md](docs/ai-usage.md) | Owner, product, engineering | Every place CiV uses AI: what it reads, which model, accuracy gates, privacy, cost per client |
 | [docs/feature-list.md](docs/feature-list.md) | Owner, product | Every feature by ID (F01–F72, plus **[v3]** additions from F73), with a Now / Later recommendation and the owner's decisions |
 | [docs/plans/2026-10-01-00-roadmap.md](docs/plans/2026-10-01-00-roadmap.md) | Engineering, product | Module order aligned to v3's six phases and gates **[v3]**, rules every plan follows, open decisions |
 | [docs/plans/superseded/](docs/plans/superseded/) `2026-10-03-01a … 01d` | Engineering | The earlier seven-page frontend plans, kept for reference |
@@ -120,6 +121,7 @@ Audit/
     ├── BRD.md
     ├── architecture.md
     ├── design.md
+    ├── ai-usage.md
     ├── feature-guide.md
     ├── feature-list.md
     ├── specs/
