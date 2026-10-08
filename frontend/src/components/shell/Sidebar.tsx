@@ -5,16 +5,20 @@ import { usePathname } from 'next/navigation';
 import { useActions, useAlerts } from '@/api/queries';
 import type { Session } from '@/api/types';
 import { Icon } from '@/components/ui/Icon';
-import { NAV } from './nav';
+import { useViewMode } from '@/state/ViewModeContext';
+import { NAV, SIMPLE_NAV } from './nav';
 
 /** Fixed left menu: six groups, with counts on Action Queue and Alerts. */
 export function Sidebar({ session, open, onNavigate }: { session: Session; open: boolean; onNavigate: () => void }) {
   const pathname = usePathname();
+  const { mode } = useViewMode();
+  const groups = mode === 'simple' ? SIMPLE_NAV : NAV;
   const actions = useActions();
   const alerts = useAlerts();
   const counts = {
     actions: actions.data?.filter((a) => a.status !== 'resolved').length ?? 0,
     alerts: alerts.data?.filter((a) => !a.reviewed).length ?? 0,
+    urgent: alerts.data?.filter((a) => !a.reviewed && a.severity === 'High').length ?? 0,
   };
 
   return (
@@ -27,7 +31,7 @@ export function Sidebar({ session, open, onNavigate }: { session: Session; open:
         </span>
       </div>
       <div className="flex-1 overflow-y-auto px-3 pb-4">
-        {NAV.map((group) => (
+        {groups.map((group) => (
           <div key={group.title} className="mt-4">
             <div className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#6f8a8d]">{group.title}</div>
             {group.items.map((item) => {

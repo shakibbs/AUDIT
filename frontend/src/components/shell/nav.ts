@@ -1,6 +1,6 @@
 import type { IconName } from '@/components/ui/Icon';
 
-export interface NavItem { href: string; label: string; icon: IconName; badge?: 'actions' | 'alerts' }
+export interface NavItem { href: string; label: string; icon: IconName; badge?: 'actions' | 'alerts' | 'urgent' }
 export interface NavGroup { title: string; items: NavItem[] }
 
 export const NAV: NavGroup[] = [
@@ -37,3 +37,15 @@ export const NAV: NavGroup[] = [
     { href: '/users', label: 'Users & Access', icon: 'users' },
   ] },
 ];
+
+/** The short menu shown in Simple view: only the most important pages. */
+export const SIMPLE_NAV: NavGroup[] = [
+  { title: 'Simple view', items: [
+    { href: '/', label: 'Home', icon: 'grid' },
+    { href: '/alerts', label: 'Urgent alerts', icon: 'bell', badge: 'urgent' },
+    { href: '/actions', label: 'Things to fix', icon: 'list', badge: 'actions' },
+    { href: '/reports', label: 'Reports', icon: 'file' },
+  ] },
+];
+
+export const SIMPLE_PATHS = SIMPLE_NAV[0].items.map((item) => item.href);

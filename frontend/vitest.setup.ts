@@ -23,3 +23,18 @@ afterEach(() => {
   resetNav();
 });
 afterAll(() => server.close());
+
+// Newer Node versions expose a global localStorage that is undefined without a backing file,
+// which hides jsdom's. Give tests a simple in-memory one.
+if (typeof globalThis.localStorage?.getItem !== 'function') {
+  const data = new Map<string, string>();
+  const memory: Storage = {
+    get length() { return data.size; },
+    clear: () => data.clear(),
+    getItem: (k) => data.get(k) ?? null,
+    key: (i) => Array.from(data.keys())[i] ?? null,
+    removeItem: (k) => { data.delete(k); },
+    setItem: (k, v) => { data.set(k, String(v)); },
+  };
+  Object.defineProperty(globalThis, 'localStorage', { value: memory, configurable: true });
+}

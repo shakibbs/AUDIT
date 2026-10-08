@@ -61,6 +61,7 @@ export const score: ScoreSummary = {
   domainsMeasured: scored.length, domainsTotal: domains.length,
   projected: { score: 84.9, grade: 'B', actions: 5, clearsCap: true },
   previous: 79.6,
+  evidenceCoverage: 0.82,
   families: FAMILIES.map((family) => ({ family, score: familyScore(family) })),
   history: [
     { period: '2026-06', label: 'Jun', score: 68.4, grade: 'D', event: 'Engagement began; first full audit' },

@@ -35,6 +35,10 @@ Any email and password signs in. The account menu has a "Sample data · view as"
 | `src/lib/wording.ts` | Banned-wording guard; tests scan every screen and fixture |
 | `tests/` | Mock API tests and screen tests (MSW routes `/api/*` to the same mock) |
 
+## Simple and Full view
+
+A switch in the top bar changes the whole portal. **Simple view** has four pages (Home, Urgent alerts, Things to fix, Reports) in plain words; **Full view** has every page. New users start in Full view; the choice is kept in the browser (`civ-view`), and `?view=simple` or `?view=full` in a link sets it. The four shared routes render `src/screens/simple/*` or the full screen through `ViewSwitch`.
+
 ## Pages
 
 Your position: Overview, Audit Scorecard, Action Queue, Alerts · Evidence: Contact Ledger, Consent Integrity, Revocation Integrity, Evidence Vault, evidence file per number · Intelligence: Contact Conduct, Lead Provenance, Vendor Ledger, Metrics Library · Disclosure: Source Registry (with upload centre), Reports & Exports · Engagement: Scope & Boundaries, Rulebook, Regulatory Changes · Account: Setup & Readiness, Settings, Users & Access.

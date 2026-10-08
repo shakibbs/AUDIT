@@ -222,6 +222,7 @@ the mock). **Recommendation** is for the frontend update to v3.
 | F103 | **[D35]** Urgent alerts within minutes | Contact after "STOP", opted-out numbers re-added and unknown caller IDs alert within 15 minutes of the change | 1 | Now |
 | F104 | **[D37]** AI conversation review updates | After each call or text ends, the AI reads or listens to the whole conversation and shows an update card: opted out, partial request, wrong number or opted back in, with the moment, confidence and "AI result" label | 3 | Now |
 | F105 | **[D37]** Missed opt-out check (M38) | For each AI-found opt-out, shows whether the client's dialer and CRM marked the number; urgent alert within 15 minutes if not | 3 | Now |
+| F106 | **Simple / Full view switch** (owner request 2026-10-08) | A switch at the top changes the whole portal. Simple view: Home (score, grade, held note, evidence coverage, trend), Urgent alerts, Things to fix (top 5 in plain words), Reports (one-click monthly report). Full view: every page. Other pages say "part of Full view" with a one-click switch. New users start in Full view; the choice is remembered; `?view=simple` in a link opens Simple view | — | Now (built 2026-10-08) |
 | F101 | End-of-contract key destruction record | When a contract ends, the client's key is destroyed so its tokens can no longer be linked; the client sees the dated record | 1 | Later |
 
 ---
@@ -269,8 +270,8 @@ decisions below use the spec's numbers from [CHANGELOG-v3 §12](specs/CHANGELOG-
 | From earlier documents (F36–F47) | 4 | 5 | 3 |
 | Suggested additions (F48–F72) | 16 | 9 | — |
 | **Total F01–F72 (v1.1, built 2026-10-04)** | **55** | **14** | **3** |
-| **[v3] Additions (F73–F105, incl. live sync F102–F103 and conversation review F104–F105)** | **28** | **5** | — |
-| **[v3] Grand total** | **83** | **19** | **3** |
+| **[v3] Additions (F73–F106, incl. live sync F102–F103, conversation review F104–F105, view switch F106)** | **29** | **5** | — |
+| **[v3] Grand total** | **84** | **19** | **3** |
 
 **[v3]** Counts for F01–F72 keep their original marks. Proposed re-marks
 from v3, not yet counted: F42 Later → Now (as F93); F45 Later → covered by

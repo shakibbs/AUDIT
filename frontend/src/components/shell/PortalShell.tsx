@@ -5,9 +5,11 @@ import { useEffect, useState } from 'react';
 import { useSession } from '@/api/queries';
 import { DrawerProvider } from '@/state/DrawerContext';
 import { PortalProvider } from '@/state/PortalContext';
+import { ViewModeProvider } from '@/state/ViewModeContext';
 import { Banners } from './Banners';
 import { Disclaimer } from './Disclaimer';
 import { DrawerHost } from './DrawerHost';
+import { FullOnlyNotice } from './FullOnlyNotice';
 import { Locked } from './Locked';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -30,6 +32,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   const s = session.data;
   const locked = s.engagementMode === 'counsel_directed' && s.role === 'operations';
   return (
+    <ViewModeProvider>
     <PortalProvider>
       <DrawerProvider>
         <Sidebar session={s} open={menuOpen} onNavigate={() => setMenuOpen(false)} />
@@ -38,6 +41,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           <Topbar session={s} onMenu={() => setMenuOpen(true)} />
           <main className="mx-auto max-w-[1320px] px-5 pb-10 pt-7 lg:px-8">
             <Banners session={s} />
+            <FullOnlyNotice />
             {locked ? <Locked /> : children}
             <Disclaimer />
           </main>
@@ -45,5 +49,6 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         <DrawerHost />
       </DrawerProvider>
     </PortalProvider>
+    </ViewModeProvider>
   );
 }

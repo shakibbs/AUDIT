@@ -49,6 +49,8 @@ export interface ScoreSummary {
   checkpointsRun: number; checkpointsTotal: number; domainsMeasured: number; domainsTotal: number;
   projected: { score: number; grade: Grade; actions: number; clearsCap: boolean };
   previous: number;
+  /** Share of the score backed by proof CiV checked itself, 0–1 (shown beside every score). */
+  evidenceCoverage: number;
   families: { family: Family; score: number | null }[];
   history: ScorePoint[];
 }

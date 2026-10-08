@@ -8,6 +8,7 @@ import { RunSelect } from './RunSelect';
 import { SearchBox } from './SearchBox';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
+import { ViewToggle } from './ViewToggle';
 
 /** Sticky bar above every page: search, freshness, period, theme and account. */
 export function Topbar({ session, onMenu }: { session: Session; onMenu: () => void }) {
@@ -16,6 +17,7 @@ export function Topbar({ session, onMenu }: { session: Session; onMenu: () => vo
       <button type="button" className="icon-btn lg:hidden" onClick={onMenu} aria-label="Open menu"><Icon name="menu" /></button>
       <SearchBox />
       <div className="ml-auto flex items-center gap-2.5">
+        <ViewToggle />
         {session.sampleData && <span className="samplechip hidden md:inline-block">Sample data</span>}
         <Freshness updatedAt={session.updatedAt} />
         {INTERNAL_ROLES.includes(session.role) && <RunSelect runs={session.runs} />}
