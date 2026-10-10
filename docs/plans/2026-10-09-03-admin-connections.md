@@ -19,13 +19,17 @@ CiV staff add each client's tools in the admin panel, read-only, with the key lo
 - **Access level 0–4** on the client, recomputed whenever a connection changes: 1 contact logs
   (dialer or texting), 2 + certificate account, 3 + lead feed copy, 4 + CRM. Each level needs the one below.
 - **Logged:** added, key replaced, tested, removed, connect link sent.
-- **Where:** menu → Clients → Connections; each client company page lists its connections and has
-  "+ Add connection"; the dashboard shows connected / waiting / failed counts.
+- **Where (changed 2026-10-11, owner's request):** there is **no separate Connections page**. Connections
+  live on the **client company page**, as a Connections tab next to General, Users and Invites, with
+  summary tiles on top and the client's Activity below. A new client and its connections are saved
+  with one Save. Each connection row has "Test connection now" or "Send connect link to client Admins".
+  The dashboard shows connected / waiting / failed counts.
 
 ## Files
 
 `providers.py` (tool list) · `crypto.py` (lock/unlock) · `models.py` (`Connection`) · `access_level.py` ·
-`signals.py` · `testers.py` · `emails.py` · `forms.py` · `admin.py`; tests in `tests/connections/`.
+`signals.py` · `testers.py` · `emails.py` · `forms.py` · `admin.py` (the Connections tab) · `views.py`
+(the row buttons); the client page itself is `apps/clients/admin.py` + `apps/clients/templates/clients/`; tests in `tests/connections/`.
 
 ## Not yet
 
