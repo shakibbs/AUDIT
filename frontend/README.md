@@ -69,7 +69,14 @@ Regulatory Changes · Account: Setup & Readiness, Settings, Users & Access · Sh
 Data Integrity, Risk Attestation, Underwriting Export · Underwriter view: Portfolio, Exposure Indicator,
 Litigation Intelligence.
 
-## Hosting (Vercel)
+## Hosting
+
+**Server (Docker, current):** `Dockerfile` builds a standalone Next.js server (`output: 'standalone'`).
+It is started together with the backend and database by `deploy/docker-compose.yml` in the
+[Audit-backend](https://github.com/shakibbs/Audit-backend) repo; see its README, "Deploy". Inside
+Docker the portal reaches Django at `BACKEND_URL=http://backend:8000`.
+
+### Vercel (alternative)
 
 `vercel.json` is in this folder; set Vercel's **Root Directory** to `frontend`.
 Set `BACKEND_URL` in Vercel's environment variables once the backend is hosted.
