@@ -76,6 +76,10 @@ It is started together with the backend and database by `deploy/docker-compose.y
 [Audit-backend](https://github.com/shakibbs/Audit-backend) repo; see its README, "Deploy". Inside
 Docker the portal reaches Django at `BACKEND_URL=http://backend:8000`.
 
+**Automatic updates:** every push to `main` that changes `frontend/` runs the checks (typecheck, lint,
+tests) in `.github/workflows/deploy.yml`; if they pass, GitHub updates the server. See the Audit-backend
+README, "Automatic updates". Docs-only pushes do not redeploy.
+
 ### Vercel (alternative)
 
 `vercel.json` is in this folder; set Vercel's **Root Directory** to `frontend`.
