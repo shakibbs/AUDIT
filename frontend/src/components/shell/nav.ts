@@ -14,6 +14,7 @@ export const NAV: NavGroup[] = [
     { href: '/consent', label: 'Consent Integrity', icon: 'check-circle' },
     { href: '/ledger', label: 'Contact Ledger', icon: 'book' },
     { href: '/revocation', label: 'Revocation Integrity', icon: 'undo' },
+    { href: '/who-contact', label: 'Who You Contact', icon: 'phone' },
     { href: '/vault', label: 'Evidence Vault', icon: 'lock' },
   ] },
   { title: 'Intelligence', items: [
@@ -29,11 +30,13 @@ export const NAV: NavGroup[] = [
     { href: '/rulebook', label: 'Rulebook', icon: 'sliders' },
     { href: '/regulatory', label: 'Regulatory Changes', icon: 'landmark' },
   ] },
-  { title: 'Account', items: [
-    { href: '/setup', label: 'Setup & Readiness', icon: 'clipboard' },
-    { href: '/settings', label: 'Settings', icon: 'settings' },
-    { href: '/users', label: 'Users & Access', icon: 'users' },
-  ] },
+];
+
+/** Account pages: in the account menu at the top right, not the sidebar. */
+export const ACCOUNT_LINKS: NavItem[] = [
+  { href: '/setup', label: 'Setup & Readiness', icon: 'clipboard' },
+  { href: '/settings', label: 'Settings', icon: 'settings' },
+  { href: '/users', label: 'Users & Access', icon: 'users' },
 ];
 
 /** Client view: the insurer-facing pages about the client's own company. */

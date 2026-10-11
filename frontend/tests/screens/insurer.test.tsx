@@ -80,7 +80,8 @@ describe('view switch', () => {
   it('switches from owner to underwriter and goes to the portfolio', async () => {
     const user = userEvent.setup();
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
-    await user.click(await screen.findByRole('button', { name: 'Underwriter' }));
+    await user.click(await screen.findByRole('button', { name: 'Account menu' }));
+    await user.click(screen.getByRole('button', { name: 'Underwriter' }));
     await waitFor(() => expect(navState.push).toHaveBeenCalledWith('/portfolio'));
     expect(await screen.findByText('Falcon Risk · underwriting')).toBeInTheDocument();
     expect(screen.getByText('J. Merchant')).toBeInTheDocument();

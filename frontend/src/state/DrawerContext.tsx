@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-export type DrawerKind = 'domain' | 'metric' | 'contact' | 'action' | 'vendor';
+export type DrawerKind = 'domain' | 'metric' | 'contact' | 'action' | 'vendor' | 'who-area';
 export interface DrawerTarget { kind: DrawerKind; id: string }
 
 interface DrawerState { target: DrawerTarget | null; open: (kind: DrawerKind, id: string) => void; close: () => void }

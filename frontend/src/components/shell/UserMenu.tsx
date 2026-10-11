@@ -3,16 +3,18 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSend } from '@/api/queries';
-import type { EngagementMode, Role, Session } from '@/api/types';
+import type { Session } from '@/api/types';
 import { Icon } from '@/components/ui/Icon';
-import { CLIENT_ROLES, ROLE_LABEL } from '@/screens/users/roles';
+import { ROLE_LABEL } from '@/screens/users/roles';
+import { ACCOUNT_LINKS } from './nav';
+import { ThemeToggle } from './ThemeToggle';
+import { ViewAsSwitch } from './ViewAsSwitch';
 
-/** Account menu: who is signed in, sign-out, and (sample data only) a way to see the portal as another role. */
+/** Account menu: who is signed in, the account pages, role, view switch (sample data), dark mode and sign-out. */
 export function UserMenu({ session }: { session: Session }) {
   const [open, setOpen] = useState(false);
   const send = useSend();
   const underwriter = session.view === 'underwriter';
-  const viewAs = (body: { role?: Role; isCounsel?: boolean; engagementMode?: EngagementMode }) => send.mutate({ method: 'POST', path: '/session/view-as', body });
 
   return (
     <div className="relative">
@@ -31,23 +33,18 @@ export function UserMenu({ session }: { session: Session }) {
             <div className="text-[13px] font-semibold">{session.name}</div>
             <div className="tiny">{session.email}</div>
           </div>
-          {!underwriter && <><Link role="menuitem" href="/settings" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-txt no-underline hover:bg-surface-3 hover:no-underline"><Icon name="settings" /> Settings</Link>
-          <Link role="menuitem" href="/users" onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-txt no-underline hover:bg-surface-3 hover:no-underline"><Icon name="users" /> Users &amp; Access</Link></>}
-          {session.sampleData && !underwriter && (
-            <div className="mt-1 border-t border-line px-3 pb-2 pt-3">
-              <div className="kpi-tag mb-2">Sample data · view as</div>
-              <label className="label" htmlFor="view-role">Role</label>
-              <select id="view-role" className="field !py-1.5" value={session.role} onChange={(e) => viewAs({ role: e.target.value as Role })}>
-                {CLIENT_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
-              </select>
-              <label className="mt-2 flex items-center gap-2 text-[12.5px]"><input type="checkbox" checked={session.isCounsel} onChange={(e) => viewAs({ isCounsel: e.target.checked })} /> Is the company’s lawyer</label>
-              <label className="label mt-2.5" htmlFor="view-mode">Engagement mode</label>
-              <select id="view-mode" className="field !py-1.5" value={session.engagementMode} onChange={(e) => viewAs({ engagementMode: e.target.value as EngagementMode })}>
-                <option value="direct">Direct</option>
-                <option value="counsel_directed">Counsel-directed</option>
-              </select>
-            </div>
-          )}
+          {!underwriter && ACCOUNT_LINKS.map((item) => (
+            <Link key={item.href} role="menuitem" href={item.href} onClick={() => setOpen(false)} className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-txt no-underline hover:bg-surface-3 hover:no-underline"><Icon name={item.icon} /> {item.label}</Link>
+          ))}
+          <div className="mt-1 border-t border-line pt-1">
+            {!underwriter && (
+              <div className="flex items-center justify-between px-3 py-2 text-[13px]">
+                <span className="kpi-tag">Role</span><span className="font-semibold">{ROLE_LABEL[session.role]}</span>
+              </div>
+            )}
+            {session.sampleData && <ViewAsSwitch session={session} onChosen={() => setOpen(false)} />}
+            <ThemeToggle />
+          </div>
           <button type="button" role="menuitem" onClick={() => send.mutate({ method: 'POST', path: '/session/sign-out' })}
             className="mt-1 flex w-full items-center gap-2.5 rounded-lg border-0 border-t border-line bg-transparent px-3 py-2 text-left text-[13px] text-txt hover:bg-surface-3"><Icon name="logout" /> Sign out</button>
         </div>

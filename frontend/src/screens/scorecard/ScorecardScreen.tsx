@@ -1,19 +1,25 @@
 'use client';
 
-import { useDomains, useScore } from '@/api/queries';
+import { useDomains, useInsured, useMetrics, useScore } from '@/api/queries';
 import { Legend } from '@/components/charts/Legend';
 import { Kpi } from '@/components/ui/Kpi';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { formatScore } from '@/lib/format';
 import { usePortal } from '@/state/PortalContext';
-import { DomainMap } from './DomainMap';
 import { DomainRegister } from './DomainRegister';
+import { FactorMap } from './FactorMap';
+import { useViewer } from '@/screens/insurer/useViewer';
 
 export function ScorecardScreen() {
   const { period } = usePortal();
   const domains = useDomains(period);
   const score = useScore(period);
+  const metrics = useMetrics(period);
+  const { insuredId } = useViewer();
+  const insured = useInsured(insuredId).data;
+  const reading = insured?.exposure.inside ?? insured?.exposure.outside ?? null;
+  const known = new Set((metrics.data ?? []).map((m) => m.code));
   return (
     <>
       <PageHead eyebrow="Your position" title="Audit Scorecard" sub="All 25 domains: what was checked, how many checkpoints passed, and where each one stands." />
@@ -27,7 +33,7 @@ export function ScorecardScreen() {
                 <Kpi tag="Domains measured" value={score.data ? String(score.data.domainsMeasured) : '—'} unit="of 25" foot="Only measured domains count toward the score" />
                 <Kpi tag="Not measured" value={String(notMeasured.length)} unit={notMeasured.length === 1 ? "domain" : "domains"} foot={notMeasured.map((d) => d.code).join(', ') || 'None'} />
               </div>
-              <DomainMap domains={list} />
+              {reading && <FactorMap reading={reading} measured={Boolean(insured?.exposure.inside)} knownMetrics={known} />}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="tiny">Checkpoint bars</span>
                 <Legend items={[{ label: 'Passed', color: 'var(--ok)' }, { label: 'Warned', color: 'var(--warn)' }, { label: 'Failed', color: 'var(--bad)' }, { label: 'Not run', color: 'var(--series-muted)' }]} />

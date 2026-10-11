@@ -5,6 +5,7 @@ import { ContactDrawer } from '@/components/drawers/ContactDrawer';
 import { DomainDrawer } from '@/components/drawers/DomainDrawer';
 import { MetricDrawer } from '@/components/drawers/MetricDrawer';
 import { VendorDrawer } from '@/components/drawers/VendorDrawer';
+import { WhoAreaDrawer } from '@/components/drawers/WhoAreaDrawer';
 import { useDrawer } from '@/state/DrawerContext';
 
 /** Renders whichever detail panel is open. */
@@ -18,5 +19,6 @@ export function DrawerHost() {
     case 'contact': return <ContactDrawer key={target.id} {...props} />;
     case 'action': return <ActionDrawer key={target.id} {...props} />;
     case 'vendor': return <VendorDrawer key={target.id} {...props} />;
+    case 'who-area': return <WhoAreaDrawer key={target.id} {...props} />;
   }
 }

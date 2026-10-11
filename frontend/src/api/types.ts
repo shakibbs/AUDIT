@@ -97,6 +97,19 @@ export interface Alert {
 // ----- Evidence -----
 export type CheckState = 'pass' | 'fails' | 'gap' | 'not_reached';
 
+// ----- Who You Contact -----
+export type WhoState = 'fail' | 'warn' | 'unverified' | 'pass';
+/** Where a check's result came from. "stated" = the client only says so: shown, but scored 0. */
+export type CheckSource = 'provider' | 'list' | 'stated' | 'none' | 'records';
+export type CheckColumn = 'national' | 'state' | 'internal' | 'reassigned';
+
+export interface WhoCheck { state: WhoState; name: string; result: string; source: CheckSource; metric: string; why: string; isNew?: boolean }
+export interface WhoFlag { number: string; known: string; from: string; flaggedOn: string; contactedOn: string; channel: 'Call' | 'Text' }
+export interface WhoArea { id: string; title: string; law: string; checks: WhoCheck[]; flags: WhoFlag[] }
+export interface WhoService { name: string; note: string; covers: Partial<Record<CheckColumn, CheckSource>> }
+export interface WhoLeadSource { id: string; group: 'vendor' | 'upload'; name: string; note?: string; checked: Record<CheckColumn, boolean> }
+export interface WhoContact { areas: WhoArea[]; services: WhoService[]; leadSources: WhoLeadSource[] }
+
 export interface Contact {
   id: string; occurredAt: string; phoneDisplay: string; phoneE164: string;
   channel: 'Call' | 'Text'; category: 'Marketing' | 'Informational' | 'Unknown';

@@ -1,5 +1,5 @@
 // In-memory stand-in for the Django API. One pure function serves the dev route handler and the tests.
-import type { DataHealth, EngagementMode, HashCheck, Role, SearchHit, Session, View } from '@/api/types';
+import type { CheckColumn, DataHealth, EngagementMode, HashCheck, Role, SearchHit, Session, View } from '@/api/types';
 import { gradeOf } from '@/lib/format';
 import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
@@ -10,13 +10,14 @@ import { insureds, litigation } from './data/insurer';
 import { conduct, leads, vendorSummary } from './data/intelligence';
 import { metrics } from './data/metrics';
 import { session } from './data/session';
+import { whoContact } from './data/whoContact';
 import { actions, alerts } from './data/work';
 
 export interface MockRequest { method: string; path: string; query?: Record<string, string>; body?: unknown }
 export interface MockResponse { status: number; body: unknown }
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-const fresh = () => clone({ session, actions, alerts, consentPages, legalHolds, uploads, reportRuns, readiness, settings, users, accessLog, regChanges });
+const fresh = () => clone({ session, actions, alerts, consentPages, legalHolds, uploads, reportRuns, readiness, settings, users, accessLog, regChanges, whoContact });
 
 let db = fresh();
 
@@ -76,7 +77,7 @@ function search(q: string): SearchHit[] {
       ...INSURER_PAGES.filter(([, label]) => has(label)).map(([id, label]): SearchHit => ({ kind: 'page', id, label, hint: 'Page' })),
     ].slice(0, 10);
   }
-  const pages: [string, string][] = [['/', 'Overview'], ['/scorecard', 'Audit Scorecard'], ['/actions', 'Action Queue'], ['/alerts', 'Alerts'], ['/ledger', 'Contact Ledger'], ['/consent', 'Consent Integrity'], ['/revocation', 'Revocation Integrity'], ['/vault', 'Evidence Vault'], ['/conduct', 'Contact Conduct'], ['/leads', 'Lead Provenance'], ['/vendors', 'Vendor Ledger'], ['/sources', 'Source Registry'], ['/reports', 'Reports & Exports'], ['/rulebook', 'Rulebook'], ['/regulatory', 'Regulatory Changes'], ['/setup', 'Setup & Readiness'], ['/settings', 'Settings'], ['/users', 'Users & Access']];
+  const pages: [string, string][] = [['/', 'Overview'], ['/scorecard', 'Audit Scorecard'], ['/actions', 'Action Queue'], ['/alerts', 'Alerts'], ['/ledger', 'Contact Ledger'], ['/consent', 'Consent Integrity'], ['/revocation', 'Revocation Integrity'], ['/who-contact', 'Who You Contact'], ['/vault', 'Evidence Vault'], ['/conduct', 'Contact Conduct'], ['/leads', 'Lead Provenance'], ['/vendors', 'Vendor Ledger'], ['/sources', 'Source Registry'], ['/reports', 'Reports & Exports'], ['/rulebook', 'Rulebook'], ['/regulatory', 'Regulatory Changes'], ['/setup', 'Setup & Readiness'], ['/settings', 'Settings'], ['/users', 'Users & Access']];
   pages.push(...SHARED_PAGES);
   return [
     ...domains.filter((d) => has(d.code, d.name)).map((d): SearchHit => ({ kind: 'domain', id: d.code, label: d.name, hint: `Domain ${d.code}` })),
@@ -106,6 +107,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'consent': return ok(consent);
     case 'consent-pages': return ok(db.consentPages);
     case 'revocation': return ok(revocation);
+    case 'who-contact': return ok(db.whoContact);
     case 'vault': return ok(vault);
     case 'position': return ok({ ...position, phone: q.phone || position.phone, date: q.date || position.date, insideCoverage: (q.date || position.date) >= '2026-05-01' });
     case 'hash-check': {
@@ -229,6 +231,15 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       if (!change) return fail(404, 'Change not found.');
       change.confirmed = true;
       return ok(change);
+    }
+    // A client switch is a statement, not proof: it is logged and never changes a score.
+    case 'PATCH who-contact': {
+      const source = db.whoContact.leadSources.find((l) => l.id === seg[1]);
+      const column = body.column as CheckColumn;
+      if (!source || !(column in source.checked)) return fail(404, 'Lead source not found.');
+      source.checked[column] = Boolean(body.checked);
+      log(source.checked[column] ? 'Checked' : 'Unchecked', `${source.name} · ${column}`);
+      return ok(source);
     }
     case 'PATCH setup': {
       const item = db.readiness.setup.find((s) => s.id === seg[1]);

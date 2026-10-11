@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { PortalShell } from '@/components/shell/PortalShell';
-import { NAV } from '@/components/shell/nav';
+import { ACCOUNT_LINKS, NAV } from '@/components/shell/nav';
 import { findBannedWords } from '@/lib/wording';
 import { mockApi } from '@/mock/api';
 import { ActionsScreen } from '@/screens/actions/ActionsScreen';
@@ -25,18 +25,20 @@ import { SourcesScreen } from '@/screens/sources/SourcesScreen';
 import { UsersScreen } from '@/screens/users/UsersScreen';
 import { VaultScreen } from '@/screens/vault/VaultScreen';
 import { VendorsScreen } from '@/screens/vendors/VendorsScreen';
+import { WhoContactScreen } from '@/screens/who-contact/WhoContactScreen';
 import { navState } from '../nav';
 import { renderScreen } from '../utils';
 
 // Every screen, the text that proves it loaded its data, and its page title.
 const SCREENS: [string, React.ReactElement, string | RegExp][] = [
   ['Overview', <OverviewScreen key="o" />, 'Things to fix'],
-  ['Audit Scorecard', <ScorecardScreen key="s" />, 'Domain register'],
+  ['Audit Scorecard', <ScorecardScreen key="s" />, 'Factor register'],
   ['Action Queue', <ActionsScreen key="a" />, 'Queue'],
   ['Alerts', <AlertsScreen key="al" />, 'Inbox'],
   ['Consent Integrity', <ConsentScreen key="c" />, 'Most common reasons'],
   ['Contact Ledger', <LedgerScreen key="l" />, '(916) •••-4471'],
   ['Revocation Integrity', <RevocationScreen key="r" />, 'Opt-out test matrix'],
+  ['Who You Contact', <WhoContactScreen key="w" />, 'Who checked what'],
   ['Evidence Vault', <VaultScreen key="v" />, 'Position lookup'],
   ['Contact Conduct', <ConductScreen key="cc" />, 'Contacts by hour of day'],
   ['Lead Provenance', <LeadsScreen key="lp" />, 'Most frequent signals'],
@@ -68,20 +70,40 @@ describe('screens', () => {
   });
 
   it('has a menu entry for every screen', () => {
-    const labels = NAV.flatMap((g) => g.items.map((i) => i.label));
+    const labels = [...NAV.flatMap((g) => g.items), ...ACCOUNT_LINKS].map((i) => i.label);
     expect(labels).toEqual(SCREENS.map(([title]) => title));
   });
 });
 
 describe('shell', () => {
-  it('shows the menu, the sample-data chip, the disclaimer and the open-action count', async () => {
+  it('shows the menu, the disclaimer and the open-action count', async () => {
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
     expect(await screen.findByText('page body')).toBeInTheDocument();
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getAllByRole('link')).toHaveLength(21);
+    expect(within(nav).getAllByRole('link')).toHaveLength(19);
+    expect(within(nav).queryByText('Settings')).not.toBeInTheDocument();
     expect(await within(nav).findByLabelText('10 open')).toBeInTheDocument();
-    expect(screen.getByText('Sample data')).toBeInTheDocument();
+    expect(screen.queryByText('Sample data')).not.toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'View as' })).not.toBeInTheDocument();
     expect(screen.getByText(/Comply iV is not a law firm/)).toBeInTheDocument();
+  });
+
+  it('shows the account pages, role, view switch and dark mode in the top-right account menu', async () => {
+    const user = userEvent.setup();
+    renderScreen(<PortalShell><p>page body</p></PortalShell>);
+    await user.click(await screen.findByRole('button', { name: 'Account menu' }));
+    const menu = screen.getByRole('menu');
+    expect(within(menu).getByRole('menuitem', { name: /Setup & Readiness/ })).toHaveAttribute('href', '/setup');
+    expect(within(menu).getByRole('menuitem', { name: /Settings/ })).toHaveAttribute('href', '/settings');
+    expect(within(menu).getByRole('menuitem', { name: /Users & Access/ })).toHaveAttribute('href', '/users');
+    expect(within(menu).getByText('Role')).toBeInTheDocument();
+    expect(within(menu).queryByRole('combobox')).not.toBeInTheDocument();
+    expect(within(menu).queryByText('Engagement mode')).not.toBeInTheDocument();
+    expect(within(menu).getByRole('group', { name: 'View as' })).toBeInTheDocument();
+    const dark = within(menu).getByRole('switch', { name: 'Dark mode' });
+    const before = dark.getAttribute('aria-checked');
+    await user.click(dark);
+    expect(within(menu).getByRole('switch', { name: 'Dark mode' })).not.toHaveAttribute('aria-checked', before ?? '');
   });
 
   it('sends a signed-out visitor to the sign-in page', async () => {
@@ -111,11 +133,40 @@ describe('interactions', () => {
   it('opens a domain panel from the scorecard and switches tabs', async () => {
     const user = userEvent.setup();
     renderScreen(<ScorecardScreen />);
-    await user.click(await screen.findByRole('button', { name: /^Opt-out handling:/ }));
+    await user.click(await screen.findByRole('button', { name: 'Opt-out handling' }));
     const panel = await screen.findByRole('dialog');
     expect(within(panel).getByText('Top finding')).toBeInTheDocument();
     await user.click(within(panel).getByRole('button', { name: 'Definition' }));
     expect(within(panel).queryByText('Top finding')).not.toBeInTheDocument();
+  });
+
+  it('shows the six factors on the scorecard and opens a metric from a factor', async () => {
+    const user = userEvent.setup();
+    renderScreen(<ScorecardScreen />);
+    expect(await screen.findByText('Six factors')).toBeInTheDocument();
+    for (const name of ['Consent defensibility', 'Suppression integrity', 'Revocation and opt-out', 'Calling conduct', 'Vendor and lead provenance', 'Call integrity']) {
+      expect(screen.getByText(name)).toBeInTheDocument();
+    }
+    expect(screen.queryByText('Domain map')).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Open metric M10' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getAllByTitle('Not yet measured').length).toBeGreaterThan(0);
+  });
+
+  it('opens a Who You Contact area, and logs a lead-source switch', async () => {
+    const user = userEvent.setup();
+    renderScreen(<WhoContactScreen />);
+    await user.click(await screen.findByRole('button', { name: /Internal do-not-call/ }));
+    const panel = await screen.findByRole('dialog');
+    expect(within(panel).getByText('Stop requests that never reached your list')).toBeInTheDocument();
+    expect(within(panel).getByText('(916) •••-2290')).toBeInTheDocument();
+    expect(findBannedWords(JSON.stringify(mockApi({ method: 'GET', path: '/who-contact' }).body))).toEqual([]);
+    const toggle = screen.getByRole('switch', { name: 'Vendor C: National DNC' });
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+    await user.click(toggle);
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Vendor C: National DNC' })).toHaveAttribute('aria-checked', 'true'));
+    const log = mockApi({ method: 'GET', path: '/access-log' }).body as { object: string }[];
+    expect(log[0].object).toBe('Vendor C · national');
   });
 
   it('assigns an action and attaches a note contesting the finding', async () => {

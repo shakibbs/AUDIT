@@ -18,3 +18,35 @@ export function exposureOf(r: ExposureReading): ExposureResult {
   const exposure = Math.min(100, raw);
   return { defect: Math.round(defect), multiplier, raw: Math.round(raw), exposure: Math.round(exposure), grade: exposureGrade(exposure), capped: raw > 100 };
 }
+
+/** Short factor names for tiles. */
+export const FACTOR_SHORT = ['Consent defensibility', 'Suppression integrity', 'Revocation and opt-out', 'Calling conduct', 'Vendor and lead provenance', 'Call integrity'];
+
+/** Scored metrics that move each factor (spec v3 §8). M10 and M34 count twice. */
+export const FACTOR_METRICS: string[][] = [
+  ['M01', 'M03', 'M04'],
+  ['M12', 'M13'],
+  ['M08', 'M09', 'M10', 'M34'],
+  ['M15', 'M16', 'M17', 'M18', 'M19', 'M20', 'M31'],
+  ['M06', 'M07', 'M25b', 'M26', 'M27', 'M28', 'M32'],
+  ['M11', 'M21', 'M35'],
+];
+export const DOUBLE_WEIGHT = new Set(['M10', 'M34']);
+
+/**
+ * Which factor each domain feeds (spec v3 §8 legal theories, C19).
+ * Records and company-control domains sit outside F1–F6, in the Integrity and Controls groups.
+ */
+export const DOMAIN_FACTOR: Record<string, string> = {
+  CON: 'F1 Consent defensibility', WEB: 'F1 Consent defensibility',
+  IDN: 'F2 Suppression integrity', NDN: 'F2 Suppression integrity', SDN: 'F2 Suppression integrity',
+  REV: 'F3 Revocation and opt-out',
+  DLR: 'F4 Calling conduct', PRV: 'F4 Calling conduct', SMS: 'F4 Calling conduct', CTF: 'F4 Calling conduct', XBD: 'F4 Calling conduct', VLT: 'F4 Calling conduct',
+  LPV: 'F5 Vendor and lead provenance', VND: 'F5 Vendor and lead provenance', AFF: 'F5 Vendor and lead provenance', MNA: 'F5 Vendor and lead provenance',
+  RND: 'F6 Call integrity', IDD: 'F6 Call integrity', SHK: 'F6 Call integrity',
+  REC: 'Integrity', RET: 'Integrity', SEC: 'Integrity', PLT: 'Integrity',
+  GOV: 'Controls', INC: 'Controls',
+};
+/** Display order for "By factor": F1…F6, then the two groups outside D. */
+export const FACTOR_ORDER = [...FACTOR_NAMES, 'Integrity', 'Controls'];
+export const factorOf = (domainCode: string): string => DOMAIN_FACTOR[domainCode] ?? 'Integrity';

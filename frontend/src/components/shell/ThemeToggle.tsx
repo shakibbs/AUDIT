@@ -1,13 +1,15 @@
 'use client';
 
-import { Icon } from '@/components/ui/Icon';
+import { Toggle } from '@/components/ui/Toggle';
 import { useTheme } from '@/state/useTheme';
 
+/** Dark mode switch, shown as a row in the account menu. */
 export function ThemeToggle() {
   const { theme, toggle } = useTheme();
   return (
-    <button type="button" className="icon-btn" onClick={toggle} aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>
-      <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
-    </button>
+    <div className="flex items-center justify-between gap-2 px-3 py-2 text-[13px]">
+      <span className="kpi-tag">Dark mode</span>
+      <Toggle label="Dark mode" checked={theme === 'dark'} onChange={toggle} />
+    </div>
   );
 }

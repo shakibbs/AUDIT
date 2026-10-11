@@ -53,6 +53,7 @@ portal and the backend talk only over `/api`.
 | [docs/feature-list.md](docs/feature-list.md) | Owner, product | Every feature by ID (F01–F72, plus **[v3]** additions from F73), with a Now / Later recommendation and the owner's decisions |
 | [docs/plans/2026-10-01-00-roadmap.md](docs/plans/2026-10-01-00-roadmap.md) | Engineering, product | Module order aligned to v3's six phases and gates **[v3]**, rules every plan follows, open decisions |
 | [docs/plans/2026-10-09-02-backend-login.md](docs/plans/2026-10-09-02-backend-login.md) | Engineering | Backend login system: CiV admin login separate from the client login API (built 2026-10-09) |
+| [docs/plans/2026-10-12-metric-priority.md](docs/plans/2026-10-12-metric-priority.md) | Engineering, product | Metric build order (6 tiers) and the rule "not yet measured" is not worst case (agreed 2026-10-12) |
 | [docs/plans/2026-10-09-03-admin-connections.md](docs/plans/2026-10-09-03-admin-connections.md) | Engineering | Client API connections in the admin panel (built 2026-10-09) |
 | [docs/plans/superseded/](docs/plans/superseded/) `2026-10-03-01a … 01d` | Engineering | The earlier seven-page frontend plans, kept for reference |
 | [docs/design-reference/complyiv-portal-audit.html](docs/design-reference/complyiv-portal-audit.html) | Engineering, design | The 15-page portal file the rebuilt frontend follows |
@@ -73,7 +74,7 @@ portal and the backend talk only over `/api`.
 | Stored-data scope (D18) | **[v3] Decided by the owner 2026-10-07:** CiV holds analyzed data and fingerprints only, never CRM or other client records. Open with counsel: what the evidence file and certification pack contain |
 | Pilot client (decision D3) | **[v3]** Open. Falcon Risk's pilot insureds (3–5 companies) are now the first candidates. Connector build order depends on it |
 | Implementation plan | **[v3]** Roadmap realigned to v3's six phases and gates; later modules are planned when reached |
-| Frontend | Built in `frontend/` (Next.js + TypeScript): the portal pages, Owner / Underwriter view, insurer pages. Roles are **Admin** and **Member** (2026-10-09). Sign-in, reset, invites and Users use the real backend when `BACKEND_URL` is set; every other page still uses sample data. See [frontend/README.md](frontend/README.md) |
+| Frontend | Built in `frontend/` (Next.js + TypeScript): the portal pages (incl. Who You Contact, six factor tiles), Owner / Underwriter view, insurer pages. Roles are **Admin** and **Member** (2026-10-09). Sign-in, reset, invites and Users use the real backend when `BACKEND_URL` is set; every other page still uses sample data. See [frontend/README.md](frontend/README.md) |
 | Backend | **Started 2026-10-09** in its own repo, [Audit-backend](https://github.com/shakibbs/Audit-backend): login system, CiV admin panel styled like the portal, client API connections. Real connectors and live sync are next. Hosting deferred until the project is complete |
 | Hosting | **Decided 2026-10-10:** Docker on a Hostinger VPS (shared with n8n, behind its Traefik): `app.complyiv.com` portal, `admin.complyiv.com` CiV admin. Steps: [Audit-backend README, Deploy](https://github.com/shakibbs/Audit-backend#deploy-on-a-server-that-already-runs-traefik-docker) |
 | Provisional rulebook | Defined (section 4 of the rulebook). Lets engineering build and test before counsel sets final values |

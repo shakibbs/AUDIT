@@ -8,7 +8,6 @@ import { PageHead } from '@/components/ui/PageHead';
 import { exposureOf } from '@/lib/exposure';
 import { FactorTable } from './FactorTable';
 import { InsuredPicker } from './InsuredPicker';
-import { MultiplierChain } from './MultiplierChain';
 import { useViewer } from './useViewer';
 
 /** Exposure Indicator v2.2: six factors measure what the company does wrong; three multipliers measure the pressure on it. */
@@ -36,23 +35,6 @@ export function ExposureScreen() {
                 <Kpi tag="Evidence coverage" value={`${Math.round(i.coverage * 100)}%`} foot={reading.source} />
               </div>
               <FactorTable insured={i} />
-              <Card title="How the headline is built" sub="Exposure = min(100, D × venue × targeting × volume) · A under 25 · B 25–39 · C 40–48 · D 49–66 · F 67+">
-                <div className="flex flex-col gap-5">
-                  {inside && <MultiplierChain reading={inside} label="Inside-out · measured" />}
-                  {outside && <MultiplierChain reading={outside} label="Outside-in · modeled" />}
-                </div>
-                <dl className="m-0 mt-5 border-t border-line pt-1">
-                  <div className="kv"><dt>Venue</dt><dd className="font-normal">{i.exposure.why.venue}</dd></div>
-                  <div className="kv"><dt>Targeting</dt><dd className="font-normal">{i.exposure.why.targeting}</dd></div>
-                  <div className="kv"><dt>Volume</dt><dd className="font-normal">{i.exposure.why.volume}</dd></div>
-                </dl>
-              </Card>
-              <Card title="Two questions, kept apart" sub="What the loss model reads">
-                <ul className="m-0 flex list-none flex-col gap-2 p-0 text-[13px]">
-                  <li><strong>How likely to be sued:</strong> driven mostly by the multipliers. A clean company in a busy venue still gets sued and still pays defense.</li>
-                  <li><strong>How likely to lose:</strong> driven by D. A company with a low D defends cheaply and rarely pays a settlement.</li>
-                </ul>
-              </Card>
             </div>
           );
         }}

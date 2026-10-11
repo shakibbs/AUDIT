@@ -129,8 +129,6 @@ button { font-family: inherit; }
   .note-box { padding: 13px 15px; border-radius: 10px; background: #fdf8ec; border: 1px solid #eddfc0; color: #6f4905; font-size: 12.5px; line-height: 1.6; }
   html[data-theme='dark'] .note-box { background: #2a2210; border-color: #4a3d1a; color: #e8d5a8; }
   .hardstop { display: flex; align-items: center; gap: 15px; background: linear-gradient(120deg, #7f1d1d, #a01f1f); color: #fff; border-radius: var(--radius); padding: 15px 18px; }
-  .samplechip { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #7a4a05; background: #fbecd0; border: 1px solid #f0d9a8; padding: 4px 9px; border-radius: 7px; white-space: nowrap; }
-  html[data-theme='dark'] .samplechip { background: #2a2210; border-color: #4a3d1a; color: #e8d5a8; }
   .dtile { width: 100%; text-align: left; border-radius: 10px; padding: 10px 11px; display: flex; flex-direction: column; gap: 2px; min-height: 82px; border: 1px solid transparent; cursor: pointer; }
   .dtile:hover { border-color: var(--txt-3); }
 }
