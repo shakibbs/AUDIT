@@ -10,9 +10,11 @@ import { StatusChip } from '@/components/ui/StatusChip';
 import { formatDate, truncateHash } from '@/lib/format';
 import { STATUS_COLOR } from '@/lib/status';
 import { ContactTimeline } from './ContactTimeline';
+import { CallingWindowCard } from './CallingWindowCard';
+import { OwnersCard } from './OwnersCard';
 import { ProofElements } from './ProofElements';
 
-const ORDER = ['VERIFIED', 'WEAK', 'CONFLICTING', 'NO_PROOF'] as const;
+const ORDER = ['VERIFIED', 'WEAK', 'CONFLICTING', 'NO_PROOF', 'NOT_CHECKED'] as const;
 
 /** The full file for one phone number. */
 export function EvidenceFileScreen({ phone }: { phone: string }) {
@@ -40,9 +42,10 @@ export function EvidenceFileScreen({ phone }: { phone: string }) {
         <div className="grid gap-5 lg:grid-cols-3">
           <Card title="Standing" sub="The weakest status across all contacts">
             <StatusChip status={f.worstStatus} />
-            <div className="mt-4"><StackedBar label="Contacts by status" segments={ORDER.map((s) => ({ label: s, value: f.counts[s], color: STATUS_COLOR[s] }))} /></div>
+            <div className="mt-4"><StackedBar label="Contacts by status" segments={ORDER.map((s) => ({ label: s, value: f.counts[s] ?? 0, color: STATUS_COLOR[s] }))} /></div>
           </Card>
           <Card title="List checks" sub="Do-not-contact lists consulted">
+            {f.listChecks.length === 0 && <p className="tiny m-0">Not checked yet.</p>}
             {f.listChecks.map((l) => (
               <div key={l.list} className="chk"><span>{l.list}<span className="tiny block">{l.label}</span></span>
                 {l.onList === null ? <span className="pill pill-gray">Not measured</span> : l.onList ? <span className="pill pill-red">Listed</span> : <span className="pill pill-green">Not listed</span>}</div>
@@ -56,6 +59,12 @@ export function EvidenceFileScreen({ phone }: { phone: string }) {
             </dl>
           </Card>
         </div>
+        {(f.callingWindow || f.epochs) && (
+          <div className="grid gap-5 lg:grid-cols-2">
+            {f.callingWindow && <CallingWindowCard window={f.callingWindow} where={f.where} confidence={f.locationConfidence} />}
+            {f.epochs && <OwnersCard epochs={f.epochs} />}
+          </div>
+        )}
         <ContactTimeline file={f} />
         <ProofElements file={f} />
       </div>

@@ -227,6 +227,21 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       return ok(run);
     }
     // The company's lawyer: agree or disagree with a draft rule update (advice; CiV alone approves).
+    // "Can I call now?" in the sample data: a fixed answer shaped like the real one. The number is not kept.
+    case 'POST can-call': {
+      const digits = String(body.number ?? '').replace(/\D/g, '');
+      if (digits.length < 10) return fail(400, 'Enter a full phone number.');
+      const area = digits.slice(-10, -7);
+      const florida = area === '850';
+      return ok({
+        number: `(${area}) •••-${digits.slice(-4)}`, state: florida ? 'FL' : 'CA', country: 'US', timeZones: florida ? ['America/Chicago', 'America/New_York'] : ['America/Los_Angeles'],
+        confidence: florida ? 'low' : 'medium', checkedAt: '2026-09-30T23:40:00Z', verdict: florida ? 'not_safe' : 'ok', hours: florida ? '8am – 8pm' : '8am – 9pm',
+        status: 'tbd', draft: true, place: florida ? 'FL' : 'Federal', holidays: 'State holiday restrictions: not set yet (counsel item A8)',
+        zones: florida ? [{ zone: 'America/Chicago', localTime: 'Wed 7:40 PM', allowed: true }, { zone: 'America/New_York', localTime: 'Wed 8:40 PM', allowed: false }]
+          : [{ zone: 'America/Los_Angeles', localTime: 'Wed 4:40 PM', allowed: true }],
+        note: florida ? 'The number could be in more than one time zone: the stricter one decides. Draft hours: not confirmed by a lawyer yet.' : 'Draft hours: not confirmed by a lawyer yet.',
+      });
+    }
     case 'POST rule-updates/review': {
       if (!db.session.isCounsel) return fail(403, "Only your company's lawyer can do this.");
       const update = db.regChanges.flatMap((c) => c.updates ?? []).find((u) => u.id === seg[1]);

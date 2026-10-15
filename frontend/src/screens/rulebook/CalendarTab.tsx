@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRulebookCalendar } from '@/api/queries';
 import { Card } from '@/components/ui/Card';
 import { Loader } from '@/components/ui/Loader';
+import { CanCallBox } from './CanCallBox';
 import { HolidaysCard } from './HolidaysCard';
 import { PlaceRulesCard } from './PlaceRulesCard';
 import { RuleStatusPill } from './RuleStatusPill';
@@ -16,6 +17,7 @@ export function CalendarTab({ thisYear }: { thisYear: number }) {
     <Loader query={calendar}>
       {(c) => (
         <div className="grid gap-5 xl:grid-cols-2">
+          <div className="xl:col-span-2"><CanCallBox /></div>
           <HolidaysCard calendar={c} year={year} onYear={setYear} />
           <div className="flex flex-col gap-5">
             <PlaceRulesCard title="Calling hours" sub="In the time zone of the person contacted" rows={c.callingHours} />

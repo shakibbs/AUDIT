@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 /** First path segments Django answers today. */
 // The Data health card is /data-health (Django's own /api/health is the server check, not forwarded).
 // Pages already served by Django when BACKEND_URL is set; every other page still uses the sample data.
-const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health'];
+const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health', 'contacts', 'evidence', 'can-call'];
 
 // The view switch is a sample-data feature; it stays on the mock.
 export function usesBackend(path: string[]): boolean {

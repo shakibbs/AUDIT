@@ -20,7 +20,8 @@ npm run build
 
 - **Sample data only (default):** any email and password signs in; every page uses the mock API in `src/mock/`.
   With `BACKEND_URL` set, sign-in, users, invites, Rulebook, Regulatory Changes, Source Registry (tool list) and the
-  Overview's Data health card come from Django. The Upload centre is unchanged.
+  Overview's Data health card, Contact Ledger, number pages and "Can I call now?" come from Django. The Upload
+  centre is unchanged.
 - **With the Django backend:** create `.env.local` with
 
   ```
@@ -81,6 +82,10 @@ contacts after; sample data until live sync).
 
 Data health (`/data-health`): records completeness and conversation review may be `null`, shown as **"Not yet
 measured"** (never as a worst-case number); "Nothing read yet" until the first record arrives.
+
+Contact Ledger rows and number pages from Django show consent **"Not checked yet"** (`NOT_CHECKED`) until the consent
+engine exists, never a worst case; numbers appear only masked (area code + last 4). The number page adds the
+**calling window** and **owners of the number**; Rulebook → Calendar & hours starts with **"Can I call now?"**.
 
 Metric numbers: ours stay as they are (M38 = AI "Missed opt-outs"). Who You Contact uses M39–M48 from the
 v2 prototype, and its stale-registry check is **M49**.

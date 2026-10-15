@@ -4,7 +4,7 @@ import { apiGet, apiSend } from './client';
 import type {
   AccessEntry, Action, DataHealth, Alert, Insured, LitigationStats, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
   Metric, Position, Readiness, RegChange, ReportRun, ReportType, Revocation, Rulebook, ScoreSummary, SearchHit, Session, Settings,
-  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar,
+  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall,
 } from './types';
 
 type Query = Record<string, string | undefined>;
@@ -57,4 +57,9 @@ export function useSend<T = unknown>() {
     mutationFn: ({ method, path, body }: SendArgs) => apiSend<T>(method, path, body),
     onSuccess: () => client.invalidateQueries(),
   });
+}
+
+/** "Can I call now?": asks the backend once; the typed number is not stored, and nothing else is refreshed. */
+export function useCanCall() {
+  return useMutation({ mutationFn: (number: string) => apiSend<CanCall>('POST', '/can-call', { number }) });
 }

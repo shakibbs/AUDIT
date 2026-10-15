@@ -8,7 +8,8 @@ export type View = 'owner' | 'underwriter';
 export type EngagementMode = 'direct' | 'counsel_directed';
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'F';
 export type Tier = 1 | 2 | 3 | 4;
-export type ConsentStatus = 'VERIFIED' | 'WEAK' | 'CONFLICTING' | 'NO_PROOF' | 'PENDING';
+/** NOT_CHECKED: the consent engine has not looked at it yet (real data before Module 6). Never a worst case. */
+export type ConsentStatus = 'VERIFIED' | 'WEAK' | 'CONFLICTING' | 'NO_PROOF' | 'PENDING' | 'NOT_CHECKED';
 export type Severity = 'High' | 'Medium' | 'Low';
 export type Basis = 'robocall_marketing' | 'robocall_informational' | 'dnc_listed' | 'dnc_unknown' | 'state_law' | 'civ_policy';
 export type Family = 'Permission' | 'Who you contact' | 'How you contact' | 'Stopping' | 'Records' | 'Company controls';
@@ -117,6 +118,8 @@ export interface Contact {
   channel: 'Call' | 'Text'; category: 'Marketing' | 'Informational' | 'Unknown';
   bases: Basis[]; status: ConsentStatus; code: string; reasonText: string;
   checks: CheckState[]; proof: string; tiers: Tier[]; flags: string[]; hash: string | null;
+  /** Real contacts only: direction, where the person probably is, the tool's own result code, which tool. */
+  direction?: 'outbound' | 'inbound' | 'unknown'; where?: string; result?: string; tool?: string;
 }
 
 export interface ConsentSummary {
@@ -185,11 +188,23 @@ export interface ProofElement {
 
 export interface EvidenceFile {
   phone: string; epoch: string; epochCertainty: 'known' | 'bounded' | 'unknown';
-  worstStatus: ConsentStatus; counts: Record<ConsentStatus, number>;
+  worstStatus: ConsentStatus; counts: Partial<Record<ConsentStatus, number>>;
   contacts: EvidenceContact[]; proofElements: ProofElement[];
   optOuts: { at: string; channel: string; method: string }[];
   listChecks: { list: string; onList: boolean | null; label: string }[];
   anchor: { date: string; root: string; anchored: boolean }; onHold: boolean;
+  /** Real files: where the person probably is, the calling window now, and the owners of the number over time. */
+  where?: string; locationConfidence?: string; callingWindow?: CallingWindow;
+  epochs?: { number: number; from: string | null; to: string | null; reason: string }[];
+}
+
+/** Advice only: CiV never blocks a call. Draft hours are said to be draft. */
+export interface CallingWindow {
+  verdict: 'ok' | 'not_safe' | 'unknown'; hours: string | null; status: RuleStatus | null; draft: boolean; place?: string;
+  zones: { zone: string; localTime: string; allowed: boolean }[]; note: string; holidays: string;
+}
+export interface CanCall extends CallingWindow {
+  number: string; state: string; country: string; timeZones: string[]; confidence: string; checkedAt: string;
 }
 
 // ----- Intelligence -----
