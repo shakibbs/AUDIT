@@ -143,7 +143,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
       return insured ? ok(insured) : fail(404, 'Insured not found.');
     }
     case 'litigation': return underwriter ? ok(litigation) : fail(403, 'Only the insurer sees this page.');
-    case 'health': {
+    case 'data-health': {
       const health: DataHealth = {
         accessLevel: 4, accessLabel: 'Level 4 · dialer, texting, certificates, lead feed and CRM connected', lastChangeAt: '2026-09-30T08:52:00Z',
         sources: { live: sources.filter((x) => x.status === 'current').length, stale: sources.filter((x) => x.status === 'stale').length, notSupplied: sources.filter((x) => x.status === 'not_supplied').length, total: sources.length },

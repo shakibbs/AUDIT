@@ -67,10 +67,12 @@ export interface CapStatus { name: string; held: boolean; detail: string }
 
 /** Is the data behind the score complete, fresh and checked? */
 export interface DataHealth {
-  accessLevel: number; accessLabel: string; lastChangeAt: string;
+  /** null until anything has been read. */
+  accessLevel: number; accessLabel: string; lastChangeAt: string | null;
   sources: { live: number; stale: number; notSupplied: number; total: number };
-  recordsCompleteness: number; completenessFloor: number;
-  conversationReview: { reviewed: number; optOutsFound: number; missed: number; notMarkedFirstCheck: number };
+  /** null = not yet measured (records completeness comes with Module 5, conversation review with Module 9). */
+  recordsCompleteness: number | null; completenessFloor: number;
+  conversationReview: { reviewed: number; optOutsFound: number; missed: number; notMarkedFirstCheck: number } | null;
 }
 
 export interface Domain {

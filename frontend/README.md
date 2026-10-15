@@ -19,7 +19,8 @@ npm run build
 ### Sample data or the real backend
 
 - **Sample data only (default):** any email and password signs in; every page uses the mock API in `src/mock/`.
-  With `BACKEND_URL` set, sign-in, users, invites, Rulebook and Regulatory Changes come from Django.
+  With `BACKEND_URL` set, sign-in, users, invites, Rulebook, Regulatory Changes, Source Registry (tool list) and the
+  Overview's Data health card come from Django. The Upload centre is unchanged.
 - **With the Django backend:** create `.env.local` with
 
   ```
@@ -77,6 +78,9 @@ and limits by state, opt-out timing, time-zone order) and **Regulatory Changes**
 company's lawyer can agree or disagree with, and "Suggest a change") come from Django when `BACKEND_URL` is set.
 Revocation Integrity starts with the **Opt-outs** card (every opt-out with its business-day deadline, dialer marked,
 contacts after; sample data until live sync).
+
+Data health (`/data-health`): records completeness and conversation review may be `null`, shown as **"Not yet
+measured"** (never as a worst-case number); "Nothing read yet" until the first record arrives.
 
 Metric numbers: ours stay as they are (M38 = AI "Missed opt-outs"). Who You Contact uses M39–M48 from the
 v2 prototype, and its stale-registry check is **M49**.

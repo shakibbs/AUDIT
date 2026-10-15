@@ -42,7 +42,7 @@ export const useReadiness = () => useGet<Readiness>('/readiness');
 export const useSettings = () => useGet<Settings>('/settings');
 export const useUsers = () => useGet<User[]>('/users');
 export const useAccessLog = () => useGet<AccessEntry[]>('/access-log');
-export const useHealth = () => useGet<DataHealth>('/health');
+export const useHealth = () => useGet<DataHealth>('/data-health');
 export const useInsureds = (enabled = true) => useGet<Insured[]>('/insureds', {}, enabled);
 export const useInsured = (id: string) => useGet<Insured>(`/insureds/${id}`);
 export const useLitigation = () => useGet<LitigationStats>('/litigation');

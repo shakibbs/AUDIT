@@ -15,7 +15,7 @@ export function AttentionBanner({ score, alerts = [], actions = [], health }: {
   const highActions = actions.filter((a) => a.severity === 'High' && a.status !== 'resolved').length;
   if (highActions) items.push({ key: 'actions', text: `${highActions} high-priority problem${highActions > 1 ? 's' : ''} to fix`, href: '/actions' });
   if (health && health.sources.stale) items.push({ key: 'stale', text: `${health.sources.stale} source${health.sources.stale > 1 ? 's' : ''} stopped syncing`, href: '/sources' });
-  if (health && health.recordsCompleteness < health.completenessFloor) items.push({ key: 'records', text: 'Records completeness below the floor', href: '/sources' });
+  if (health && health.recordsCompleteness !== null && health.recordsCompleteness < health.completenessFloor) items.push({ key: 'records', text: 'Records completeness below the floor', href: '/sources' });
   if (!items.length) return null;
 
   return (

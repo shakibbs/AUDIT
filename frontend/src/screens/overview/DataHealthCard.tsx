@@ -25,8 +25,8 @@ export function DataHealthCard({ health }: { health: DataHealth }) {
       </div>
       <div>
         <div className="kpi-tag mb-1">Last change received</div>
-        <div className="font-display text-[22px] font-extrabold leading-tight">{formatDateTime(health.lastChangeAt)}</div>
-        <div className="tiny mt-1">UTC · live sync, hourly catch-up · <Link href="/sources">Source Registry</Link></div>
+        <div className="font-display text-[22px] font-extrabold leading-tight">{health.lastChangeAt ? formatDateTime(health.lastChangeAt) : 'Nothing read yet'}</div>
+        <div className="tiny mt-1">UTC · read every 2 minutes, hourly catch-up · <Link href="/sources">Source Registry</Link></div>
       </div>
     </section>
   );

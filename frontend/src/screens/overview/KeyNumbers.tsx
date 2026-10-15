@@ -15,7 +15,8 @@ export function KeyNumbers({ metrics, health, since }: { metrics: Metric[]; heal
   const afterOptOut = m('M10');
   const stop = m('M08');
   const notMeasured = metrics.filter((x) => x.notMeasured);
-  const review = health?.conversationReview;
+  const review = health?.conversationReview ?? null;
+  const completeness = health?.recordsCompleteness ?? null;
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       <KeyNumberCard tag="Consent coverage" value={coverage?.display ?? '—'} trend={trendOf(coverage)}
@@ -24,11 +25,11 @@ export function KeyNumbers({ metrics, health, since }: { metrics: Metric[]; heal
         foot={afterOptOut?.note ?? ''} onClick={() => open('metric', 'M10')} />
       <KeyNumberCard tag="Median time to stop" value={stop?.display ?? '—'} trend={trendOf(stop)}
         foot="From a test opt-out to every system stopping" onClick={() => open('metric', 'M08')} />
-      <KeyNumberCard tag="Opt-outs your dialer missed" value={review ? String(review.missed) : '—'} unit={review ? `of ${review.optOutsFound}` : undefined}
+      <KeyNumberCard tag="Opt-outs your dialer missed" value={review ? String(review.missed) : 'Not yet measured'} unit={review ? `of ${review.optOutsFound}` : undefined}
         bar={review ? { share: review.missed / Math.max(1, review.optOutsFound), caption: `${review.notMarkedFirstCheck} were not marked at first check`, tone: 'bad' } : undefined}
-        foot={review ? `Found by AI review of ${review.reviewed.toLocaleString('en-US')} calls and texts` : ''} onClick={() => router.push('/revocation')} />
-      <KeyNumberCard tag="Records completeness" value={health ? `${Math.round(health.recordsCompleteness * 100)}%` : '—'}
-        bar={health ? { share: health.recordsCompleteness, caption: `Flagged below ${Math.round(health.completenessFloor * 100)}%`, tone: health.recordsCompleteness >= health.completenessFloor ? 'ok' : 'bad' } : undefined}
+        foot={review ? `Found by AI review of ${review.reviewed.toLocaleString('en-US')} calls and texts` : 'Comes with AI review of calls and texts'} onClick={() => router.push('/revocation')} />
+      <KeyNumberCard tag="Records completeness" value={completeness === null ? 'Not yet measured' : `${Math.round(completeness * 100)}%`}
+        bar={health && completeness !== null ? { share: completeness, caption: `Flagged below ${Math.round(health.completenessFloor * 100)}%`, tone: completeness >= health.completenessFloor ? 'ok' : 'bad' } : undefined}
         foot="Your logs compared with your carrier and platform bills" onClick={() => router.push('/sources')} />
       <KeyNumberCard tag="Not measured" value={String(notMeasured.length)} unit="metrics"
         bar={{ share: notMeasured.length / Math.max(1, metrics.length), caption: `${notMeasured.length} of ${metrics.length} metrics wait for a source`, tone: 'bad' }}
