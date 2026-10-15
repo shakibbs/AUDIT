@@ -144,6 +144,14 @@ export interface Revocation {
   distribution: { label: string; count: number }[];
   wording: { phrase: string; kind: 'keyword' | 'plain words'; dialer: boolean | null; messaging: boolean | null }[];
   authorisation: { signedOn: string; windowFrom: string; windowTo: string; channels: string[] };
+  /** Real opt-outs, newest first, each with its deadline (sample data until live sync). */
+  optOuts?: OptOut[];
+}
+
+export interface OptOut {
+  id: string; phoneDisplay: string; phoneE164: string | null; how: string; words: string | null; at: string;
+  deadline: string; businessDaysLeft: number; deadlineProvisional: boolean;
+  dialerMarked: boolean; contactsAfter: { count: number; channel: string; lastAt: string; afterDeadline: boolean } | null;
 }
 
 export interface VaultStats {
@@ -226,14 +234,48 @@ export interface ReportType { id: string; name: string; description: string; for
 export interface ReportRun { id: string; name: string; period: string; requestedBy: string; at: string; status: 'ready' | 'queued' }
 
 // ----- Engagement -----
-export interface RulebookSetting { key: string; value: string; owner: 'Counsel' | 'Product' | 'Engineering'; status: 'set' | 'proposed' | 'tbd'; counselItem: string | null }
+export type RuleStatus = 'set' | 'proposed' | 'tbd';
+export interface RulebookSetting {
+  key: string; value: string; owner: 'Counsel' | 'Product' | 'Engineering'; status: RuleStatus; counselItem: string | null;
+  /** 'Federal' or a state / court forum code. */
+  place?: string; section?: string; meaning?: string; since?: string | null;
+}
 export interface ImpactRow { key: string; counselItem: string; strict: string; lenient: string; contacts: number; changing: number }
-export interface Rulebook { version: string; set: number; proposed: number; tbd: number; settings: RulebookSetting[]; impact: ImpactRow[] }
+export interface Rulebook {
+  version: string; set: number; proposed: number; tbd: number; settings: RulebookSetting[]; impact: ImpactRow[];
+  /** 'provisional' until a lawyer-confirmed version exists; `note` then says so. */
+  versionStatus?: 'draft' | 'provisional' | 'approved'; note?: string | null;
+}
+
+/** One value of the Calendar & hours tab. `value` is the draft value while the status is TBD. */
+export interface CalendarRule { value: unknown; shown: string; status: RuleStatus; counselItem: string | null }
+export interface PlaceRule { place: string; value: string | null; status: RuleStatus; counselItem: string | null }
+export interface RulebookCalendar {
+  year: number;
+  holidays: { date: string; name: string; actual: string }[];
+  nextHoliday: { date: string; name: string } | null;
+  businessDays: CalendarRule;
+  callingHours: PlaceRule[];
+  smsFollowsCallingHours: CalendarRule;
+  frequencyLimits: PlaceRule[];
+  restrictedHolidays: CalendarRule;
+  optOut: { deadlineDays: CalendarRule; confirmationMinutes: CalendarRule; keywords: CalendarRule };
+  timeZone: { order: string[]; status: RuleStatus };
+}
 
 export interface RegChange {
   id: string; title: string; jurisdiction: string; status: 'adopted' | 'in force' | 'proposed' | 'court ruling';
   date: string; effective: string; summary: string; settings: string[]; metrics: string[]; domains: string[];
   confirmed: boolean; source: string;
+  sourceUrl?: string | null; checkedByCounsel?: boolean;
+  /** New rule values this change brings. Drafts wait for CiV's approval; your lawyer may review them. */
+  updates?: RuleUpdateDraft[];
+}
+
+export interface RuleReview { verdict: 'agree' | 'disagree'; comment: string; by: string; at: string }
+export interface RuleUpdateDraft {
+  id: string; rule: string; isNewRule: boolean; meaning: string | null; place: string; value: string; startsOn: string;
+  state: 'draft' | 'approved'; myReview: RuleReview | null;
 }
 
 // ----- Account -----

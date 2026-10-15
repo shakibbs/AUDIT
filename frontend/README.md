@@ -19,6 +19,7 @@ npm run build
 ### Sample data or the real backend
 
 - **Sample data only (default):** any email and password signs in; every page uses the mock API in `src/mock/`.
+  With `BACKEND_URL` set, sign-in, users, invites, Rulebook and Regulatory Changes come from Django.
 - **With the Django backend:** create `.env.local` with
 
   ```
@@ -70,6 +71,12 @@ Intelligence: Contact Conduct, Lead Provenance, Vendor Ledger · Disclosure: Sou
 Exports · Engagement: Rulebook, Regulatory Changes · Shared with your insurer: Data Integrity, Risk
 Attestation, Underwriting Export · Account menu (top right): Setup & Readiness, Settings, Users & Access ·
 Underwriter view: Portfolio, Exposure Indicator, Litigation Intelligence.
+
+Rulebook (two tabs: **Settings** with search and status filter, and **Calendar & hours**: holidays, calling hours
+and limits by state, opt-out timing, time-zone order) and **Regulatory Changes** (draft rule values that the
+company's lawyer can agree or disagree with, and "Suggest a change") come from Django when `BACKEND_URL` is set.
+Revocation Integrity starts with the **Opt-outs** card (every opt-out with its business-day deadline, dialer marked,
+contacts after; sample data until live sync).
 
 Metric numbers: ours stay as they are (M38 = AI "Missed opt-outs"). Who You Contact uses M39–M48 from the
 v2 prototype, and its stale-registry check is **M49**.

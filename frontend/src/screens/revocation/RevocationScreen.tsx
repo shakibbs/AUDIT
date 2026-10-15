@@ -7,6 +7,7 @@ import { Kpi } from '@/components/ui/Kpi';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { useDrawer } from '@/state/DrawerContext';
+import { OptOutsCard } from './OptOutsCard';
 import { RevocationMatrix } from './RevocationMatrix';
 import { TestAuthorisation } from './TestAuthorisation';
 import { WordingCoverage } from './WordingCoverage';
@@ -16,10 +17,11 @@ export function RevocationScreen() {
   const { open } = useDrawer();
   return (
     <>
-      <PageHead eyebrow="Evidence" title="Revocation Integrity" sub="What happens when someone opts out. CiV sends test opt-outs from its own numbers and times how long each system keeps contacting." />
+      <PageHead eyebrow="Evidence" title="Revocation Integrity" sub="What happens when someone opts out: every real opt-out with its deadline, and CiV's test opt-outs timing how long each system keeps contacting." />
       <Loader query={revocation}>
         {(r) => (
           <div className="flex flex-col gap-5">
+            {r.optOuts && <OptOutsCard optOuts={r.optOuts} />}
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Kpi tag="Median time to stop" value={r.medianHours === null ? 'Not measured' : r.medianHours.toFixed(1)} unit="hours" foot="Half of test opt-outs stopped sooner" onClick={() => open('metric', 'M08')} />
               <Kpi tag="Slowest 10%" value={r.p90 === null ? 'Not measured' : String(r.p90)} foot="At least one path never stopped" info="The time by which 90% of test opt-outs had stopped. NEVER means one in ten or more had not stopped when the deadline passed." />

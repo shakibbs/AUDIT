@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 
 /** First path segments Django answers today. */
 // Not 'health': the portal's /health is the Data health card, still sample data. Django's own check is on port 8000.
-const BACKEND_PATHS = ['session', 'users', 'invites'];
+// Pages already served by Django when BACKEND_URL is set; every other page still uses the sample data.
+const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates'];
 
 // The view switch is a sample-data feature; it stays on the mock.
 export function usesBackend(path: string[]): boolean {

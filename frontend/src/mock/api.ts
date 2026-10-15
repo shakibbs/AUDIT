@@ -4,7 +4,7 @@ import { gradeOf } from '@/lib/format';
 import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
 import { domains, score } from './data/domains';
-import { regChanges, rulebook } from './data/engagement';
+import { calendar, regChanges, rulebook } from './data/engagement';
 import { consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, position, revocation, vault } from './data/evidence';
 import { insureds, litigation } from './data/insurer';
 import { conduct, leads, vendorSummary } from './data/intelligence';
@@ -129,7 +129,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'sources': return ok(sources);
     case 'uploads': return ok(db.uploads);
     case 'reports': return ok({ types: reportTypes, runs: db.reportRuns });
-    case 'rulebook': return ok({ ...rulebook, impact: [] });
+    case 'rulebook': return ok(seg[1] === 'calendar' ? { ...calendar, year: Number(q.year) || calendar.year } : { ...rulebook, impact: [] });
     case 'reg-changes': return ok(db.regChanges);
     case 'readiness': return ok(db.readiness);
     case 'settings': return ok(db.settings);
@@ -225,6 +225,24 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       db.reportRuns.unshift(run);
       log('Requested', run.name);
       return ok(run);
+    }
+    // The company's lawyer: agree or disagree with a draft rule update (advice; CiV alone approves).
+    case 'POST rule-updates/review': {
+      if (!db.session.isCounsel) return fail(403, "Only your company's lawyer can do this.");
+      const update = db.regChanges.flatMap((c) => c.updates ?? []).find((u) => u.id === seg[1]);
+      if (!update) return fail(404, 'Rule update not found.');
+      if (update.state !== 'draft') return fail(400, 'CiV has already decided on this update.');
+      update.myReview = { verdict: body.verdict === 'disagree' ? 'disagree' : 'agree', comment: String(body.comment ?? ''), by: db.session.name, at: '2026-09-30T09:00:00Z' };
+      log('Reviewed rule update', `${update.rule} · ${update.myReview.verdict}`);
+      return ok(update);
+    }
+    // The company's lawyer tells CiV about a law change. Only CiV sees it.
+    case 'POST reg-changes': {
+      if (seg[1] !== 'suggest') return fail(404, `No mock for ${method} ${path}`);
+      if (!db.session.isCounsel) return fail(403, "Only your company's lawyer can do this.");
+      if (!body.title || !body.summary || !body.jurisdiction) return fail(400, 'Enter a title, the place and a summary.');
+      log('Suggested a law change', String(body.title));
+      return ok({ id: 'cs-1', received: true });
     }
     case 'POST reg-changes/confirm': {
       const change = db.regChanges.find((c) => c.id === seg[1]);

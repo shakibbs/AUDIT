@@ -204,6 +204,48 @@ describe('interactions', () => {
     await waitFor(() => expect(screen.getAllByRole('button', { name: 'Mark as reviewed' })).toHaveLength(before - 1));
   });
 
+  it('shows the Rulebook note and the Calendar & hours tab', async () => {
+    const user = userEvent.setup();
+    renderScreen(<RulebookScreen />);
+    expect(await screen.findByText(/not yet confirmed by a lawyer/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Calendar & hours' }));
+    expect(await screen.findByText('Thanksgiving Day')).toBeInTheDocument();
+    expect(screen.getByText(/falls on Sat/)).toBeInTheDocument();  // July 4 2026 is a Saturday
+    expect(screen.getAllByText('8am – 8pm').length).toBeGreaterThan(0);
+  });
+
+  it('lets only the company lawyer review a draft rule and suggest a change', async () => {
+    const user = userEvent.setup();
+    const { unmount } = renderScreen(<RegulatoryScreen />);
+    expect(await screen.findByText('Draft')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Review as our lawyer' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Suggest a change')).not.toBeInTheDocument();
+    unmount();
+    mockApi({ method: 'POST', path: '/session/view-as', body: { isCounsel: true } });
+    renderScreen(<RegulatoryScreen />);
+    await user.click(await screen.findByRole('button', { name: 'Review as our lawyer' }));
+    await user.type(screen.getByLabelText('Comment for CiV (optional)'), 'Texts are covered too.');
+    await user.click(screen.getByRole('button', { name: 'Disagree' }));
+    expect(await screen.findByText(/disagrees: “Texts are covered too.”/)).toBeInTheDocument();
+    await user.click(screen.getAllByRole('button', { name: 'Suggest a change' })[0]);
+    await user.type(screen.getByLabelText('What changed'), 'Florida ends calls at 7pm');
+    await user.type(screen.getByLabelText('Where'), 'Florida');
+    await user.type(screen.getByLabelText('Summary'), 'A new bill.');
+    await user.click(screen.getByRole('button', { name: 'Send to CiV' }));
+    expect(await screen.findByText(/CiV received it/)).toBeInTheDocument();
+  });
+
+  it('lists opt-outs with deadlines and filters the late ones', async () => {
+    const user = userEvent.setup();
+    renderScreen(<RevocationScreen />);
+    expect(await screen.findByText('(480) •••-1234')).toBeInTheDocument();
+    expect(screen.getByText('9 business days left')).toBeInTheDocument();
+    expect(screen.getByText('No: block it now')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Late' }));
+    expect(screen.getByText('(623) •••-4806')).toBeInTheDocument();
+    expect(screen.queryByText('(480) •••-1234')).not.toBeInTheDocument();
+  });
+
   it('sets and releases a legal hold', async () => {
     const user = userEvent.setup();
     renderScreen(<VaultScreen />);
