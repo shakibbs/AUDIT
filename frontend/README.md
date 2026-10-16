@@ -80,8 +80,10 @@ company's lawyer can agree or disagree with, and "Suggest a change") come from D
 Revocation Integrity starts with the **Opt-outs** card (every opt-out with its business-day deadline, dialer marked,
 contacts after; sample data until live sync).
 
-Data health (`/data-health`): records completeness and conversation review may be `null`, shown as **"Not yet
-measured"** (never as a worst-case number); "Nothing read yet" until the first record arrives.
+Data health (`/data-health`): the Overview's **Records completeness** box shows the latest month's percentage with
+"Complete" or "Incomplete data" and a one-line reason (e.g. "CiV received only 70% of the texts Twilio billed"),
+"Not available" when there is no billing source, or "Not yet measured". Conversation review stays "Not yet measured"
+until Module 9; "Nothing read yet" until the first record arrives.
 
 Contact Ledger rows and number pages from Django show consent **"Not checked yet"** (`NOT_CHECKED`) until the consent
 engine exists, never a worst case; numbers appear only masked (area code + last 4). The number page adds the

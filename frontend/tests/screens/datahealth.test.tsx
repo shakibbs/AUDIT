@@ -24,3 +24,23 @@ describe('data health before anything is measured', () => {
     expect(screen.queryByText('0%')).not.toBeInTheDocument();
   });
 });
+
+describe('records completeness box', () => {
+  it('shows the percentage, complete or incomplete, and why', () => {
+    const { unmount } = renderScreen(<KeyNumbers metrics={[]} since="Sep 2026" health={{ ...EMPTY, recordsCompleteness: 0.7, completenessStatus: 'incomplete',
+      completenessNote: 'CiV received only 70% of the texts Twilio billed · September 2026' }} />);
+    expect(screen.getByText('70%')).toBeInTheDocument();
+    expect(screen.getByText(/Incomplete data · flagged below 90%/)).toBeInTheDocument();
+    expect(screen.getByText(/only 70% of the texts Twilio billed/)).toBeInTheDocument();
+    unmount();
+    renderScreen(<KeyNumbers metrics={[]} since="Sep 2026" health={{ ...EMPTY, recordsCompleteness: 0.912, completenessStatus: 'complete' }} />);
+    expect(screen.getByText('91%')).toBeInTheDocument();
+    expect(screen.getByText(/Complete · flagged below 90%/)).toBeInTheDocument();
+  });
+
+  it('says "Not available" when there is no bill to compare', () => {
+    renderScreen(<KeyNumbers metrics={[]} since="Sep 2026" health={{ ...EMPTY, completenessStatus: 'not_available', completenessNote: 'No billing source connected by API to compare with · September 2026' }} />);
+    expect(screen.getByText('Not available')).toBeInTheDocument();
+    expect(screen.getByText(/No billing source/)).toBeInTheDocument();
+  });
+});

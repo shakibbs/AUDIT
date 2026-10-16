@@ -28,9 +28,9 @@ export function KeyNumbers({ metrics, health, since }: { metrics: Metric[]; heal
       <KeyNumberCard tag="Opt-outs your dialer missed" value={review ? String(review.missed) : 'Not yet measured'} unit={review ? `of ${review.optOutsFound}` : undefined}
         bar={review ? { share: review.missed / Math.max(1, review.optOutsFound), caption: `${review.notMarkedFirstCheck} were not marked at first check`, tone: 'bad' } : undefined}
         foot={review ? `Found by AI review of ${review.reviewed.toLocaleString('en-US')} calls and texts` : 'Comes with AI review of calls and texts'} onClick={() => router.push('/revocation')} />
-      <KeyNumberCard tag="Records completeness" value={completeness === null ? 'Not yet measured' : `${Math.round(completeness * 100)}%`}
-        bar={health && completeness !== null ? { share: completeness, caption: `Flagged below ${Math.round(health.completenessFloor * 100)}%`, tone: completeness >= health.completenessFloor ? 'ok' : 'bad' } : undefined}
-        foot="Your logs compared with your carrier and platform bills" onClick={() => router.push('/sources')} />
+      <KeyNumberCard tag="Records completeness" value={completeness !== null ? `${Math.round(completeness * 100)}%` : health?.completenessStatus === 'not_available' ? 'Not available' : 'Not yet measured'}
+        bar={health && completeness !== null ? { share: Math.min(1, completeness), caption: `${completeness >= health.completenessFloor ? 'Complete' : 'Incomplete data'} · flagged below ${Math.round(health.completenessFloor * 100)}%`, tone: completeness >= health.completenessFloor ? 'ok' : 'bad' } : undefined}
+        foot={health?.completenessNote ?? 'Your logs compared with your carrier and platform bills'} onClick={() => router.push('/sources')} />
       <KeyNumberCard tag="Not measured" value={String(notMeasured.length)} unit="metrics"
         bar={{ share: notMeasured.length / Math.max(1, metrics.length), caption: `${notMeasured.length} of ${metrics.length} metrics wait for a source`, tone: 'bad' }}
         foot={`${notMeasured.map((x) => x.code).join(', ')}: supply the missing source to measure them`} onClick={() => router.push('/sources')} />

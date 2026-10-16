@@ -73,6 +73,8 @@ export interface DataHealth {
   sources: { live: number; stale: number; notSupplied: number; total: number };
   /** null = not yet measured (records completeness comes with Module 5, conversation review with Module 9). */
   recordsCompleteness: number | null; completenessFloor: number;
+  /** Records completeness box (M37): complete / incomplete / not_available (no billing source) / not_measured, and why. */
+  completenessStatus?: 'complete' | 'incomplete' | 'not_available' | 'not_measured'; completenessNote?: string | null;
   conversationReview: { reviewed: number; optOutsFound: number; missed: number; notMarkedFirstCheck: number } | null;
 }
 
