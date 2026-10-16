@@ -5,7 +5,7 @@ import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
 import { domains, score } from './data/domains';
 import { calendar, regChanges, rulebook } from './data/engagement';
-import { consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, position, revocation, vault } from './data/evidence';
+import { consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, optOuts, position, revocation, vault } from './data/evidence';
 import { insureds, litigation } from './data/insurer';
 import { conduct, leads, vendorSummary } from './data/intelligence';
 import { metrics } from './data/metrics';
@@ -107,6 +107,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'consent': return ok(consent);
     case 'consent-pages': return ok(db.consentPages);
     case 'revocation': return ok(revocation);
+    case 'optouts': return ok(optOuts);
     case 'who-contact': return ok(db.whoContact);
     case 'vault': return ok(vault);
     case 'position': return ok({ ...position, phone: q.phone || position.phone, date: q.date || position.date, insideCoverage: (q.date || position.date) >= '2026-05-01' });

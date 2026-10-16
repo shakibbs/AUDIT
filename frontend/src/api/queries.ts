@@ -4,7 +4,7 @@ import { apiGet, apiSend } from './client';
 import type {
   AccessEntry, Action, DataHealth, Alert, Insured, LitigationStats, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
   Metric, Position, Readiness, RegChange, ReportRun, ReportType, Revocation, Rulebook, ScoreSummary, SearchHit, Session, Settings,
-  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall,
+  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall, OptOut,
 } from './types';
 
 type Query = Record<string, string | undefined>;
@@ -37,6 +37,7 @@ export const useUploads = () => useGet<Upload[]>('/uploads');
 export const useReports = () => useGet<{ types: ReportType[]; runs: ReportRun[] }>('/reports');
 export const useRulebook = () => useGet<Rulebook>('/rulebook');
 export const useRulebookCalendar = (year: number) => useGet<RulebookCalendar>('/rulebook/calendar', { year: String(year) });
+export const useOptOuts = () => useGet<OptOut[]>('/optouts');
 export const useRegChanges = () => useGet<RegChange[]>('/reg-changes');
 export const useReadiness = () => useGet<Readiness>('/readiness');
 export const useSettings = () => useGet<Settings>('/settings');

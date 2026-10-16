@@ -44,3 +44,21 @@ describe('number page and "Can I call now?"', () => {
     expect(within(screen.getByText(/New York/).parentElement!).getByText(/outside/)).toBeInTheDocument();
   });
 });
+
+describe('opt-outs card with real data', () => {
+  it('says "Not checked yet" for the dialer until AI review exists', async () => {
+    const { OptOutsTable } = await import('@/screens/revocation/OptOutsTable');
+    renderScreen(<OptOutsTable optOuts={[{ id: 'oo-1', phoneDisplay: '(916) •••-0001', phoneE164: null, how: 'Text · keyword', words: 'STOP',
+      at: '2026-10-01T16:00:00Z', deadline: '2026-10-16', businessDaysLeft: 8, deadlineProvisional: true, dialerMarked: null,
+      contactsAfter: { count: 1, channel: 'Call', lastAt: '2026-10-03T15:00:00Z', afterDeadline: false } }]} />);
+    expect(screen.getByText('Not checked yet')).toBeInTheDocument();
+    expect(screen.getByText('8 business days left')).toBeInTheDocument();
+    expect(screen.getByText(/1 call · before the deadline/)).toBeInTheDocument();
+  });
+
+  it('says so when there are no opt-outs yet', async () => {
+    const { OptOutsTable } = await import('@/screens/revocation/OptOutsTable');
+    renderScreen(<OptOutsTable optOuts={[]} />);
+    expect(screen.getByText('No opt-outs yet.')).toBeInTheDocument();
+  });
+});

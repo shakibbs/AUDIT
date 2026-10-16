@@ -53,9 +53,10 @@ export function EvidenceFileScreen({ phone }: { phone: string }) {
           </Card>
           <Card title="Anchor" sub="Seal over this file's records">
             <dl className="m-0">
-              <div className="kv"><dt>Status</dt><dd>{f.anchor.anchored ? <span className="pill pill-green">Anchored</span> : <span className="pill pill-gray">Waiting for tonight’s anchor</span>}</dd></div>
-              <div className="kv"><dt>Anchor date</dt><dd>{formatDate(f.anchor.date)}</dd></div>
-              <div className="kv"><dt>Root fingerprint</dt><dd className="mono">{truncateHash(f.anchor.root)}</dd></div>
+              <div className="kv"><dt>Status</dt><dd>{f.anchor.anchored ? <span className="pill pill-green">Sealed</span> : <span className="pill pill-gray">Waiting for tonight’s seal</span>}</dd></div>
+              {f.anchor.recordCount !== undefined && <div className="kv"><dt>Records sealed</dt><dd>{f.anchor.sealedCount} of {f.anchor.recordCount}{f.anchor.stamped ? ' · time-stamped' : ''}</dd></div>}
+              <div className="kv"><dt>Sealed on</dt><dd>{f.anchor.date ? formatDate(f.anchor.date) : '—'}</dd></div>
+              <div className="kv"><dt>Root fingerprint</dt><dd className="mono">{f.anchor.root ? truncateHash(f.anchor.root) : '—'}</dd></div>
             </dl>
           </Card>
         </div>

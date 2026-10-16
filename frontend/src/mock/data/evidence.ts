@@ -1,4 +1,4 @@
-import type { CheckState, ConsentPage, ConsentSummary, Contact, EvidenceFile, LegalHold, Position, Revocation, VaultStats } from '@/api/types';
+import type { OptOut, CheckState, ConsentPage, ConsentSummary, Contact, EvidenceFile, LegalHold, Position, Revocation, VaultStats } from '@/api/types';
 
 const STEP_OF: Record<string, number> = { VF_OK: 6, NP_NO_CONSENT_TEXT: 3, NP_PRETICKED: 3, CF_NOT_FOUND: 2, CF_EXPIRED: 2, CF_FILE_MISSING: 2 };
 
@@ -89,21 +89,6 @@ export const revocation: Revocation = {
     { phrase: 'wrong number', kind: 'plain words', dialer: false, messaging: false },
     { phrase: 'no more messages', kind: 'plain words', dialer: null, messaging: false },
   ],
-  // Deadlines counted with the business-day rule (Columbus Day 12 Oct and Labor Day 7 Sep skipped). Sample "today": 30 Sep.
-  optOuts: [
-    { id: 'oo-1', phoneDisplay: '(480) •••-1234', phoneE164: null, how: 'Text · keyword', words: 'STOP', at: '2026-09-29T15:00:00Z',
-      deadline: '2026-10-14', businessDaysLeft: 9, deadlineProvisional: true, dialerMarked: true, contactsAfter: null },
-    { id: 'oo-2', phoneDisplay: '(916) •••-5527', phoneE164: null, how: 'Call · AI review', words: '“Take me off your list”', at: '2026-09-28T18:20:00Z',
-      deadline: '2026-10-13', businessDaysLeft: 8, deadlineProvisional: true, dialerMarked: false, contactsAfter: null },
-    { id: 'oo-3', phoneDisplay: '(480) •••-0923', phoneE164: '+14805550923', how: 'Text · keyword', words: 'STOP', at: '2026-09-22T16:40:00Z',
-      deadline: '2026-10-06', businessDaysLeft: 4, deadlineProvisional: true, dialerMarked: true,
-      contactsAfter: { count: 3, channel: 'Text', lastAt: '2026-09-29T13:47:00Z', afterDeadline: false } },
-    { id: 'oo-4', phoneDisplay: '(623) •••-4806', phoneE164: null, how: 'Text · AI review', words: '“Please don’t text me anymore”', at: '2026-09-10T16:05:00Z',
-      deadline: '2026-09-24', businessDaysLeft: 0, deadlineProvisional: true, dialerMarked: true,
-      contactsAfter: { count: 1, channel: 'Call', lastAt: '2026-09-26T19:10:00Z', afterDeadline: true } },
-    { id: 'oo-5', phoneDisplay: '(520) •••-7712', phoneE164: null, how: 'Call · dialer code', words: 'Agent coded “DNC”', at: '2026-09-01T17:30:00Z',
-      deadline: '2026-09-16', businessDaysLeft: 0, deadlineProvisional: true, dialerMarked: true, contactsAfter: null },
-  ],
   authorisation: { signedOn: '2026-06-01', windowFrom: '2026-06-01', windowTo: '2027-05-31', channels: ['Text', 'Call', 'Web form', 'Email'] },
 };
 
@@ -164,3 +149,20 @@ export const evidenceFiles: Record<string, EvidenceFile> = {
     anchor: { date: '2026-09-30', root: sha('5fec', '57e9'), anchored: true }, onHold: true,
   },
 };
+
+// The Opt-outs card (Revocation Integrity). Deadlines counted with the business-day rule (Columbus Day 12 Oct and
+// Labor Day 7 Sep skipped). Sample "today": 30 Sep.
+export const optOuts: OptOut[] = [
+    { id: 'oo-1', phoneDisplay: '(480) •••-1234', phoneE164: null, how: 'Text · keyword', words: 'STOP', at: '2026-09-29T15:00:00Z',
+      deadline: '2026-10-14', businessDaysLeft: 9, deadlineProvisional: true, dialerMarked: true, contactsAfter: null },
+    { id: 'oo-2', phoneDisplay: '(916) •••-5527', phoneE164: null, how: 'Call · AI review', words: '“Take me off your list”', at: '2026-09-28T18:20:00Z',
+      deadline: '2026-10-13', businessDaysLeft: 8, deadlineProvisional: true, dialerMarked: false, contactsAfter: null },
+    { id: 'oo-3', phoneDisplay: '(480) •••-0923', phoneE164: '+14805550923', how: 'Text · keyword', words: 'STOP', at: '2026-09-22T16:40:00Z',
+      deadline: '2026-10-06', businessDaysLeft: 4, deadlineProvisional: true, dialerMarked: true,
+      contactsAfter: { count: 3, channel: 'Text', lastAt: '2026-09-29T13:47:00Z', afterDeadline: false } },
+    { id: 'oo-4', phoneDisplay: '(623) •••-4806', phoneE164: null, how: 'Text · AI review', words: '“Please don’t text me anymore”', at: '2026-09-10T16:05:00Z',
+      deadline: '2026-09-24', businessDaysLeft: 0, deadlineProvisional: true, dialerMarked: true,
+      contactsAfter: { count: 1, channel: 'Call', lastAt: '2026-09-26T19:10:00Z', afterDeadline: true } },
+    { id: 'oo-5', phoneDisplay: '(520) •••-7712', phoneE164: null, how: 'Call · dialer code', words: 'Agent coded “DNC”', at: '2026-09-01T17:30:00Z',
+      deadline: '2026-09-16', businessDaysLeft: 0, deadlineProvisional: true, dialerMarked: true, contactsAfter: null },
+  ];

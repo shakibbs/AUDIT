@@ -87,7 +87,9 @@ until Module 9; "Nothing read yet" until the first record arrives.
 
 Contact Ledger rows and number pages from Django show consent **"Not checked yet"** (`NOT_CHECKED`) until the consent
 engine exists, never a worst case; numbers appear only masked (area code + last 4). The number page adds the
-**calling window** and **owners of the number**; Rulebook → Calendar & hours starts with **"Can I call now?"**.
+**calling window**, **owners of the number** and the real **seal**; Rulebook → Calendar & hours starts with **"Can I call
+now?"**. Revocation Integrity's **Opt-outs card** reads `/optouts` (the real STOP list from Django; "Dialer marked:
+Not checked yet" until Module 9).
 
 Metric numbers: ours stay as they are (M38 = AI "Missed opt-outs"). Who You Contact uses M39–M48 from the
 v2 prototype, and its stale-registry check is **M49**.

@@ -151,14 +151,13 @@ export interface Revocation {
   distribution: { label: string; count: number }[];
   wording: { phrase: string; kind: 'keyword' | 'plain words'; dialer: boolean | null; messaging: boolean | null }[];
   authorisation: { signedOn: string; windowFrom: string; windowTo: string; channels: string[] };
-  /** Real opt-outs, newest first, each with its deadline (sample data until live sync). */
-  optOuts?: OptOut[];
 }
 
 export interface OptOut {
   id: string; phoneDisplay: string; phoneE164: string | null; how: string; words: string | null; at: string;
   deadline: string; businessDaysLeft: number; deadlineProvisional: boolean;
-  dialerMarked: boolean; contactsAfter: { count: number; channel: string; lastAt: string; afterDeadline: boolean } | null;
+  /** null = not checked yet (Module 9). */
+  dialerMarked: boolean | null; contactsAfter: { count: number; channel: string; lastAt: string; afterDeadline: boolean } | null;
 }
 
 export interface VaultStats {
@@ -194,7 +193,7 @@ export interface EvidenceFile {
   contacts: EvidenceContact[]; proofElements: ProofElement[];
   optOuts: { at: string; channel: string; method: string }[];
   listChecks: { list: string; onList: boolean | null; label: string }[];
-  anchor: { date: string; root: string; anchored: boolean }; onHold: boolean;
+  anchor: { date: string; root: string; anchored: boolean; sealedCount?: number; recordCount?: number; stamped?: boolean }; onHold: boolean;
   /** Real files: where the person probably is, the calling window now, and the owners of the number over time. */
   where?: string; locationConfidence?: string; callingWindow?: CallingWindow;
   epochs?: { number: number; from: string | null; to: string | null; reason: string }[];

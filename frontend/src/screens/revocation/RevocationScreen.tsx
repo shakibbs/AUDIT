@@ -21,7 +21,7 @@ export function RevocationScreen() {
       <Loader query={revocation}>
         {(r) => (
           <div className="flex flex-col gap-5">
-            {r.optOuts && <OptOutsCard optOuts={r.optOuts} />}
+            <OptOutsCard />
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <Kpi tag="Median time to stop" value={r.medianHours === null ? 'Not measured' : r.medianHours.toFixed(1)} unit="hours" foot="Half of test opt-outs stopped sooner" onClick={() => open('metric', 'M08')} />
               <Kpi tag="Slowest 10%" value={r.p90 === null ? 'Not measured' : String(r.p90)} foot="At least one path never stopped" info="The time by which 90% of test opt-outs had stopped. NEVER means one in ten or more had not stopped when the deadline passed." />
