@@ -4,7 +4,7 @@ import { apiGet, apiSend } from './client';
 import type {
   AccessEntry, Action, DataHealth, Alert, Insured, LitigationStats, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
   Metric, Position, Readiness, RegChange, ReportRun, ReportType, Revocation, Rulebook, ScoreSummary, SearchHit, Session, Settings,
-  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall, OptOut,
+  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall, OptOut, Certificate,
 } from './types';
 
 type Query = Record<string, string | undefined>;
@@ -21,6 +21,7 @@ export const useAlerts = () => useGet<Alert[]>('/alerts');
 export const useContacts = (status: string, q: string) => useGet<Contact[]>('/contacts', { status, q });
 export const useConsent = () => useGet<ConsentSummary>('/consent');
 export const useConsentPages = () => useGet<ConsentPage[]>('/consent-pages');
+export const useCertificates = () => useGet<Certificate[]>('/certificates');
 export const useRevocation = () => useGet<Revocation>('/revocation');
 export const useWhoContact = () => useGet<WhoContact>('/who-contact');
 export const useVault = () => useGet<VaultStats>('/vault');

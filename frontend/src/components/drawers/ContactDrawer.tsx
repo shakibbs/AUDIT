@@ -12,7 +12,7 @@ import { formatDateTime, truncateHash } from '@/lib/format';
 import { CHECK_NAMES, STATUS_MEANING } from '@/lib/status';
 
 const TABS = [{ id: 'result', label: 'Result' }, { id: 'evidence', label: 'Evidence' }, { id: 'definition', label: 'Definition' }] as const;
-const CHECK_PILL: Record<CheckState, [string, string]> = { pass: ['pill-green', 'Pass'], fails: ['pill-red', 'Fails'], gap: ['pill-amber', 'Gap'], not_reached: ['pill-gray', 'Not reached'] };
+const CHECK_PILL: Record<CheckState, [string, string]> = { pass: ['pill-green', 'Pass'], fails: ['pill-red', 'Fails'], gap: ['pill-amber', 'Gap'], not_reached: ['pill-gray', 'Not reached'], not_measured: ['pill-gray', 'Not yet measured'] };
 
 /** Detail panel for one call or text: the five checks, the proof behind the status, and the link to the full evidence file. */
 export function ContactDrawer({ id, onClose }: { id: string; onClose: () => void }) {
@@ -32,6 +32,7 @@ export function ContactDrawer({ id, onClose }: { id: string; onClose: () => void
             </div>
             <div>
               <div className="kpi-tag mb-2">The five checks</div>
+              {contact.checks.length === 0 && <p className="tiny m-0">{contact.status === 'NOT_NEEDED' ? 'No checks: no consent needed.' : 'Not checked yet.'}</p>}
               {contact.checks.map((state, i) => (
                 <div key={CHECK_NAMES[i]} className="chk"><span>{i + 1}. {CHECK_NAMES[i]}</span><span className={`pill ${CHECK_PILL[state][0]}`}>{CHECK_PILL[state][1]}</span></div>
               ))}
@@ -54,7 +55,7 @@ export function ContactDrawer({ id, onClose }: { id: string; onClose: () => void
         {tab === 'definition' && (
           <div className="text-[13px] leading-relaxed">
             <p className="mt-0"><strong>{contact.status}</strong> — {STATUS_MEANING[contact.status]}</p>
-            <p className="mb-0 text-txt-2">Each contact is run through five checks in order. The first check that does not pass sets the status and the reason code.</p>
+            <p className="mb-0 text-txt-2">Each contact is run through five checks in order. The first check that does not pass sets the status and the reason code. A check CiV cannot run yet is shown as “Not yet measured” and never makes the result worse.</p>
           </div>
         )}
         <Link href={`/numbers/${encodeURIComponent(contact.phoneE164)}`} onClick={onClose} className="btn btn-primary self-start no-underline hover:no-underline">Open the evidence file for this number</Link>

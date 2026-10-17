@@ -1,4 +1,4 @@
-import type { OptOut, CheckState, ConsentPage, ConsentSummary, Contact, EvidenceFile, LegalHold, Position, Revocation, VaultStats } from '@/api/types';
+import type { Certificate, OptOut, CheckState, ConsentPage, ConsentSummary, Contact, EvidenceFile, LegalHold, Position, Revocation, VaultStats } from '@/api/types';
 
 const STEP_OF: Record<string, number> = { VF_OK: 6, NP_NO_CONSENT_TEXT: 3, NP_PRETICKED: 3, CF_NOT_FOUND: 2, CF_EXPIRED: 2, CF_FILE_MISSING: 2 };
 
@@ -166,3 +166,13 @@ export const optOuts: OptOut[] = [
     { id: 'oo-5', phoneDisplay: '(520) •••-7712', phoneE164: null, how: 'Call · dialer code', words: 'Agent coded “DNC”', at: '2026-09-01T17:30:00Z',
       deadline: '2026-09-16', businessDaysLeft: 0, deadlineProvisional: true, dialerMarked: true, contactsAfter: null },
   ];
+
+/** Sample: certificates CiV found in the client's records (only the start of each ID is ever shown). */
+export const certificates: Certificate[] = [
+  { id: 'cc-3', provider: 'TrustedForm', ref: '7f3a91c2…', state: 'claimed', stateLabel: 'Claimed', seenAt: '2026-09-28T14:02:00Z', deadlineAt: '2026-10-01T14:00:00Z',
+    createdAt: '2026-09-28T13:58:00Z', expiresAt: '2029-09-28T13:58:00Z', page: 'solar.example.com/quote', usedBy: 4, problem: '' },
+  { id: 'cc-2', provider: 'Jornaya', ref: 'A41C77E0…', state: 'waiting', stateLabel: 'Waiting to be claimed', seenAt: '2026-09-29T09:15:00Z', deadlineAt: '2026-10-02T09:10:00Z',
+    createdAt: null, expiresAt: null, page: '', usedBy: 0, problem: '' },
+  { id: 'cc-1', provider: 'TrustedForm', ref: '0b2e4d18…', state: 'lost', stateLabel: 'Lost: not claimed in time', seenAt: '2026-09-20T11:00:00Z', deadlineAt: '2026-09-23T10:55:00Z',
+    createdAt: null, expiresAt: null, page: '', usedBy: 2, problem: '' },
+];

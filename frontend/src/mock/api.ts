@@ -5,7 +5,7 @@ import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
 import { domains, score } from './data/domains';
 import { calendar, regChanges, rulebook } from './data/engagement';
-import { consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, optOuts, position, revocation, vault } from './data/evidence';
+import { certificates, consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, optOuts, position, revocation, vault } from './data/evidence';
 import { insureds, litigation } from './data/insurer';
 import { conduct, leads, vendorSummary } from './data/intelligence';
 import { metrics } from './data/metrics';
@@ -106,6 +106,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'contacts': return ok(contacts.filter((c) => (!q.status || q.status === 'ALL' || c.status === q.status) && (!q.q || c.phoneE164.includes(q.q.replace(/\D/g, '')))));
     case 'consent': return ok(consent);
     case 'consent-pages': return ok(db.consentPages);
+    case 'certificates': return ok(certificates);
     case 'revocation': return ok(revocation);
     case 'optouts': return ok(optOuts);
     case 'who-contact': return ok(db.whoContact);

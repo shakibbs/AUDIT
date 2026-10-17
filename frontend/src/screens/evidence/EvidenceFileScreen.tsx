@@ -11,10 +11,11 @@ import { formatDate, truncateHash } from '@/lib/format';
 import { STATUS_COLOR } from '@/lib/status';
 import { ContactTimeline } from './ContactTimeline';
 import { CallingWindowCard } from './CallingWindowCard';
+import { ConsentCard } from './ConsentCard';
 import { OwnersCard } from './OwnersCard';
 import { ProofElements } from './ProofElements';
 
-const ORDER = ['VERIFIED', 'WEAK', 'CONFLICTING', 'NO_PROOF', 'NOT_CHECKED'] as const;
+const ORDER = ['VERIFIED', 'WEAK', 'CONFLICTING', 'NO_PROOF', 'PENDING', 'NOT_NEEDED', 'NOT_CHECKED'] as const;
 
 /** The full file for one phone number. */
 export function EvidenceFileScreen({ phone }: { phone: string }) {
@@ -40,7 +41,7 @@ export function EvidenceFileScreen({ phone }: { phone: string }) {
       </PageHead>
       <div className="flex flex-col gap-5">
         <div className="grid gap-5 lg:grid-cols-3">
-          <Card title="Standing" sub="The weakest status across all contacts">
+          <Card title="Standing" sub="The weakest status across all contacts (pending and frozen left out)">
             <StatusChip status={f.worstStatus} />
             <div className="mt-4"><StackedBar label="Contacts by status" segments={ORDER.map((s) => ({ label: s, value: f.counts[s] ?? 0, color: STATUS_COLOR[s] }))} /></div>
           </Card>
@@ -66,8 +67,9 @@ export function EvidenceFileScreen({ phone }: { phone: string }) {
             {f.epochs && <OwnersCard epochs={f.epochs} />}
           </div>
         )}
+        {f.consent && <ConsentCard consent={f.consent} />}
         <ContactTimeline file={f} />
-        <ProofElements file={f} />
+        {f.proofElements.length > 0 && <ProofElements file={f} />}
       </div>
     </>
   );

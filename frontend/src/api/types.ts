@@ -8,8 +8,9 @@ export type View = 'owner' | 'underwriter';
 export type EngagementMode = 'direct' | 'counsel_directed';
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'F';
 export type Tier = 1 | 2 | 3 | 4;
-/** NOT_CHECKED: the consent engine has not looked at it yet (real data before Module 6). Never a worst case. */
-export type ConsentStatus = 'VERIFIED' | 'WEAK' | 'CONFLICTING' | 'NO_PROOF' | 'PENDING' | 'NOT_CHECKED';
+/** NOT_CHECKED: the consent engine has not looked at it yet. Never a worst case. PENDING: a certificate not read yet,
+ * left out of totals. NOT_NEEDED: the person contacted the client, or a CiV test number. */
+export type ConsentStatus = 'VERIFIED' | 'WEAK' | 'CONFLICTING' | 'NO_PROOF' | 'PENDING' | 'NOT_CHECKED' | 'NOT_NEEDED';
 export type Severity = 'High' | 'Medium' | 'Low';
 export type Basis = 'robocall_marketing' | 'robocall_informational' | 'dnc_listed' | 'dnc_unknown' | 'state_law' | 'civ_policy';
 export type Family = 'Permission' | 'Who you contact' | 'How you contact' | 'Stopping' | 'Records' | 'Company controls';
@@ -100,7 +101,8 @@ export interface Alert {
 }
 
 // ----- Evidence -----
-export type CheckState = 'pass' | 'fails' | 'gap' | 'not_reached';
+/** not_measured: a check CiV cannot run yet (Module 7 or 8); it never changes a result. */
+export type CheckState = 'pass' | 'fails' | 'gap' | 'not_reached' | 'not_measured';
 
 // ----- Who You Contact -----
 export type WhoState = 'fail' | 'warn' | 'unverified' | 'pass';
@@ -132,6 +134,24 @@ export interface ConsentSummary {
   certificateValidity: number; certificatePairs: number; expiredBeforeEngagement: number;
   trend: { label: string; verified: number; weak: number; conflicting: number; noProof: number }[];
   expiring: { within: string; count: number }[];
+  /** Real data: left out of the shares above, shown apart. */
+  pending?: number; frozen?: number; notNeeded?: number; period?: string; real?: boolean;
+}
+
+/** A consent certificate CiV found in the client's records (TrustedForm / Jornaya). Never the whole certificate ID. */
+export interface Certificate {
+  id: string; provider: string; ref: string; state: 'waiting' | 'claimed' | 'no_key' | 'lost'; stateLabel: string;
+  seenAt: string; deadlineAt: string; createdAt: string | null; expiresAt: string | null; page: string; usedBy: number; problem: string;
+}
+
+/** The consent part of a number's page (strict results, current owner). */
+export interface ConsentPanel {
+  owner: number | null;
+  proofs: { id: string; kind: string; provider: string | null; madeAt: string | null; dateKnown: boolean; expiresAt: string | null;
+    state: string | null; tool: string; withdrawn: boolean; usedBy: number }[];
+  needs: { basis: Basis; status: ConsentStatus; proof: string | null }[]; needsFor: string | null;
+  history: { at: string; contactAt: string; from: ConsentStatus | null; to: ConsentStatus; reason: string; frozen: boolean }[];
+  frozen: number; pending: number; notMeasured: string[]; draftRules: boolean;
 }
 
 export interface ConsentPage {
@@ -197,6 +217,7 @@ export interface EvidenceFile {
   /** Real files: where the person probably is, the calling window now, and the owners of the number over time. */
   where?: string; locationConfidence?: string; callingWindow?: CallingWindow;
   epochs?: { number: number; from: string | null; to: string | null; reason: string }[];
+  consent?: ConsentPanel;
 }
 
 /** Advice only: CiV never blocks a call. Draft hours are said to be draft. */

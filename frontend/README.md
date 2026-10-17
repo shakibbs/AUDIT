@@ -80,13 +80,18 @@ company's lawyer can agree or disagree with, and "Suggest a change") come from D
 Revocation Integrity starts with the **Opt-outs** card (every opt-out with its business-day deadline, dialer marked,
 contacts after; sample data until live sync).
 
-Data health (`/data-health`): the Overview's **Records completeness** box shows the latest month's percentage with
-"Complete" or "Incomplete data" and a one-line reason (e.g. "CiV received only 70% of the texts Twilio billed"),
-"Not available" when there is no billing source, or "Not yet measured". Conversation review stays "Not yet measured"
+Data health (`/data-health`): the Overview's **Records completeness** box shows the latest month's percentage over
+every connected tool (each checked by its bill, its own count or its working days) with "Complete" or "Incomplete
+data" and a one-line reason, "Not available" when no tool gave a second number yet, or "Not yet measured". Conversation review stays "Not yet measured"
 until Module 9; "Nothing read yet" until the first record arrives.
 
-Contact Ledger rows and number pages from Django show consent **"Not checked yet"** (`NOT_CHECKED`) until the consent
-engine exists, never a worst case; numbers appear only masked (area code + last 4). The number page adds the
+**Consent results (Module 6, strict reading):** Contact Ledger rows show Verified / Weak / Conflicting / No proof /
+Pending / Not needed with the reason in words, the five checks ("Not yet measured" for checks CiV cannot run yet) and
+the proof used; "Not checked yet" (`NOT_CHECKED`) only in the minute before the engine runs, never a worst case. The
+number page adds a **Consent** card (current owner's proofs, what the latest contact needed, history of changes, not
+yet measured) and the real opt-outs in the timeline. Consent Integrity's Summary and Expiry tabs read `/consent`
+(pending and frozen counted apart), and a **Your certificates** card reads `/certificates`; the Wording tab stays
+sample data until Module 7. Numbers appear only masked (area code + last 4). The number page adds the
 **calling window**, **owners of the number** and the real **seal**; Rulebook → Calendar & hours starts with **"Can I call
 now?"**. Revocation Integrity's **Opt-outs card** reads `/optouts` (the real STOP list from Django; "Dialer marked:
 Not checked yet" until Module 9).

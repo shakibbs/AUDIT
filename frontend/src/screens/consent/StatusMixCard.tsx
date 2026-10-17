@@ -8,7 +8,7 @@ import { STATUS_COLOR } from '@/lib/status';
 export function StatusMixCard({ consent, className = '' }: { consent: ConsentSummary; className?: string }) {
   const verified = consent.mix.find((m) => m.status === 'VERIFIED');
   return (
-    <Card title="Consent status mix" sub={`${formatCount(consent.contacts)} contacts this period`} className={className}>
+    <Card title="Consent status mix" sub={`${formatCount(consent.contacts)} contacts ${consent.period ? `in ${consent.period}` : 'this period'}${consent.pending || consent.frozen ? ` · ${formatCount(consent.pending ?? 0)} pending and ${formatCount(consent.frozen ?? 0)} frozen left out` : ''}`} className={className}>
       <div className="flex flex-wrap items-center gap-6">
         <Donut label="Consent status mix" centre={`${verified?.share.toFixed(0) ?? 0}%`} centreLabel="Verified"
           segments={consent.mix.map((m) => ({ label: m.status, value: m.count, color: STATUS_COLOR[m.status], display: `${m.share.toFixed(0)}%` }))} />

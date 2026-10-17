@@ -13,7 +13,7 @@ export function ExpiryTab({ consent }: { consent: ConsentSummary }) {
       </div>
       <Card title="Certificates becoming unavailable" sub="Cumulative count by horizon">
         <BarList labelWidth={120} rows={consent.expiring.map((e) => ({ key: e.within, label: `Within ${e.within}`, value: e.count, display: formatCount(e.count) }))} />
-        <div className="note-box mt-4">A certificate that is not retained at the provider can no longer be opened after its claim period. Contacts that rely on it then move from VERIFIED or WEAK to CONFLICTING (CF_EXPIRED). Retention is a setting in your certificate account; CiV also stores a copy from the day it first sees a certificate.</div>
+        <div className="note-box mt-4">A certificate that is not retained at the provider can no longer be opened after its claim period. Contacts that rely on it then move from VERIFIED or WEAK to CONFLICTING (CF_EXPIRED). Retention is a setting in your certificate account. CiV keeps only a fingerprint of each certificate it reads, which proves it existed on that date but cannot show its content.</div>
       </Card>
     </div>
   );

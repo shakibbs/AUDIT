@@ -5,6 +5,7 @@ import { useConsent } from '@/api/queries';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { Seg } from '@/components/ui/Seg';
+import { CertificatesCard } from './CertificatesCard';
 import { ExpiryTab } from './ExpiryTab';
 import { FiveChecks } from './FiveChecks';
 import { LegalBasisCard } from './LegalBasisCard';
@@ -23,7 +24,12 @@ export function ConsentScreen() {
       <PageHead eyebrow="Evidence" title="Consent Integrity" sub="Whether each contact had permission on record, and how strong that record is.">
         <Seg label="View" options={TABS} value={tab} onChange={setTab} />
       </PageHead>
-      {tab === 'wording' ? <WordingTab /> : (
+      {tab === 'wording' ? (
+        <>
+          <div className="note-box mb-4">Sample data: capturing the consent wording on your pages comes with Module 7.</div>
+          <WordingTab />
+        </>
+      ) : (
         <Loader query={consent}>
           {(c) => tab === 'expiry' ? <ExpiryTab consent={c} /> : (
             <div className="grid gap-5 lg:grid-cols-2">
@@ -31,6 +37,7 @@ export function ConsentScreen() {
               <StatusTrendCard consent={c} />
               <ReasonCodes consent={c} />
               <LegalBasisCard consent={c} />
+              <div className="lg:col-span-2"><CertificatesCard /></div>
               <div className="lg:col-span-2"><FiveChecks /></div>
             </div>
           )}
