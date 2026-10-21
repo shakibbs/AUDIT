@@ -167,7 +167,7 @@ unapproved `affects_status` key in an approved version.
 | `record_retention_years` | Retention required for call, consent, EBR and DNC records | 5 | Counsel | Proposed (A16) | no |
 | **[v1.1]** `civ_default_retention_years` | CiV artifact retention when the client contract is silent. **[v3]** CiV keeps no client records; this now applies to CiV's fingerprints and analyzed data (CHANGELOG-v3 §2) | max(`record_retention_years`, `lookback_years`) + 1 = 6 | Counsel | Proposed (C7) | no |
 | **[v1.1]** `legal_hold` | Per client (or per artifact): blocks every deletion including key destruction. **[v3]** A hold is also an instruction to the client to retain the named source records, with an optional encrypted snapshot to a bucket the client owns; release needs a Legal-role user and a reason | false | Counsel | Set (C7) | no |
-| `vendor_required_clauses` | Clauses each vendor contract must contain | — | Counsel | TBD (A15b) | no |
+| `vendor_required_clauses` | Clauses each vendor contract must contain | 12 clauses, 5 required (consent naming the client, a claimable certificate, proof within 5 business days kept 5 years, opt-outs passed on, indemnity); 7 recommended. CiV draft for the clients' lawyers to review (owner decision 2026-10-22) | Counsel | Proposed (A15b) | no |
 | `vendor_active_days` | Vendor active if it sent a lead within | 90 | Product | Set | no |
 | `require_sub_id` | Affiliate networks must supply a sub-ID | true | Product | Set | no |
 | `acquired_list_sample_size` / `acquired_list_max_failures` | Acquired list sampling | 100 / 2 | Product | Set | no |

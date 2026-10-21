@@ -23,7 +23,7 @@ export function UserMenu({ session }: { session: Session }) {
         <span className="grid h-[30px] w-[30px] place-items-center rounded-lg bg-brand-soft font-display text-[11.5px] font-bold text-brand-ink">{session.initials}</span>
         <span className="hidden sm:block">
           <span className="block text-[12.5px] font-semibold leading-tight text-txt">{session.name}</span>
-          <span className="block text-[10.5px] leading-tight text-txt-3">{underwriter ? 'Underwriter · Falcon Risk' : `${ROLE_LABEL[session.role]}${session.isCounsel ? ' · lawyer' : ''}`}</span>
+          <span className="block text-[10.5px] leading-tight text-txt-3">{underwriter ? `Underwriter · ${session.sampleData ? 'Falcon Risk' : session.clientName}` : `${ROLE_LABEL[session.role]}${session.isCounsel ? ' · lawyer' : ''}`}</span>
         </span>
         <Icon name="chevron-down" size={14} className="text-txt-3" />
       </button>

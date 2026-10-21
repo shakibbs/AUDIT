@@ -17,7 +17,7 @@ export function BasisMixCard({ insured }: { insured: Insured }) {
           {insured.basisMix.map((m) => (
             <tr key={m.grade}><td><SourceGradeChip grade={m.grade} /></td><td className="mono">{m.share}%</td><td className="mono">{GRADE_INFO[m.grade].weight}</td><td className="mono">{(m.share * GRADE_INFO[m.grade].weight).toFixed(1)}%</td></tr>
           ))}
-          <tr><td className="font-semibold">Evidence coverage</td><td /><td /><td className="mono font-semibold">{coverage.toFixed(0)}%</td></tr>
+          <tr><td className="font-semibold">Evidence coverage</td><td /><td /><td className="mono font-semibold">{insured.basisMix.length ? `${coverage.toFixed(0)}%` : 'Not measured'}</td></tr>
         </tbody>
       </table>
       <p className="tiny mb-0 mt-3">A company export weighs 0.7 because a spreadsheet can be edited; a record CiV reads by API is fingerprinted when fetched. Statements and missing sources count for nothing.</p>

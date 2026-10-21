@@ -1,7 +1,7 @@
 import type { View } from '@/api/types';
 
 /** Pages an underwriter may open. Everything else belongs to the client. */
-export const UNDERWRITER_PATHS = ['/portfolio', '/exposure', '/integrity', '/attestation', '/litigation', '/uw-export', '/rulebook', '/regulatory'];
+export const UNDERWRITER_PATHS = ['/portfolio', '/exposure', '/integrity', '/attestation', '/litigation', '/uw-export'];
 /** Insurer pages that cover the insurer's whole book; clients never open them. */
 export const INSURER_ONLY_PATHS = ['/portfolio', '/exposure', '/litigation'];
 

@@ -37,6 +37,7 @@ portal and the backend talk only over `/api`.
 
 | Document | Audience | What it answers |
 |---|---|---|
+| [docs/CiV-System-Spec.md](docs/CiV-System-Spec.md) (also .docx, .pdf) | Owner, engineering | The whole system top to bottom from the code: what each part fetches, the flows, the logic, the functions, the API, the jobs and every portal page |
 | [docs/feature-guide.md](docs/feature-guide.md) | Owner, everyone new to the project | Every feature in plain language: what it is, why a client needs it, how it works, what is automatic, what the client supplies |
 | [docs/BRD.md](docs/BRD.md) | Product, leadership, counsel | Why we build this, for whom, what "done" means, what we will not build |
 | [docs/architecture.md](docs/architecture.md) | Engineering | The six-layer pipeline, components, interfaces, stack, tenancy, integrity chain |

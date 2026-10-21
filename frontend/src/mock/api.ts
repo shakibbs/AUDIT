@@ -1,5 +1,5 @@
 // In-memory stand-in for the Django API. One pure function serves the dev route handler and the tests.
-import type { CheckColumn, DataHealth, EngagementMode, HashCheck, Role, SearchHit, Session, View } from '@/api/types';
+import type { CheckColumn, DataHealth, EngagementMode, HashCheck, RatingEngine, Role, SearchHit, Session, View } from '@/api/types';
 import { gradeOf } from '@/lib/format';
 import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
@@ -40,7 +40,7 @@ function visibleSession(): Session {
 }
 
 // An underwriter reaches only insurer data: never a client's contacts, findings, alerts or sources (v3 §9a).
-const UNDERWRITER_READS = ['session', 'insureds', 'litigation', 'rulebook', 'reg-changes', 'search'];
+const UNDERWRITER_READS = ['session', 'insureds', 'litigation', 'rating-engine', 'rulebook', 'reg-changes', 'search'];
 // What a client sees of the insurer side: its own company only.
 const OWN_INSURED = 'sunpath';
 
@@ -133,6 +133,9 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'conduct': return ok(conduct);
     case 'leads': return ok(leads);
     case 'vendors': return ok(vendorSummary);
+    case 'vendor-contracts': return ok([]);  // sample: none uploaded yet (real list from Django)
+    case 'rating-engine': return underwriter ? ok(ratingEngine) : fail(403, 'Only the insurer sets its rating engine.');
+    case 'buyer-links': return ok({ links: [] });  // sample: nobody shared yet (real list from Django)
     case 'sources': return ok(sources);
     case 'uploads': return ok(db.uploads);
     case 'reports': return ok({ types: reportTypes, runs: db.reportRuns });
@@ -167,8 +170,27 @@ function read(path: string, q: Record<string, string>): MockResponse {
 const LAST_ADMIN = 'A company needs at least one active Admin.';
 const otherAdmin = (id: string) => db.users.some((u) => u.id !== id && u.role === 'admin' && u.status === 'active');
 
+// The sample insurer's rating engine (Module 15): saved here only; nothing is ever sent.
+let ratingEngine: RatingEngine = { url: '', keyHint: '', monthly: false, sends: [] };
+function rating(method: string, verb: string | undefined, body: Record<string, unknown>): MockResponse {
+  if (db.session.view !== 'underwriter') return fail(403, 'Only the insurer sets its rating engine.');
+  if (method === 'DELETE') { ratingEngine = { url: '', keyHint: '', monthly: false, sends: [] }; return ok(ratingEngine); }
+  if (verb === 'send') {
+    if (!ratingEngine.url) return fail(400, 'Add your rating engine address and key first.');
+    ratingEngine.sends.unshift({ at: new Date().toISOString(), company: String(body.insured ?? ''), ok: true, detail: 'Accepted by the rating engine (sample)', by: 'J. Merchant' });
+    return ok({ ok: true, detail: 'Accepted by the rating engine (sample) · logged in the insured’s access log' });
+  }
+  const url = String(body.url ?? '');
+  if (!url.startsWith('https://')) return fail(400, 'Use an https:// address.');
+  const key = String(body.key ?? '');
+  if (!key && !ratingEngine.keyHint) return fail(400, 'Enter the key your rating engine gave you.');
+  ratingEngine = { ...ratingEngine, url, monthly: Boolean(body.monthly), keyHint: key ? key.slice(-4) : ratingEngine.keyHint };
+  return ok(ratingEngine);
+}
+
 function write(method: string, path: string, body: Record<string, unknown>): MockResponse {
   const seg = path.split('/').filter(Boolean);
+  if (seg[0] === 'rating-engine') return rating(method, seg[1], body);
   if (db.session.view === 'underwriter' && seg[0] !== 'session') return fail(403, 'The underwriter view is read-only.');
   // "/session/sign-in" names its verb second; "/alerts/al-1/review" names it third, after the id.
   const verb = seg[0] === 'session' ? seg[1] : seg[2];

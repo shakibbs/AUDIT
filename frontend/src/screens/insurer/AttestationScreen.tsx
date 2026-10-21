@@ -8,8 +8,10 @@ import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { formatDate } from '@/lib/format';
 import { lossModel, money } from '@/lib/lossModel';
+import { countOr, shareOr } from '@/lib/notMeasured';
 import { AttestationRow } from './AttestationRow';
 import { InsuredPicker } from './InsuredPicker';
+import { StatementForm } from './StatementForm';
 import { useViewer } from './useViewer';
 
 // Small shares keep one decimal so 1.5% does not read as 2%.
@@ -34,7 +36,7 @@ export function AttestationScreen() {
           return (
             <div className="flex flex-col gap-5">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Kpi tag="Evidence coverage" value={`${Math.round(i.coverage * 100)}%`} foot={i.coverage < 0.6 ? 'Below 60%: grade capped at C' : 'At or above the 60% floor'} />
+                <Kpi tag="Evidence coverage" value={shareOr(i.coverage)} foot={i.coverage === null ? 'No score yet, so counted as under 60%' : i.coverage < 0.6 ? 'Below 60%: grade capped at C' : 'At or above the 60% floor'} />
                 <Kpi tag="Fields at worst case" value={String(worst)} foot="Not verified, so pessimistic values are used" />
                 <Kpi tag="Sheet fingerprint" value={i.sheetHash ?? '—'} foot={i.asOf ? `As of ${formatDate(i.asOf)}` : 'Not yet attested'} />
                 <Kpi tag="Monitoring" value={i.monitoring === 'Live' ? 'Live' : 'Not yet'} foot={i.monitoring === 'Live' ? 'Independent monthly monitoring in place' : i.monitoring} />
@@ -44,11 +46,11 @@ export function AttestationScreen() {
                   <table className="tbl">
                     <thead><tr><th>Field</th><th>Value</th><th>Source grade</th><th>Source</th></tr></thead>
                     <tbody>
-                      <AttestationRow field="Marketing contacts per month" value={i.contactsPerMonth.toLocaleString('en-US')} grade={i.selfReported ? 'S' : 'C'} source="Dialer and messaging platform, 30 days; reconciled to invoices" />
+                      <AttestationRow field="Marketing contacts per month" value={countOr(i.contactsPerMonth)} grade={i.contactsPerMonth === null ? 'N' : i.selfReported ? 'S' : 'C'} source="Dialer and messaging platform, 30 days; reconciled to invoices" />
                       <AttestationRow field="Prerecorded or AI voice share" value={pct(i.prerecordedShare)} grade={g(i, 'C', i.prerecordedShare)} source="Dialer dial-mode field" note={i.prerecordedShare === null ? 'Worst case used: 20%' : undefined} />
                       <AttestationRow field="Contacts from purchased leads" value={pct(i.purchasedShare)} grade={g(i, 'C', i.purchasedShare)} source="Lead receipts by provenance ladder" note={i.purchasedShare === null ? 'Worst case used: 60%' : undefined} />
                       <AttestationRow field="Manual-import share · evidence found" value={i.manualImportShare === null ? '—' : `${pct(i.manualImportShare)} · ${pct(i.evidenceFoundShare)}`} grade={g(i, 'C', i.manualImportShare)} source="CRM and dialer creation records (M32, M33)" />
-                      <AttestationRow field="Lead vendors · with signed indemnification" value={`${i.vendors} · ${pct(i.vendorTermsShare)}`} grade={g(i, 'D', i.vendorTermsShare)} source="Contracts" />
+                      <AttestationRow field="Lead vendors · with signed indemnification" value={`${countOr(i.vendors)} · ${pct(i.vendorTermsShare)}`} grade={g(i, 'D', i.vendorTermsShare)} source="Contracts" />
                       <AttestationRow field="Consent proof rate" value={pct(i.consentProof)} grade={g(i, 'B', i.consentProof)} source="Certificates read through the insured’s own key; five-check engine" note={i.consentProof === null ? 'Worst case used: 60%' : undefined} />
                       <AttestationRow field="Opt-out: median time to stop · not honored" value={i.optOutMedianHours === null ? '—' : `${i.optOutMedianHours} h · ${pct(i.optOutFailShare)}`} grade={i.optOutMedianHours === null ? 'N' : 'A'} source="CiV blind test lines" />
                       <AttestationRow field="Contacts after opt-out · opted-out re-added" value={i.contactsAfterOptOut === null ? '—' : `${i.contactsAfterOptOut}${i.reAdded !== null ? ` · ${i.reAdded}` : ''}`} grade={g(i, 'C', i.contactsAfterOptOut)} source="Messaging and dialer logs (M10, M34)" />
@@ -56,7 +58,7 @@ export function AttestationScreen() {
                       <AttestationRow field="Reassigned exposure (sample)" value={pct(i.rndExposure)} grade={i.rndExposure === null ? 'N' : 'B'} source="CiV query after contact, never before a dial (M35)" />
                       <AttestationRow field="Reassigned check before calling" value={i.reassignedCheckRate === null ? 'Not checked' : pct(i.reassignedCheckRate)} grade={i.reassignedCheckRate === null ? 'S' : 'D'} source="Insured’s query logs; a statement without logs scores as not checked" />
                       <AttestationRow field="Unknown caller IDs on the brand" value={i.unknownCallerIds ?? '—'} grade={i.unknownCallerIds === null ? 'N' : 'A'} source="Test lines, carrier labels, consumer reports" />
-                      <AttestationRow field="Prior matters, 3 years" value={`stated ${i.priorStated} · dockets ${i.priorDocket}`} grade="B" source="Court dockets; the higher figure is used" />
+                      <AttestationRow field="Prior matters, 3 years" value={i.priorStated === null && i.priorDocket === null ? 'Not measured' : `stated ${countOr(i.priorStated)} · dockets ${countOr(i.priorDocket)}`} grade={i.priorDocket === null ? 'N' : 'B'} source="Court dockets; the higher figure is used" />
                     </tbody>
                   </table>
                 </div>
@@ -65,10 +67,10 @@ export function AttestationScreen() {
                 <Card title="B. Records integrity">
                   <dl className="m-0">
                     <div className="kv"><dt>Records completeness</dt><dd>{i.completeness === null ? 'No logs' : i.completeness.toFixed(2)}</dd></div>
-                    {underwriter && <div className="kv"><dt>Theoretical statutory exposure, 12 months</dt><dd>{money(i.contactsPerMonth * 12 * (1 - consent) * 500)} – {money(i.contactsPerMonth * 12 * (1 - consent) * 1500)}</dd></div>}
+                    {underwriter && <div className="kv"><dt>Theoretical statutory exposure, 12 months</dt><dd>{i.contactsPerMonth === null ? 'Not measured' : `${money(i.contactsPerMonth * 12 * (1 - consent) * 500)} – ${money(i.contactsPerMonth * 12 * (1 - consent) * 1500)}`}</dd></div>}
                     <div className="kv"><dt>Records fingerprinted</dt><dd>{i.controls.fingerprinted ? i.controls.fingerprinted.toLocaleString('en-US') : 'None'}</dd></div>
-                    <div className="kv"><dt>Written policy · training currency</dt><dd>{i.controls.policy ? 'Yes' : 'No'} · {pct(i.controls.trainingCurrency)}</dd></div>
-                    <div className="kv"><dt>Opt-out tests in 90 days</dt><dd>{i.controls.optOutTests90d}</dd></div>
+                    <div className="kv"><dt>Written policy · training currency</dt><dd>{i.controls.policy === null ? 'Not measured' : i.controls.policy ? 'Yes' : 'No'} · {pct(i.controls.trainingCurrency)}</dd></div>
+                    <div className="kv"><dt>Opt-out tests in 90 days</dt><dd>{countOr(i.controls.optOutTests90d)}</dd></div>
                   </dl>
                   {!underwriter && <p className="tiny mb-0 mt-3">Your insurer also sees a dollar estimate of exposure on this sheet. Dollar figures are not shown in your portal.</p>}
                 </Card>
@@ -80,9 +82,10 @@ export function AttestationScreen() {
                     </div>
                   ))}
                   <div className="mt-3 rounded-[10px] bg-surface-3 p-3 text-[12.5px]">
-                    <strong>Signed by {i.signedBy ?? 'nobody yet'}{i.asOf ? ` · ${formatDate(i.asOf)}` : ''}</strong>
+                    <strong>Signed by {i.signedBy ?? 'nobody yet'}{i.signedBy && i.asOf ? ` · ${formatDate(i.asOf)}` : ''}</strong>
                     <div className="tiny mt-1">Statements are the insured’s, not CiV’s. CiV’s reliance letter covers its method and observed data only.</div>
                   </div>
+                  {!underwriter && i.statementRows !== undefined && <StatementForm rows={i.statementRows} />}
                 </Card>
               </div>
             </div>

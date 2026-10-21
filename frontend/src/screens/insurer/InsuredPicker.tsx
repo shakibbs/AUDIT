@@ -6,9 +6,9 @@ import { useViewer } from './useViewer';
 
 /** Underwriter only: choose which insured company the page shows. */
 export function InsuredPicker() {
-  const { underwriter } = useViewer();
+  const { underwriter, insuredId } = useViewer();
   const list = useInsureds(underwriter).data ?? [];
-  const { insuredId, setInsuredId } = usePortal();
+  const { setInsuredId } = usePortal();
   if (!underwriter) return null;
   return (
     <label className="flex items-center gap-2 text-[12px] text-txt-2">

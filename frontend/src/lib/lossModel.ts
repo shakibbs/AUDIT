@@ -36,9 +36,11 @@ export function lossModel(insured: Insured, m: ModelParams = MODEL_V0): LossResu
   for (const w of WORST) {
     if (v[w.field] == null) { (v as Record<string, unknown>)[w.field] = w.value; worstCaseFields += 1; steps.push(`Not verified, worst case used: ${w.label}`); }
   }
-  const p0 = band(v.contactsPerMonth, m.base);
+  // Not measured: no contacts, no priors, no private-suit states; coverage counts as under 60% (worst case).
+  const contacts = insured.contactsPerMonth ?? 0;
+  const p0 = band(contacts, m.base);
   let odds = p0 / (1 - p0);
-  steps.push(`Base chance for ${v.contactsPerMonth.toLocaleString('en-US')} marketing contacts a month: ${(p0 * 100).toFixed(0)}%`);
+  steps.push(`Base chance for ${contacts.toLocaleString('en-US')} marketing contacts a month: ${(p0 * 100).toFixed(0)}%`);
   const apply = (when: boolean, x: number, why: string) => { if (when) { odds *= x; steps.push(`odds × ${x}: ${why}`); } };
   const consent = v.consentProof as number;
   apply(consent < 0.7, 1.8, 'consent proof under 70%');
@@ -51,15 +53,17 @@ export function lossModel(insured: Insured, m: ModelParams = MODEL_V0): LossResu
   apply((v.optOutFailShare as number) > 0, 1.5, 'opt-outs not honored by the deadline');
   apply((v.internalListContacts as number) > 0, 1.3, 'contacts after an internal-list entry');
   apply((v.litigatorContacts as number) > 0, 1.3, 'contacts to known litigator numbers');
-  const prior = Math.max(v.priorStated, v.priorDocket);
-  apply(prior > 0, Math.min(2, 1 + 0.25 * prior), `${prior} prior matter(s) in 3 years${v.priorDocket > v.priorStated ? ' (dockets, higher than stated)' : ''}`);
-  apply(v.praStates >= 2, 1.2, 'two or more states that allow private suits');
+  const stated = insured.priorStated ?? 0;
+  const docket = insured.priorDocket ?? 0;
+  const prior = Math.max(stated, docket);
+  apply(prior > 0, Math.min(2, 1 + 0.25 * prior), `${prior} prior matter(s) in 3 years${docket > stated ? ' (dockets, higher than stated)' : ''}`);
+  apply((insured.praStates ?? 0) >= 2, 1.2, 'two or more states that allow private suits');
   apply(v.monitoring === 'Live', 0.75, 'independent monitoring in place');
-  apply(v.coverage < 0.6, 1.4, 'evidence coverage under 60%');
+  apply((insured.coverage ?? 0) < 0.6, 1.4, 'evidence coverage under 60%');
   apply(v.completeness != null && v.completeness < 0.9, 1.3, 'records incomplete against invoices');
   const chance = odds / (1 + odds);
   steps.push(`Chance of a suit = odds ÷ (1 + odds) = ${(chance * 100).toFixed(1)}%`);
-  const costIfSued = (1 - m.classShare) * m.individualCost + m.classShare * (m.classDefense + band(v.contactsPerMonth, m.classSettlement));
+  const costIfSued = (1 - m.classShare) * m.individualCost + m.classShare * (m.classDefense + band(contacts, m.classSettlement));
   const expectedLoss = chance * costIfSued;
   return { chance, costIfSued, expectedLoss, premium: [expectedLoss * m.loading * 0.8, expectedLoss * m.loading * 1.2], steps, worstCaseFields };
 }

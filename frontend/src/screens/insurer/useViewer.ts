@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from '@/api/queries';
+import { useInsureds, useSession } from '@/api/queries';
 import { usePortal } from '@/state/PortalContext';
 
 const OWN_COMPANY = 'sunpath';
@@ -10,5 +10,9 @@ export function useViewer() {
   const session = useSession().data;
   const { insuredId } = usePortal();
   const underwriter = session?.view === 'underwriter';
-  return { underwriter, insuredId: underwriter ? insuredId : OWN_COMPANY, eyebrow: underwriter ? 'Falcon Risk · underwriting' : 'Shared with your insurer' };
+  const list = useInsureds(underwriter).data;
+  // A real insurer's companies have their own ids: open the first one until another is picked.
+  const chosen = list && list.length && !list.some((i) => i.id === insuredId) ? list[0].id : insuredId;
+  const org = session?.sampleData === false ? session.clientName : 'Falcon Risk';
+  return { underwriter, insuredId: underwriter ? chosen : OWN_COMPANY, eyebrow: underwriter ? `${org} · underwriting` : 'Shared with your insurer' };
 }

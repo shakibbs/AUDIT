@@ -158,3 +158,24 @@ read `/alerts` (fully from Django: portal only, "Resolved", "Reviewed by"). The 
 findings fixed). Reports & Exports: Period audit report, Rulebook snapshot and Metric export are made by Django and
 download from the history; files pass through the proxy untouched; evidence file, certification pack and litigation
 package come with Module 14.
+
+**Vendors (Module 12):** the Vendor Ledger reads `/vendors` (scorecards from Django; the sample shows only without a
+backend). Admins and the company's lawyer upload a vendor contract (`AddContractCard`, `ContractForm`: private file,
+end date, dispute days) and see lead dispute candidates (`DisputeList`, `/vendor-contracts`, `/vendor-disputes`).
+
+**Evidence vault (Module 14):** the evidence file per number exports as PDF or JSON (`/evidence-file`), Bulk export
+makes a sealed bundle of up to 25 numbers (`/evidence-bundle`), and the Vault manages legal holds (`/legal-holds`).
+Admins and the company's lawyer only.
+
+**Insurer views (Module 15):** Settings → Insurer sharing (`SharingTab`, `/buyer-links`): an Admin shares the company
+with its insurer or acquirer by email and can stop at any time. The client's Risk Attestation page has the signed
+statements box (`StatementForm`, `/statements`: Admins and the lawyer). A real insurer signs in to the underwriter
+view: Portfolio, Exposure, Data Integrity, Risk Attestation, Litigation and Underwriting Export come only from Django
+(header `x-civ-viewer: buyer`, no sample), and anything not measured shows "Not measured". Underwriting Export shows
+the sheet in plain words (`PlainPayload`) and the insurer's rating engine settings (`RatingEngineCard`,
+`/rating-engine`; "Send to rating engine" really sends). The insurer menu has no Engagement pages.
+
+**Document AI (Module 16):** backend only so far (readers for contracts, consent pages and policy files; the AI slot is
+off until it is plugged in).
+
+The full system description is in [docs/CiV-System-Spec.md](../docs/CiV-System-Spec.md) (also `.docx` and `.pdf`).

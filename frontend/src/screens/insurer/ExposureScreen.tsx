@@ -6,17 +6,18 @@ import { Kpi } from '@/components/ui/Kpi';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { exposureOf } from '@/lib/exposure';
+import { shareOr } from '@/lib/notMeasured';
 import { FactorTable } from './FactorTable';
 import { InsuredPicker } from './InsuredPicker';
 import { useViewer } from './useViewer';
 
 /** Exposure Indicator v2.2: six factors measure what the company does wrong; three multipliers measure the pressure on it. */
 export function ExposureScreen() {
-  const { insuredId } = useViewer();
+  const { insuredId, eyebrow } = useViewer();
   const insured = useInsured(insuredId);
   return (
     <>
-      <PageHead eyebrow="Falcon Risk · underwriting" title="Exposure Indicator" sub="Six factors measure what the company does wrong; three multipliers measure the pressure on it. Higher means more exposed. The same factors are scored from public evidence before connection and from the company’s records after.">
+      <PageHead eyebrow={eyebrow} title="Exposure Indicator" sub="Six factors measure what the company does wrong; three multipliers measure the pressure on it. Higher means more exposed. The same factors are scored from public evidence before connection and from the company’s records after.">
         <InsuredPicker />
       </PageHead>
       <Loader query={insured}>
@@ -32,7 +33,7 @@ export function ExposureScreen() {
                 <Kpi tag="Exposure Indicator" value={String(e.exposure)} unit={`grade ${e.grade}`} foot={`${inside ? 'Measured from records' : 'Modeled from public evidence'}${e.capped ? ` · capped, raw ${e.raw}` : ''}`} />
                 <Kpi tag="Defect term D" value={String(e.defect)} foot="What the company can fix: weighted sum of F1–F6" />
                 <Kpi tag="Pressure multipliers" value={`×${e.multiplier.toFixed(2)}`} foot={`Venue ${reading.venue.toFixed(2)} · targeting ${reading.targeting.toFixed(2)} · volume ${reading.volume.toFixed(2)}`} />
-                <Kpi tag="Evidence coverage" value={`${Math.round(i.coverage * 100)}%`} foot={reading.source} />
+                <Kpi tag="Evidence coverage" value={shareOr(i.coverage)} foot={reading.source} />
               </div>
               <FactorTable insured={i} />
             </div>

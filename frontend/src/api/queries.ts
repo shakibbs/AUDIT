@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiSend } from './client';
 import type {
-  AccessEntry, Action, DataHealth, Alert, Insured, LitigationStats, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
+  BuyerLink, RatingEngine, VendorContract, VendorDisputes, AccessEntry, Action, DataHealth, Alert, Insured, LitigationStats, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
   Metric, Position, Readiness, RegChange, ReportRun, ReportType, Revocation, Rulebook, ScoreSummary, SearchHit, Session, Settings,
   Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall, OptOut, Certificate, ProvenancePage, ProofRequests,
 } from './types';
@@ -35,6 +35,13 @@ export const useConduct = () => useGet<Conduct>('/conduct');
 export const useLeads = () => useGet<Leads>('/leads');
 export const useProvenance = () => useGet<ProvenancePage>('/provenance');
 export const useProofRequests = () => useGet<ProofRequests>('/proof-requests');
+/** Module 12: a vendor's dispute candidates (only when the vendor came from the backend). */
+export const useDisputes = (vendor: string, enabled: boolean) => useGet<VendorDisputes>('/vendor-disputes', { vendor }, enabled);
+/** Module 12: every vendor contract the company uploaded. */
+/** Module 15: who the company shares its attestation with. */
+export const useRatingEngine = (enabled = true) => useGet<RatingEngine>('/rating-engine', {}, enabled);
+export const useBuyerLinks = () => useGet<{ links: BuyerLink[] }>('/buyer-links');
+export const useVendorContracts = () => useGet<VendorContract[]>('/vendor-contracts');
 export const useVendors = () => useGet<VendorSummary>('/vendors');
 export const useSources = () => useGet<Source[]>('/sources');
 export const useUploads = () => useGet<Upload[]>('/uploads');

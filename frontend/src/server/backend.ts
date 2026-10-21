@@ -4,7 +4,9 @@ import type { NextRequest } from 'next/server';
 /** First path segments Django answers today. */
 // The Data health card is /data-health (Django's own /api/health is the server check, not forwarded).
 // Pages already served by Django when BACKEND_URL is set; every other page still uses the sample data.
-const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health', 'contacts', 'evidence', 'can-call', 'optouts', 'consent', 'certificates', 'consent-pages', 'provenance', 'proof-requests', 'access-log', 'uploads', 'conduct', 'billed-numbers', 'position', 'hash-check', 'alerts'];
+const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health', 'contacts', 'evidence', 'can-call', 'optouts', 'consent', 'certificates', 'consent-pages', 'provenance', 'proof-requests', 'access-log', 'uploads', 'conduct', 'billed-numbers', 'position', 'hash-check', 'alerts', 'vendor-contracts', 'vendor-disputes', 'evidence-file', 'evidence-bundle', 'legal-holds', 'buyer-links', 'statements', 'rating-engine'];
+// Answered by Django for a real insurer; a client trying the sample insurer view is refused there and gets the sample.
+export const SAMPLE_WHEN_REFUSED = ['rating-engine'];
 // Pages that are partly real: Django sends only the fields it really has; the rest still comes from the sample until
 // its module is built (nothing on the page is lost). Only reads; changes on these pages stay with the sample.
 const MERGE_PATHS = ['vault', 'settings', 'revocation', 'insureds', 'metrics', 'who-contact', 'readiness', 'leads', 'vendors', 'litigation', 'score', 'domains', 'actions', 'reports'];
@@ -66,6 +68,8 @@ export async function forward(request: NextRequest, path: string[]): Promise<Res
   const reply = await fetch(url, { method: request.method, headers, body, redirect: 'manual', cache: 'no-store' });
 
   const out = new Headers({ 'content-type': reply.headers.get('content-type') ?? 'application/json' });
+  const viewer = reply.headers.get('x-civ-viewer');
+  if (viewer) out.set('x-civ-viewer', viewer);  // Module 15: a real insurer's pages carry no sample
   for (const cookie of reply.headers.getSetCookie()) out.append('set-cookie', cookie);
   // Bytes, not text: photos of consent pages pass through unchanged.
   return new Response(reply.status === 204 ? null : await reply.arrayBuffer(), { status: reply.status, headers: out });

@@ -19,12 +19,13 @@ export function VendorTable({ vendors }: { vendors: Vendor[] }) {
             <tr key={v.id} className="clickrow" onClick={() => open('vendor', v.id)}>
               <td><button type="button" className="border-0 bg-transparent p-0 text-left text-[13px] font-semibold text-txt">{v.name}</button>{v.subId && <div className="tiny">sub-ID {v.subId}</div>}</td>
               <td className="mono">{formatCount(v.leads)}</td>
-              <td className="mono">{formatCount(v.highSignals)}</td>
+              <td className="mono">{v.highSignals === null ? <span className="tiny">Not measured yet</span> : formatCount(v.highSignals)}</td>
               <td className="mono font-semibold">{v.notEnoughData ? <span className="pill pill-gray">Not enough data</span> : formatScore(v.score)}</td>
               <td><GradeBadge score={v.score} /></td>
               <td className="whitespace-nowrap">{v.monthOnMonth === null ? '—' : <Delta value={v.monthOnMonth} label="" />}{v.alert && <span className="pill pill-red ml-2">Alert</span>}</td>
               <td><Sparkline values={v.history} /></td>
-              <td>{v.termsOnFile ? <span className="pill pill-green">On file</span> : <span className="pill pill-amber">Not on file</span>}</td>
+              <td>{v.termsOnFile ? <span className="pill pill-green">On file</span> : <span className="pill pill-amber">Not on file</span>}
+                {v.contract !== undefined && <button type="button" className="btn btn-ghost btn-sm ml-2" onClick={(e) => { e.stopPropagation(); open('vendor', v.id); }}>{v.contract ? 'Contract' : 'Add contract'}</button>}</td>
               <td className="mono">{formatCount(v.disputeCandidates)}</td>
             </tr>
           ))}

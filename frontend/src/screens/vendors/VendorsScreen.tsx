@@ -8,6 +8,7 @@ import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { formatCount, formatScore, gradeOf } from '@/lib/format';
 import { useDrawer } from '@/state/DrawerContext';
+import { AddContractCard } from './AddContractCard';
 import { VendorTable } from './VendorTable';
 
 export function VendorsScreen() {
@@ -26,6 +27,9 @@ export function VendorsScreen() {
                 <Kpi tag="Dispute candidates" value={formatCount(v.disputeCandidates)} unit="leads" foot="Leads whose record may support a return or credit request" info="A lead is a dispute candidate when its record misses what your vendor terms require. Whether to raise it with the vendor is your decision." />
                 <Kpi tag="Score-drop alerts" value={String(v.alerts)} foot={v.alertNote} />
               </div>
+              {v.vendors.length === 0 && (
+                <div className="note-box" role="note">No vendors yet. CiV lists the vendors named in your CRM records or in vendor lead files you upload (Source Registry → Upload centre), and scores each one once it has 100 leads.</div>
+              )}
               <Card title="Vendor scores" sub="Ranked, 0 to 100">
                 <BarList max={100} labelWidth={170} rows={ranked.map((x) => ({
                   key: x.id, value: x.score, onClick: () => open('vendor', x.id),
@@ -34,6 +38,7 @@ export function VendorsScreen() {
                 }))} />
               </Card>
               <Card title="Vendors" sub="Select a row for the rates behind the score" flush><VendorTable vendors={v.vendors} /></Card>
+              <AddContractCard vendorNames={[...new Set(v.vendors.map((x) => x.name))]} />
             </div>
           );
         }}

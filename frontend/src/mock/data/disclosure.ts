@@ -17,6 +17,7 @@ const ROWS: S[] = [
   ['Complaint log', 4, 'Upload', '25 Sep', 'current', ['INC'], false, true, null],
   ['DNC scrub records', 4, 'Upload', '—', 'not_supplied', ['NDN', 'SDN'], false, true, 'Blocks M13'],
   ['Reassigned-number query logs', 4, 'Export from your Somos account', '—', 'not_supplied', ['RND'], false, true, 'Blocks M11'],
+  ['Vendor lead files', 4, 'Upload (leads that do not pass through your CRM)', '—', 'not_supplied', ['LPV', 'VND'], false, true, null],
 ];
 
 export const sources: Source[] = ROWS.map(([name, tier, access, lastSync, status, feeds, revocable, acceptsUpload, blocks], i) => ({

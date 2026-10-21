@@ -9,8 +9,9 @@ import { AgreementsTab } from './AgreementsTab';
 import { CompanyTab } from './CompanyTab';
 import { NotificationsTab } from './NotificationsTab';
 import { PlanTab } from './PlanTab';
+import { SharingTab } from './SharingTab';
 
-const TABS = [{ id: 'company', label: 'Company' }, { id: 'notifications', label: 'Notifications' }, { id: 'plan', label: 'Plan & usage' }, { id: 'agreements', label: 'Agreements' }] as const;
+const TABS = [{ id: 'company', label: 'Company' }, { id: 'notifications', label: 'Notifications' }, { id: 'plan', label: 'Plan & usage' }, { id: 'agreements', label: 'Agreements' }, { id: 'sharing', label: 'Insurer sharing' }] as const;
 
 export function SettingsScreen() {
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('company');
@@ -28,6 +29,7 @@ export function SettingsScreen() {
             {tab === 'notifications' && <NotificationsTab settings={s} />}
             {tab === 'plan' && <PlanTab settings={s} />}
             {tab === 'agreements' && <AgreementsTab settings={s} />}
+            {tab === 'sharing' && <SharingTab />}
           </>
         )}
       </Loader>

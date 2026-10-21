@@ -8,6 +8,8 @@ import { Drawer } from '@/components/ui/Drawer';
 import { GradeBadge } from '@/components/ui/GradeBadge';
 import { formatCount, formatScore } from '@/lib/format';
 import { monthLabels } from '@/lib/months';
+import { ContractForm } from '@/screens/vendors/ContractForm';
+import { DisputeList } from '@/screens/vendors/DisputeList';
 
 /** One lead vendor: score, the six rates behind it, and its history. */
 export function VendorDrawer({ id, onClose }: { id: string; onClose: () => void }) {
@@ -27,14 +29,19 @@ export function VendorDrawer({ id, onClose }: { id: string; onClose: () => void 
         </div>
         <dl className="m-0">
           <div className="kv"><dt>Leads this period</dt><dd className="mono">{formatCount(vendor.leads)}</dd></div>
-          <div className="kv"><dt>High-signal leads</dt><dd className="mono">{formatCount(vendor.highSignals)}</dd></div>
+          <div className="kv"><dt>High-signal leads</dt><dd className="mono">{vendor.highSignals === null ? 'Not measured yet' : formatCount(vendor.highSignals)}</dd></div>
           <div className="kv"><dt>Dispute candidates</dt><dd className="mono">{formatCount(vendor.disputeCandidates)}</dd></div>
           <div className="kv"><dt>Signed terms on file</dt><dd>{vendor.termsOnFile ? 'Yes' : 'Not on file'}</dd></div>
         </dl>
+        <ContractForm vendor={vendor} />
+        <DisputeList vendor={vendor} />
         {vendor.rates.length > 0 && (
           <div>
             <div className="kpi-tag mb-2">Rates behind the score (% of leads)</div>
             <BarList labelWidth={170} rows={vendor.rates.map((r) => ({ key: r.label, label: r.label, value: r.value, display: `${r.value.toFixed(1)}%` }))} />
+            {vendor.ratesMeasured !== undefined && vendor.ratesTotal !== undefined && vendor.ratesMeasured < vendor.ratesTotal && (
+              <p className="tiny mb-0 mt-2">Partial: {vendor.ratesMeasured} of {vendor.ratesTotal} rates measured.{vendor.notMeasuredRates?.length ? ` Not measured yet: ${vendor.notMeasuredRates.join(', ')}.` : ''} Their weight is spread over the measured rates.</p>
+            )}
           </div>
         )}
         {!vendor.notEnoughData && (

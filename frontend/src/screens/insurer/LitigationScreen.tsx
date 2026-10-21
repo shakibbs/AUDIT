@@ -5,15 +5,17 @@ import { Columns } from '@/components/charts/Columns';
 import { Card } from '@/components/ui/Card';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
+import { useViewer } from './useViewer';
 
 const STATUS_PILL = { Verified: 'pill-teal', Estimate: 'pill-amber', Statute: 'pill-blue' } as const;
 
 /** What the filings say, what they cost, and what the litigation study will measure. */
 export function LitigationScreen() {
   const data = useLitigation();
+  const { eyebrow } = useViewer();
   return (
     <>
-      <PageHead eyebrow="Falcon Risk · underwriting" title="Litigation Intelligence" sub="What the filings say, what they cost, and what is not yet known. Every figure carries its source and status." />
+      <PageHead eyebrow={eyebrow} title="Litigation Intelligence" sub="What the filings say, what they cost, and what is not yet known. Every figure carries its source and status." />
       <Loader query={data}>
         {(d) => (
           <div className="flex flex-col gap-5">

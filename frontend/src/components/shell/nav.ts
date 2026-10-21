@@ -46,7 +46,7 @@ export const SHARED_WITH_INSURER: NavGroup = { title: 'Shared with your insurer'
   { href: '/uw-export', label: 'Underwriting Export', icon: 'download' },
 ] };
 
-/** Underwriter view: the insurer's own pages, plus the read-only Engagement pages. */
+/** Underwriter view: the insurer's own pages only (owner, 2026-10-22: no Engagement pages for the insurer). */
 export const UNDERWRITER_NAV: NavGroup[] = [
   { title: 'Falcon Risk · underwriting', items: [
     { href: '/portfolio', label: 'Portfolio', icon: 'grid' },
@@ -55,9 +55,5 @@ export const UNDERWRITER_NAV: NavGroup[] = [
     { href: '/attestation', label: 'Risk Attestation', icon: 'clipboard' },
     { href: '/litigation', label: 'Litigation Intelligence', icon: 'landmark' },
     { href: '/uw-export', label: 'Underwriting Export', icon: 'download' },
-  ] },
-  { title: 'Engagement', items: [
-    { href: '/rulebook', label: 'Rulebook', icon: 'sliders' },
-    { href: '/regulatory', label: 'Regulatory Changes', icon: 'landmark' },
   ] },
 ];

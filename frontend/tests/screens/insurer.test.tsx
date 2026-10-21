@@ -38,7 +38,7 @@ describe('underwriter view', () => {
     navState.pathname = '/actions';
     renderScreen(<PortalShell><p>client page</p></PortalShell>);
     const nav = await screen.findByRole('navigation', { name: 'Main' });
-    expect(within(nav).getAllByRole('link').map((l) => l.textContent)).toEqual(['Portfolio', 'Exposure Indicator', 'Data Integrity', 'Risk Attestation', 'Litigation Intelligence', 'Underwriting Export', 'Rulebook', 'Regulatory Changes']);
+    expect(within(nav).getAllByRole('link').map((l) => l.textContent)).toEqual(['Portfolio', 'Exposure Indicator', 'Data Integrity', 'Risk Attestation', 'Litigation Intelligence', 'Underwriting Export']);
     expect(screen.getByText('This page holds the client’s own records')).toBeInTheDocument();
     expect(screen.queryByText('client page')).not.toBeInTheDocument();
   });
@@ -71,8 +71,9 @@ describe('owner view of what is shared with the insurer', () => {
 
   it('leaves the insurer’s estimates out of the owner’s export', async () => {
     renderScreen(<ExportScreen />);
-    const pre = await screen.findByText(/civ\.attestation\.v1/);
-    expect(pre.textContent).not.toMatch(/model_v0|exposure_indicator/);
+    expect(await screen.findByText('Marketing contacts per month')).toBeInTheDocument();
+    expect(screen.queryByText('Loss estimate (model v0)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Exposure Indicator')).not.toBeInTheDocument();
   });
 });
 

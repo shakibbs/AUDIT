@@ -14,7 +14,7 @@ export function VaultScreen() {
   const vault = useVault();
   return (
     <>
-      <PageHead eyebrow="Evidence" title="Evidence Vault" sub="Every record CiV holds is fingerprinted, stored write-once, and sealed into a daily anchor. Look up a number, verify a file, or place a hold." />
+      <PageHead eyebrow="Evidence" title="Evidence Vault" sub="Fingerprints of what CiV saw, sealed into a daily anchor. Look up a number, verify a file, or place a hold." />
       <Loader query={vault}>
         {(v) => (
           <div className="flex flex-col gap-5">

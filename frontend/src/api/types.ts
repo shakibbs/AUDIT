@@ -281,10 +281,35 @@ export interface Leads {
 }
 
 export interface Vendor {
-  id: string; name: string; subId: string | null; leads: number; highSignals: number;
+  /** highSignals: null = not measured yet (needs the Lead Inspector signals, Module 12). */
+  id: string; name: string; subId: string | null; leads: number; highSignals: number | null;
   score: number | null; grade: Grade | null; monthOnMonth: number | null; alert: boolean; notEnoughData: boolean;
   history: (number | null)[]; termsOnFile: boolean; disputeCandidates: number;
   rates: { label: string; value: number }[];
+  /** Module 12: the newest contract the client uploaded (clauses are checked later by the AI reader). */
+  contract?: VendorContract | null;
+  /** Module 12: the rates CiV cannot measure yet, and how many of the six were measured. */
+  notMeasuredRates?: string[]; ratesMeasured?: number; ratesTotal?: number;
+}
+
+/** Module 12: a vendor's dispute candidates (leads with a consent problem inside the contract's dispute window). */
+export interface VendorDisputes {
+  name: string; windowDays: number; basis: string; total: string; noPrice: number;
+  rows: { lead: string; subId: string | null; date: string; price: string | null; result: string; reasons: string; number: string; ref: string }[];
+}
+
+/** Module 15: who the company shares its attestation with. */
+/** Module 15: the insurer's own pricing software; the key is never sent back, only its last 4 characters. */
+export interface RatingEngine { url: string; keyHint: string; monthly: boolean; adapter?: string; sends: { at: string; company: string; ok: boolean; detail: string; by: string }[] }
+
+export interface BuyerLink { id: string; org: string; kind: 'insurer' | 'acquirer'; grantedBy: string; grantedOn: string; endsOn: string | null; stoppedOn: string | null; active: boolean }
+
+/** Module 15: a statement the company signed, with what CiV measured (conflict) or a note. */
+export interface StatementRow { id: string; topic: string; text: string; signedBy: string; signedOn: string; conflict: string | null; note: string }
+
+export interface VendorContract {
+  id: string; vendor: string; file: string; endsOn: string | null; disputeDays: number | null;
+  state: 'on_file' | 'expired' | 'none'; uploadedBy: string; uploadedAt: string; url: string | null;
 }
 
 export interface VendorSummary { gradeMix: string; gradeMixNote: string; disputeCandidates: number; alerts: number; alertNote: string; vendors: Vendor[] }
@@ -387,20 +412,23 @@ export type SourceGrade = 'A' | 'B' | 'C' | 'D' | 'S' | 'N';
 export interface ExposureReading { factors: (number | null)[]; venue: number; targeting: number; volume: number; source: string }
 
 export interface Insured {
-  id: string; name: string; industry: string; contactsPerMonth: number; selfReported: boolean;
+  id: string; name: string; industry: string; contactsPerMonth: number | null; selfReported: boolean;
   asOf: string | null; sheetHash: string | null; monitoring: string; signedBy: string | null;
   consentProof: number | null; marketingShare: number | null; prerecordedShare: number | null; smsShare: number | null;
-  purchasedShare: number | null; vendors: number; vendorTermsShare: number | null;
+  purchasedShare: number | null; vendors: number | null; vendorTermsShare: number | null;
   optOutMedianHours: number | null; optOutFailShare: number | null; contactsAfterOptOut: number | null; reAdded: number | null;
   internalListContacts: number | null; rndExposure: number | null; reassignedCheckRate: number | null; litigatorContacts: number | null;
   manualImportShare: number | null; evidenceFoundShare: number | null;
-  praStates: number; priorStated: number; priorDocket: number; openMatters: number;
-  coverage: number; completeness: number | null; unknownCallerIds: number | null;
+  /** null = not measured yet (a real insurer's page never shows sample values). */
+  praStates: number | null; priorStated: number | null; priorDocket: number | null; openMatters: number | null;
+  coverage: number | null; completeness: number | null; unknownCallerIds: number | null;
   basisMix: { grade: SourceGrade; share: number }[];
   conflicts: { stated: string; observed: string; treatment: string; ref: string }[];
   statements: string[];
+  /** Module 15: the company's own signed statements (its own page only). */
+  statementRows?: StatementRow[];
   reconciliation: { label: string; against: string; records: string; total: string; ratio: number | null; result: 'consistent' | 'flag'; source: string }[];
-  controls: { policy: boolean; trainingCurrency: number | null; optOutTests90d: number; fingerprinted: number };
+  controls: { policy: boolean | null; trainingCurrency: number | null; optOutTests90d: number | null; fingerprinted: number };
   exposure: { inside: ExposureReading | null; outside: ExposureReading | null; why: { venue: string; targeting: string; volume: string } };
 }
 
