@@ -141,3 +141,11 @@ README, "Automatic updates". Docs-only pushes do not redeploy.
 
 `vercel.json` is in this folder; set Vercel's **Root Directory** to `frontend`.
 Set `BACKEND_URL` in Vercel's environment variables once the backend is hosted.
+
+**Scores (Module 10):** the month picker lists every month since the client's start date (from `/session`), with a
+"This month was revised…" notice when a locked month was saved again. The Audit Score card, the domain cards and the
+factor map read the saved scores (`/score`, `/domains` merged by code, `exposure.inside` on `/insureds/<ref>`): a
+domain is the mean of its metrics' scores, the Audit Score the mean of the measured domains, and the score card adds
+"Partial: n of 6 factors measured · Draft bands". Pending factors are null and the Exposure spreads their weight over
+the measured ones. Fields not built yet (evidence coverage, confirmed-rules score, projected, unmeasured domains) still
+show the sample. The insurer Litigation page takes WebRecon's monthly numbers from `/litigation` (cards merged by id).
