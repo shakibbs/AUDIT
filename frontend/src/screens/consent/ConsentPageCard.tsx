@@ -1,5 +1,11 @@
+'use client';
+
+import { useSend } from '@/api/queries';
 import type { ConsentPage } from '@/api/types';
+import { Seg } from '@/components/ui/Seg';
 import { formatCount, formatDate, formatDateTime } from '@/lib/format';
+
+const MARKS = [{ id: 'approved', label: 'Approved' }, { id: 'unmarked', label: 'Not marked' }, { id: 'rejected', label: 'Rejected' }] as const;
 
 const SOURCE_PILL: Record<ConsentPage['source'], string> = { client_form: 'pill-green', vendor: 'pill-teal', uploaded_list: 'pill-amber', unknown: 'pill-gray' };
 const FAIL: Record<ConsentPage['items'][number]['effect'], [string, string]> = {
@@ -14,14 +20,20 @@ function mark(item: ConsentPage['items'][number]): [string, string] {
 
 /** One consent form page: where it comes from, CiV's latest photos, the words asking for permission, the checklist. */
 export function ConsentPageCard({ page }: { page: ConsentPage }) {
+  const send = useSend();
+  const setMark = (value: ConsentPage['mark']) => send.mutate({ method: 'PATCH', path: `/consent-pages/${page.id}`, body: { mark: value } });
+  const owner = page.source === 'client_form' ? 'Your page' : page.vendor ?? page.sourceLabel;
   return (
     <section className="card card-pad">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="mono text-[13px] font-semibold">{page.address}</div>
-          <div className="tiny mt-1">First seen {formatDate(page.firstSeen)} · last seen {formatDate(page.lastSeen)} · {formatCount(page.leads)} certificates</div>
+          <div className="tiny mt-1">{owner} · first seen {formatDate(page.firstSeen)} · last seen {formatDate(page.lastSeen)} · {formatCount(page.leads)} leads</div>
         </div>
-        <span className={`pill ${SOURCE_PILL[page.source]}`}>{page.sourceLabel}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={`pill ${SOURCE_PILL[page.source]}`}>{page.sourceLabel}</span>
+          <Seg label={`Your mark for ${page.address}`} options={MARKS} value={page.mark} onChange={setMark} />
+        </div>
       </div>
       <div className="tiny mt-3">
         {page.capturedAt ? `Photo taken by CiV ${formatDateTime(page.capturedAt)} UTC` : 'No photo yet: CiV takes one about once a day.'}
@@ -35,6 +47,11 @@ export function ConsentPageCard({ page }: { page: ConsentPage }) {
       {page.wording
         ? <blockquote className="m-0 mt-3 rounded-[10px] border-l-[3px] border-line bg-surface-3 px-4 py-3 text-[12.5px] leading-relaxed text-txt-2">{page.wording}</blockquote>
         : page.capturedAt && !page.problem && <p className="tiny mt-3">No words asking for permission were found on this page.</p>}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {page.checklistTotal > 0 && <span className={`pill ${page.checklistPassed === page.checklistTotal ? 'pill-green' : 'pill-amber'}`}>Checklist {page.checklistPassed} of {page.checklistTotal}</span>}
+        {page.changedOn && <span className="pill pill-orange">Changed {formatDate(page.changedOn)}</span>}
+        {page.missing.map((m) => <span key={m} className="flag">Missing: {m}</span>)}
+      </div>
       <ul className="m-0 mt-3 grid list-none gap-1.5 p-0 sm:grid-cols-2">
         {page.items.map((item) => {
           const [sign, note] = mark(item);

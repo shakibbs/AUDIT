@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useContacts } from '@/api/queries';
+import { useContact } from '@/api/queries';
 import { BASIS_LABEL, type CheckState } from '@/api/types';
 import { Drawer } from '@/components/ui/Drawer';
 import { Seg } from '@/components/ui/Seg';
@@ -17,7 +17,7 @@ const CHECK_PILL: Record<CheckState, [string, string]> = { pass: ['pill-green', 
 /** Detail panel for one call or text: the five checks, the proof behind the status, and the link to the full evidence file. */
 export function ContactDrawer({ id, onClose }: { id: string; onClose: () => void }) {
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('result');
-  const contact = useContacts('ALL', '').data?.find((c) => c.id === id);
+  const contact = useContact(id).data;
   if (!contact) return <Drawer eyebrow="Contact" title="Contact" onClose={onClose}><p className="tiny">Loading…</p></Drawer>;
 
   return (

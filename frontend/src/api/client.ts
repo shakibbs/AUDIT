@@ -38,3 +38,8 @@ export function apiSend<T>(method: 'POST' | 'PATCH' | 'DELETE', path: string, bo
   const headers = { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() };
   return fetch(`${BASE}/api${path}`, { method, headers, body: JSON.stringify(body) }).then((r) => parse<T>(r));
 }
+
+/** A file upload (multipart): the browser sets the boundary, so no Content-Type here. */
+export function apiUpload<T>(path: string, form: FormData): Promise<T> {
+  return fetch(`${BASE}/api${path}`, { method: 'POST', headers: { 'X-CSRFToken': csrfToken() }, body: form }).then((r) => parse<T>(r));
+}

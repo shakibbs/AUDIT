@@ -1,14 +1,30 @@
 // Serves /api/*: the login endpoints go to Django when BACKEND_URL is set; the rest come from the mock.
 import { NextResponse, type NextRequest } from 'next/server';
-import type { Session } from '@/api/types';
+import type { SearchHit, Session } from '@/api/types';
 import { mockApi } from '@/mock/api';
-import { forward, usesBackend } from '@/server/backend';
+import { forward, mergesBackend, overlay, usesBackend } from '@/server/backend';
 import { mergeSession } from '@/server/mergeSession';
 
 type Ctx = { params: Promise<{ path: string[] }> };
 
 async function handle(request: NextRequest, { params }: Ctx): Promise<Response> {
   const { path } = await params;
+  // Search: your real numbers and vendors from Django, pages, domains and metrics from the portal's own list.
+  if (process.env.BACKEND_URL && path[0] === 'search' && request.method === 'GET') {
+    const query = Object.fromEntries(request.nextUrl.searchParams);
+    const reply = await forward(request, path);
+    const sample = mockApi({ method: 'GET', path: '/search', query }).body as SearchHit[];
+    const real = reply.ok ? ((await reply.json()) as SearchHit[]) : [];
+    return NextResponse.json([...real, ...sample.filter((h) => h.kind !== 'number' && h.kind !== 'vendor')].slice(0, 10));
+  }
+  // Partly real pages first: Django's fields laid over the sample.
+  if (mergesBackend(path, request.method)) {
+    const query = Object.fromEntries(request.nextUrl.searchParams);
+    const reply = await forward(request, path);
+    const sample = mockApi({ method: 'GET', path: `/${path.join('/')}`, query });
+    if (!reply.ok || sample.status !== 200) return reply;
+    return NextResponse.json(overlay(sample.body, await reply.json()));
+  }
   if (usesBackend(path)) {
     const reply = await forward(request, path);
     if (request.method !== 'GET' || path.join('/') !== 'session' || !reply.ok) return reply;

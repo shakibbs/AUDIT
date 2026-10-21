@@ -4,10 +4,50 @@ import type { NextRequest } from 'next/server';
 /** First path segments Django answers today. */
 // The Data health card is /data-health (Django's own /api/health is the server check, not forwarded).
 // Pages already served by Django when BACKEND_URL is set; every other page still uses the sample data.
-const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health', 'contacts', 'evidence', 'can-call', 'optouts', 'consent', 'certificates', 'consent-pages'];
+const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health', 'contacts', 'evidence', 'can-call', 'optouts', 'consent', 'certificates', 'consent-pages', 'provenance', 'proof-requests', 'access-log', 'uploads', 'conduct', 'billed-numbers', 'position', 'hash-check'];
+// Pages that are partly real: Django sends only the fields it really has; the rest still comes from the sample until
+// its module is built (nothing on the page is lost). Only reads; changes on these pages stay with the sample.
+const MERGE_PATHS = ['vault', 'settings', 'revocation', 'insureds', 'metrics', 'who-contact', 'readiness', 'leads', 'vendors'];
+// Changes on a partly real page that Django already saves (the rest stay with the sample).
+const WRITE_PATHS = ['who-contact'];
+
+export function mergesBackend(path: string[], method: string): boolean {
+  return Boolean(process.env.BACKEND_URL) && method === 'GET' && MERGE_PATHS.includes(path[0]);
+}
+
+type Keyed = Record<string, unknown>;
+/** Which field names a list's items: a metric code, an id, or a name. */
+function keyOf(list: unknown[]): string | null {
+  for (const key of ['code', 'id', 'name']) if (list.every((x) => x && typeof x === 'object' && key in (x as object))) return key;
+  return null;
+}
+
+/** Real fields over sample fields. Objects are merged inside. Lists of named items (metrics by code, areas by id, checks
+ * by name) are merged item by item: an item not built yet keeps its sample, a new real item is added; when no real item
+ * matches a sample one (e.g. your own vendors), the real list replaces the sample. Other values are replaced. */
+export function overlay(sample: unknown, real: unknown): unknown {
+  if (Array.isArray(sample) && Array.isArray(real) && real.length) {
+    const key = keyOf(sample) && keyOf(sample) === keyOf(real) ? keyOf(sample)! : null;
+    if (key) {
+      const realBy = new Map((real as Keyed[]).map((r) => [r[key], r]));
+      if ((sample as Keyed[]).some((s) => realBy.has(s[key]))) {
+        const merged = (sample as Keyed[]).map((s) => (realBy.has(s[key]) ? overlay(s, realBy.get(s[key])) : s));
+        const seen = new Set((sample as Keyed[]).map((s) => s[key]));
+        return [...merged, ...(real as Keyed[]).filter((r) => !seen.has(r[key]))];
+      }
+    }
+  }
+  if (sample && real && typeof sample === 'object' && typeof real === 'object' && !Array.isArray(sample) && !Array.isArray(real)) {
+    const out: Record<string, unknown> = { ...(sample as Record<string, unknown>) };
+    for (const [k, v] of Object.entries(real as Record<string, unknown>)) out[k] = k in out ? overlay(out[k], v) : v;
+    return out;
+  }
+  return real;
+}
 
 // The view switch is a sample-data feature; it stays on the mock.
 export function usesBackend(path: string[]): boolean {
+  if (process.env.BACKEND_URL && WRITE_PATHS.includes(path[0])) return true;  // reads still merge (route.ts checks merges first)
   return Boolean(process.env.BACKEND_URL) && BACKEND_PATHS.includes(path[0]) && path[1] !== 'view-as';
 }
 
@@ -21,7 +61,8 @@ export async function forward(request: NextRequest, path: string[]): Promise<Res
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }
-  const body = request.method === 'GET' ? undefined : await request.text();
+  // Bytes, not text: proof files are uploaded through here.
+  const body = request.method === 'GET' ? undefined : await request.arrayBuffer();
   const reply = await fetch(url, { method: request.method, headers, body, redirect: 'manual', cache: 'no-store' });
 
   const out = new Headers({ 'content-type': reply.headers.get('content-type') ?? 'application/json' });

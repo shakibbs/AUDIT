@@ -1,4 +1,4 @@
-import type { Certificate, OptOut, CheckState, ConsentPage, ConsentSummary, Contact, EvidenceFile, LegalHold, Position, Revocation, VaultStats } from '@/api/types';
+import type { ProofRequests, ProvenancePage, Certificate, OptOut, CheckState, ConsentPage, ConsentSummary, Contact, EvidenceFile, LegalHold, Position, Revocation, VaultStats } from '@/api/types';
 
 const STEP_OF: Record<string, number> = { VF_OK: 6, NP_NO_CONSENT_TEXT: 3, NP_PRETICKED: 3, CF_NOT_FOUND: 2, CF_EXPIRED: 2, CF_FILE_MISSING: 2 };
 
@@ -42,7 +42,7 @@ export const consent: ConsentSummary = {
     { code: 'NP_AFTER_OPT_OUT', count: 160, text: 'Contact after an in-scope opt-out' },
     { code: 'NP_WRONG_TYPE', count: 140, text: 'Proof type does not meet requirement' },
   ],
-  legalShare: 70, legalCount: 7000, policyCount: 3000, dncUnknownShare: 12,
+  legalShare: 70, legalCount: 7000, policyCount: 3000, dncUnknownShare: 12, noProofLegal: 2860,
   certificateValidity: 92.5, certificatePairs: 800, expiredBeforeEngagement: 210,
   trend: [
     { label: 'Jun', verified: 61, weak: 12, conflicting: 16, noProof: 11 },
@@ -72,17 +72,17 @@ const withFails = (...codes: string[]) => ITEMS.map((i) => (codes.includes(i.cod
 /** Sample pages (no photos in sample data). */
 export const consentPages: ConsentPage[] = [
   { id: 'cpg-1', address: 'go.sunpathsolar.com/quote', source: 'client_form', sourceLabel: "Client's own form", firstSeen: '2026-06-01', lastSeen: '2026-09-30',
-    leads: 2140, capturedAt: '2026-09-30T09:20:00Z', problem: '', photos: [], items: withFails('CC_FONT_SIZE'), draft: true,
+    leads: 2140, capturedAt: '2026-09-30T09:20:00Z', problem: '', photos: [], items: withFails('CC_FONT_SIZE'), draft: true, mark: 'unmarked', vendor: null, changedOn: '2026-09-28', checklistPassed: 8, checklistTotal: 9, missing: ['Text big enough (10 px, draft)'],
     wording: 'By clicking Get my quote, I agree that SunPath may call or text me at the number above using automated technology.' },
   { id: 'cpg-2', address: 'solar-savings-quotes.example/ca', source: 'vendor', sourceLabel: 'From a vendor', firstSeen: '2026-06-03', lastSeen: '2026-09-30',
-    leads: 1420, capturedAt: '2026-09-30T09:24:00Z', problem: '', photos: [], items: ITEMS, draft: true,
+    leads: 1420, capturedAt: '2026-09-30T09:24:00Z', problem: '', photos: [], items: ITEMS, draft: true, mark: 'approved', vendor: 'Vendor A · sub-ID 114', changedOn: null, checklistPassed: 9, checklistTotal: 9, missing: [],
     wording: 'I consent to receive calls and texts from SunPath Residential Solar at this number, including by autodialer. Not required to purchase.' },
   { id: 'cpg-3', address: 'home-energy-match.example/form', source: 'vendor', sourceLabel: 'From a vendor', firstSeen: '2026-07-11', lastSeen: '2026-09-30',
-    leads: 520, capturedAt: '2026-09-30T09:31:00Z', problem: '', photos: [], items: withFails('CC_UNTICKED', 'CC_SELLER_NAMED', 'CC_CONTRAST'), draft: true,
+    leads: 520, capturedAt: '2026-09-30T09:31:00Z', problem: '', photos: [], items: withFails('CC_UNTICKED', 'CC_SELLER_NAMED', 'CC_CONTRAST'), draft: true, mark: 'rejected', vendor: 'Vendor E · sub-ID 7', changedOn: '2026-09-12', checklistPassed: 6, checklistTotal: 9, missing: ['Consent box not ticked in advance', 'Text easy to read (contrast)', 'Your company named'],
     wording: 'By submitting, you agree to be contacted by our marketing partners.' },
   { id: 'cpg-4', address: 'best-roof-deals.example/get-quote', source: 'uploaded_list', sourceLabel: 'From a vendor (uploaded list)', firstSeen: '2026-06-20',
     lastSeen: '2026-09-29', leads: 480, capturedAt: '2026-09-30T09:35:00Z', problem: 'The page answered 404', photos: [], wording: '',
-    items: ITEMS.map((i) => ({ ...i, result: 'not_measured' as const })), draft: true },
+    items: ITEMS.map((i) => ({ ...i, result: 'not_measured' as const })), draft: true, mark: 'unmarked', vendor: 'Vendor F', changedOn: null, checklistPassed: 0, checklistTotal: 0, missing: [] },
 ];
 
 const cell = (hours: number | null, tests: number, tested = true) => ({ hours, tests, tested });
@@ -200,3 +200,45 @@ export const certificates: Certificate[] = [
   { id: 'cc-1', provider: 'TrustedForm', ref: '0b2e4d18…', state: 'lost', stateLabel: 'Lost: not claimed in time', seenAt: '2026-09-20T11:00:00Z', deadlineAt: '2026-09-23T10:55:00Z',
     createdAt: null, expiresAt: null, page: '', usedBy: 2, problem: '' },
 ];
+
+/** Sample Lead Provenance page (Module 8). */
+export const provenance: ProvenancePage = {
+  period: 'October 2026', numbers: 2000,
+  ladder: [
+    { basis: 'feed', label: 'Lead platform feed', count: 0, share: 0, available: false },
+    { basis: 'crm_field', label: 'CRM lead source', count: 1040, share: 52, available: true },
+    { basis: 'invoice', label: 'Vendor invoice', count: 0, share: 0, available: false },
+    { basis: 'cert_domain', label: 'Certificate website', count: 420, share: 21, available: true },
+    { basis: 'manual_import', label: 'Uploaded list', count: 360, share: 18, available: true },
+    { basis: 'untraced', label: 'Untraced', count: 180, share: 9, available: true },
+  ],
+  topSources: [
+    { name: 'SolarLeads Inc', basis: 'CRM lead source', count: 610 },
+    { name: 'go.sunpathsolar.com', basis: 'Certificate website', count: 300 },
+    { name: 'HomeEnergy Match', basis: 'CRM lead source', count: 260 },
+    { name: 'home-energy-match.example', basis: 'Certificate website', count: 120 },
+  ],
+  untraced: [
+    { number: '(850) •••-0009', firstContactAt: '2026-10-06T16:00:00Z', tool: 'convoso', crmRecord: 'salesforce leads:00Q9', note: 'The CRM record names no vendor and carries no certificate.' },
+    { number: '(415) •••-0231', firstContactAt: '2026-10-07T14:12:00Z', tool: 'convoso', crmRecord: '', note: 'No CRM record before the first contact.' },
+  ],
+  uploads: [
+    { id: 'ib-1', label: 'Uploaded list · 1,240 records · 03 Oct 2026', system: 'crm', numbers: 1240, withEvidence: 210, stopBroughtBack: 2, optOutsCleared: 0, asked: 50, proofRate: 0.24 },
+    { id: 'ib-2', label: 'Update upload · 300 records · 06 Oct 2026', system: 'crm_update', numbers: 300, withEvidence: 40, stopBroughtBack: 1, optOutsCleared: 1, asked: 50, proofRate: null },
+    { id: 'ib-3', label: 'Dialer upload · list 1002 · 25 records · 05 Oct 2026', system: 'dialer', numbers: 25, withEvidence: 0, stopBroughtBack: 0, optOutsCleared: 0, asked: 0, proofRate: null },
+  ],
+  missing: [{ label: 'Text big enough (10 px, draft)', count: 2140 }, { label: 'Consent box not ticked in advance', count: 520 }, { label: 'Text easy to read (contrast)', count: 520 }],
+};
+
+export const proofRequests: ProofRequests = {
+  canAnswer: true,
+  lists: [{ batchKey: 'crm|salesforce|005U|20261003T101500', label: 'Uploaded list · 1,240 records · 03 Oct 2026', listSize: 1240, asked: 50, attached: 13, valid: 12, waitingReview: 1, none: 30, overdue: 0, rate: 0.24 }],
+  requests: [
+    { id: 'pr-1', batchKey: 'crm|salesforce|005U|20261003T101500', list: 'Uploaded list · 1,240 records · 03 Oct 2026', number: '(916) •••-0001', sentAt: '2026-10-08T09:00:00Z', dueAt: '2026-11-07T09:00:00Z',
+      answer: null, answeredAt: null, answeredBy: null, fileType: null, fileName: null, fileUrl: null, review: null, reviewNote: null, consentDate: null },
+    { id: 'pr-2', batchKey: 'crm|salesforce|005U|20261003T101500', list: 'Uploaded list · 1,240 records · 03 Oct 2026', number: '(916) •••-0007', sentAt: '2026-10-08T09:00:00Z', dueAt: '2026-11-07T09:00:00Z',
+      answer: 'proof', answeredAt: '2026-10-09T11:00:00Z', answeredBy: 'Dana Reyes', fileType: 'Signed form or contract', fileName: 'signup-0007.pdf', fileUrl: null, review: null, reviewNote: null, consentDate: null },
+    { id: 'pr-3', batchKey: 'crm|salesforce|005U|20261003T101500', list: 'Uploaded list · 1,240 records · 03 Oct 2026', number: '(916) •••-0012', sentAt: '2026-10-08T09:00:00Z', dueAt: '2026-11-07T09:00:00Z',
+      answer: 'proof', answeredAt: '2026-10-09T11:05:00Z', answeredBy: 'Dana Reyes', fileType: 'Signed form or contract', fileName: 'signup-0012.pdf', fileUrl: null, review: 'valid', reviewNote: null, consentDate: '2026-09-01' },
+  ],
+};

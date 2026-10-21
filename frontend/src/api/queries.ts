@@ -4,7 +4,7 @@ import { apiGet, apiSend } from './client';
 import type {
   AccessEntry, Action, DataHealth, Alert, Insured, LitigationStats, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
   Metric, Position, Readiness, RegChange, ReportRun, ReportType, Revocation, Rulebook, ScoreSummary, SearchHit, Session, Settings,
-  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall, OptOut, Certificate,
+  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall, OptOut, Certificate, ProvenancePage, ProofRequests,
 } from './types';
 
 type Query = Record<string, string | undefined>;
@@ -20,6 +20,7 @@ export const useActions = () => useGet<Action[]>('/actions');
 export const useAlerts = () => useGet<Alert[]>('/alerts');
 export const useContacts = (status: string, q: string) => useGet<Contact[]>('/contacts', { status, q });
 export const useConsent = () => useGet<ConsentSummary>('/consent');
+export const useContact = (id: string) => useGet<Contact>(`/contacts/${encodeURIComponent(id)}`);
 export const useConsentPages = () => useGet<ConsentPage[]>('/consent-pages');
 export const useCertificates = () => useGet<Certificate[]>('/certificates');
 export const useRevocation = () => useGet<Revocation>('/revocation');
@@ -32,6 +33,8 @@ export const useEvidenceFile = (phone: string) => useGet<EvidenceFile>(`/evidenc
 export const useMetrics = (period?: string) => useGet<Metric[]>('/metrics', { period });
 export const useConduct = () => useGet<Conduct>('/conduct');
 export const useLeads = () => useGet<Leads>('/leads');
+export const useProvenance = () => useGet<ProvenancePage>('/provenance');
+export const useProofRequests = () => useGet<ProofRequests>('/proof-requests');
 export const useVendors = () => useGet<VendorSummary>('/vendors');
 export const useSources = () => useGet<Source[]>('/sources');
 export const useUploads = () => useGet<Upload[]>('/uploads');

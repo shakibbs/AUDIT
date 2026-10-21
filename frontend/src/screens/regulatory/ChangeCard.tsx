@@ -2,6 +2,7 @@
 
 import { useSend } from '@/api/queries';
 import type { RegChange } from '@/api/types';
+import { DomainCode } from '@/components/ui/DomainCode';
 import { MetricCode } from '@/components/ui/MetricCode';
 import { formatDate } from '@/lib/format';
 import { RuleUpdateRow } from './RuleUpdateRow';
@@ -9,7 +10,7 @@ import { RuleUpdateRow } from './RuleUpdateRow';
 const STATUS_PILL: Record<RegChange['status'], string> = { adopted: 'pill-amber', 'in force': 'pill-teal', proposed: 'pill-gray', 'court ruling': 'pill-blue' };
 
 /** One rule change: what it is, when it takes effect, and what it touches in this portal. */
-export function ChangeCard({ change, canReview, readOnly }: { change: RegChange; canReview: boolean; readOnly: boolean }) {
+export function ChangeCard({ change, canReview }: { change: RegChange; canReview: boolean; readOnly?: boolean }) {
   const send = useSend();
   return (
     <section className="card card-pad">
@@ -21,12 +22,12 @@ export function ChangeCard({ change, canReview, readOnly }: { change: RegChange;
         </div>
         {change.confirmed
           ? <span className="pill pill-green">Reviewed</span>
-          : !readOnly && <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'POST', path: `/reg-changes/${change.id}/confirm` })}>Mark as reviewed</button>}
+          : <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'POST', path: `/reg-changes/${change.id}/confirm` })}>Mark as reviewed</button>}
       </div>
       <dl className="m-0 mt-4 border-t border-line pt-1">
         <div className="kv"><dt>Takes effect</dt><dd>{change.effective}</dd></div>
         <div className="kv"><dt>Rulebook settings it touches</dt><dd className="flex flex-wrap justify-end gap-1">{change.settings.length ? change.settings.map((s) => <span key={s} className="flag mono">{s}</span>) : '—'}</dd></div>
-        <div className="kv"><dt>Metrics it touches</dt><dd className="flex flex-wrap justify-end gap-1">{change.metrics.map((m) => <MetricCode key={m} code={m} />)}</dd></div>
+        <div className="kv"><dt>Metrics and domains it touches</dt><dd className="flex flex-wrap justify-end gap-1">{change.metrics.map((m) => <MetricCode key={m} code={m} />)}{change.domains.map((d) => <DomainCode key={d} code={d} />)}</dd></div>
         <div className="kv"><dt>Source</dt><dd className="font-normal text-txt-2">{change.sourceUrl ? <a href={change.sourceUrl} target="_blank" rel="noopener noreferrer">{change.source}</a> : change.source}</dd></div>
       </dl>
       {(change.updates?.length ?? 0) > 0 && (

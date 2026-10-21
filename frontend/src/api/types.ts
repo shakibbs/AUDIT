@@ -77,6 +77,8 @@ export interface DataHealth {
   /** Records completeness box (M37): complete / incomplete / not_available (no billing source) / not_measured, and why. */
   completenessStatus?: 'complete' | 'incomplete' | 'not_available' | 'not_measured'; completenessNote?: string | null;
   conversationReview: { reviewed: number; optOutsFound: number; missed: number; notMarkedFirstCheck: number } | null;
+  /** Module 8: proof requests not answered yet. */
+  proofRequestsWaiting?: number;
 }
 
 export interface Domain {
@@ -136,6 +138,8 @@ export interface ConsentSummary {
   expiring: { within: string; count: number }[];
   /** Real data: left out of the shares above, shown apart. */
   pending?: number; frozen?: number; notNeeded?: number; period?: string; real?: boolean;
+  /** No proof where a legal basis (not only CiV policy) requires proof. */
+  noProofLegal?: number;
 }
 
 /** A consent certificate CiV found in the client's records (TrustedForm / Jornaya). Never the whole certificate ID. */
@@ -163,6 +167,10 @@ export interface ConsentPage {
   /** effect when an item fails: no_proof · wording (weak) · warning · info; ai = needs AI, not measured yet. */
   items: { code: string; label: string; effect: 'no_proof' | 'wording' | 'warning' | 'info' | 'ai'; result: 'pass' | 'fail' | 'not_measured' }[];
   draft: boolean;
+  /** Restored from the first portal: your own mark (never changes a result), the vendor your CRM names, when the
+   * wording last changed on CiV's photos, the checklist count and what is missing. */
+  mark: 'approved' | 'rejected' | 'unmarked'; vendor: string | null; changedOn: string | null;
+  checklistPassed: number; checklistTotal: number; missing: string[];
 }
 
 export interface RevocationCell { hours: number | null; tested: boolean; tests: number }
@@ -222,6 +230,8 @@ export interface EvidenceFile {
   where?: string; locationConfidence?: string; callingWindow?: CallingWindow;
   epochs?: { number: number; from: string | null; to: string | null; reason: string }[];
   consent?: ConsentPanel;
+  /** Where this owner's number came from (Module 8 provenance ladder), in words. */
+  cameFrom?: string | null;
 }
 
 /** Advice only: CiV never blocks a call. Draft hours are said to be draft. */
@@ -382,4 +392,33 @@ export interface LitigationStats {
   costs: { label: string; value: string; status: 'Statute' | 'Verified' | 'Estimate' }[];
   claimTypes: { type: string; hook: string; direction: string }[];
   study: { step: string; how: string; cost: string }[];
+}
+
+// ----- Lead provenance (Module 8) -----
+export type ProvenanceBasis = 'feed' | 'crm_field' | 'invoice' | 'cert_domain' | 'manual_import' | 'untraced';
+
+/** The Lead Provenance page: where this month's called numbers came from, uploads, missing checklist items. */
+export interface ProvenancePage {
+  period: string; numbers: number;
+  /** available = false: the rung needs a source CiV does not read yet (lead platform feed, vendor invoices). */
+  ladder: { basis: ProvenanceBasis; label: string; count: number; share: number; available: boolean }[];
+  topSources: { name: string; basis: string; count: number }[];
+  untraced: { number: string; firstContactAt: string; tool: string; crmRecord: string; note: string }[];
+  uploads: { id: string; label: string; system: string; numbers: number; withEvidence: number; stopBroughtBack: number;
+    optOutsCleared: number; asked: number; proofRate: number | null }[];
+  missing: { label: string; count: number }[];
+}
+
+export interface ProofRequest {
+  id: string; batchKey: string; list: string; number: string; sentAt: string; dueAt: string;
+  answer: 'proof' | 'none' | null; answeredAt: string | null; answeredBy: string | null;
+  fileType: string | null; fileName: string | null; fileUrl: string | null;
+  review: 'valid' | 'invalid' | null; reviewNote: string | null; consentDate: string | null;
+}
+
+export interface ProofRequests {
+  canAnswer: boolean;
+  lists: { batchKey: string; label: string; listSize: number; asked: number; attached: number; valid: number; waitingReview: number;
+    none: number; overdue: number; rate: number | null }[];
+  requests: ProofRequest[];
 }

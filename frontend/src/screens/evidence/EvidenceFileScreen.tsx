@@ -39,6 +39,7 @@ export function EvidenceFileScreen({ phone }: { phone: string }) {
         {f.onHold && <span className="pill pill-teal">Under legal hold</span>}
         <button type="button" className="btn btn-primary" onClick={exportFile} disabled={send.isPending}><Icon name="download" /> {send.isSuccess ? 'Export requested' : 'Export this file'}</button>
       </PageHead>
+      {f.cameFrom && <p className="tiny -mt-2 mb-4">Came from: {f.cameFrom}</p>}
       <div className="flex flex-col gap-5">
         <div className="grid gap-5 lg:grid-cols-3">
           <Card title="Standing" sub="The weakest status across all contacts (pending and frozen left out)">
@@ -69,7 +70,7 @@ export function EvidenceFileScreen({ phone }: { phone: string }) {
         )}
         {f.consent && <ConsentCard consent={f.consent} />}
         <ContactTimeline file={f} />
-        {f.proofElements.length > 0 && <ProofElements file={f} />}
+        <ProofElements file={f} />
       </div>
     </>
   );

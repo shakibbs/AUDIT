@@ -2,9 +2,9 @@ import { Card } from '@/components/ui/Card';
 
 const CHECKS = [
   ['Proof exists', 'There is a consent record for this number: a certificate, a signed form or a recorded keypress.', 'NO_PROOF'],
-  ['Proof can be opened', 'The certificate still opens at the provider, or CiV fingerprinted it earlier.', 'CONFLICTING'],
-  ['Proof matches the contact', 'The consent wording says yes and the box was not pre-ticked. Not yet measured (Module 7).', 'NO_PROOF'],
-  ['Sources agree', 'The certificate was not made after the lead was delivered. Phone and page match: not yet measured (Module 7).', 'CONFLICTING'],
+  ['Proof can be opened', 'The certificate still opens at the provider, or CiV holds a stored copy.', 'CONFLICTING'],
+  ['Proof matches the contact', 'The number, the seller named and the consent wording match the contact made.', 'NO_PROOF'],
+  ['Sources agree', 'The certificate, the page capture and the lead record tell the same story.', 'CONFLICTING'],
   ['No gaps in the record', 'Nothing is uncertain: timing, retention and reassignment are all settled.', 'WEAK'],
 ];
 

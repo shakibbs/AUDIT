@@ -1,18 +1,17 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useSend, useUploads } from '@/api/queries';
+import { apiUpload } from '@/api/client';
+import { useUploads } from '@/api/queries';
 import type { Source } from '@/api/types';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { Loader } from '@/components/ui/Loader';
 import { formatCount, formatDateTime, truncateHash } from '@/lib/format';
 
-// SHA-256 of the file, computed in the browser before anything is sent.
-async function fingerprint(file: File): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
-}
+// Policies and contracts may also be documents; every other source is a CSV of rows.
+const DOCUMENTS_OK = 'Policies, training, contracts';
 
 /** Upload a file for a source that accepts uploads; shows the fingerprint recorded for each file. */
 export function UploadCentre({ sources }: { sources: Source[] }) {
@@ -20,13 +19,28 @@ export function UploadCentre({ sources }: { sources: Source[] }) {
   const [source, setSource] = useState(accepting.find((s) => s.status === 'not_supplied')?.name ?? accepting[0]?.name ?? '');
   const [file, setFile] = useState<File | null>(null);
   const uploads = useUploads();
-  const send = useSend();
+  const client = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
+  // The file itself goes to CiV, which fingerprints it, keeps it write-once and reads its rows.
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!file) return;
-    const text = await file.text();
-    send.mutate({ method: 'POST', path: '/uploads', body: { source, fileName: file.name, sha256: await fingerprint(file), rows: Math.max(0, text.split('\n').filter(Boolean).length - 1) } }, { onSuccess: () => setFile(null) });
+    setBusy(true);
+    setError('');
+    try {
+      const form = new FormData();
+      form.append('source', source);
+      form.append('file', file);
+      await apiUpload('/uploads', form);
+      await client.invalidateQueries();
+      setFile(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'The file could not be uploaded.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -40,10 +54,11 @@ export function UploadCentre({ sources }: { sources: Source[] }) {
           <span className="label">File (CSV)</span>
           <label className="field flex cursor-pointer items-center gap-2 !border-dashed text-txt-2">
             <Icon name="upload" /><span className="truncate">{file ? file.name : 'Choose a file'}</span>
-            <input type="file" accept=".csv,text/csv" className="sr-only" aria-label="File to upload" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            <input type="file" accept={source === DOCUMENTS_OK ? '.csv,text/csv,.pdf,.doc,.docx' : '.csv,text/csv'} className="sr-only" aria-label="File to upload" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </label>
         </div>
-        <button type="submit" className="btn btn-primary" disabled={!file || send.isPending}>{send.isPending ? 'Uploading…' : 'Upload'}</button>
+        <button type="submit" className="btn btn-primary" disabled={!file || busy}>{busy ? 'Uploading…' : 'Upload'}</button>
+        {error && <div className="tiny w-full" style={{ color: 'var(--bad-ink)' }}>{error}</div>}
       </form>
       <Loader query={uploads}>
         {(list) => (

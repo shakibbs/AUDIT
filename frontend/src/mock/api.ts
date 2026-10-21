@@ -5,7 +5,7 @@ import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
 import { domains, score } from './data/domains';
 import { calendar, regChanges, rulebook } from './data/engagement';
-import { certificates, consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, optOuts, position, revocation, vault } from './data/evidence';
+import { certificates, proofRequests, provenance, consent, consentPages, contacts, evidenceFiles, KNOWN_HASH, legalHolds, optOuts, position, revocation, vault } from './data/evidence';
 import { insureds, litigation } from './data/insurer';
 import { conduct, leads, vendorSummary } from './data/intelligence';
 import { metrics } from './data/metrics';
@@ -17,7 +17,7 @@ export interface MockRequest { method: string; path: string; query?: Record<stri
 export interface MockResponse { status: number; body: unknown }
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-const fresh = () => clone({ session, actions, alerts, consentPages, legalHolds, uploads, reportRuns, readiness, settings, users, accessLog, regChanges, whoContact });
+const fresh = () => clone({ session, actions, alerts, consentPages, proofRequests, legalHolds, uploads, reportRuns, readiness, settings, users, accessLog, regChanges, whoContact });
 
 let db = fresh();
 
@@ -103,10 +103,15 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'domains': return ok(domains.map((d) => ({ ...d, score: d.history[i] })));
     case 'actions': return ok(db.actions);
     case 'alerts': return ok(db.alerts);
-    case 'contacts': return ok(contacts.filter((c) => (!q.status || q.status === 'ALL' || c.status === q.status) && (!q.q || c.phoneE164.includes(q.q.replace(/\D/g, '')))));
+    case 'contacts': if (seg[1]) {
+      const one = contacts.find((c) => c.id === decodeURIComponent(seg[1]));
+      return one ? ok(one) : fail(404, 'No such contact.');
+    } else return ok(contacts.filter((c) => (!q.status || q.status === 'ALL' || c.status === q.status) && (!q.q || c.phoneE164.includes(q.q.replace(/\D/g, '')))));
     case 'consent': return ok(consent);
     case 'consent-pages': return ok(db.consentPages);
     case 'certificates': return ok(certificates);
+    case 'provenance': return ok(provenance);
+    case 'proof-requests': return ok(db.proofRequests);
     case 'revocation': return ok(revocation);
     case 'optouts': return ok(optOuts);
     case 'who-contact': return ok(db.whoContact);
@@ -135,6 +140,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'reg-changes': return ok(db.regChanges);
     case 'readiness': return ok(db.readiness);
     case 'settings': return ok(db.settings);
+    case 'billed-numbers': return fail(404, 'The list of billed numbers comes from the real server (sample data has none).');
     case 'users': return ok(db.users);
     case 'access-log': return ok(db.accessLog);
     case 'search': return ok(search(q.q ?? ''));
@@ -191,6 +197,20 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       log('Updated', `Action ${action.rank}`);
       return ok(action);
     }
+    case 'PATCH consent-pages': {
+      const page = db.consentPages.find((p) => p.id === seg[1]);
+      if (!page) return fail(404, 'Page not found.');
+      Object.assign(page, body);
+      return ok(page);
+    }
+    case 'POST proof-requests/answer': {
+      const req = db.proofRequests.requests.find((r) => r.id === seg[1]);
+      if (!req) return fail(404, 'Proof request not found.');
+      // A file upload arrives here without a JSON body: sample data records it as attached.
+      Object.assign(req, body.none ? { answer: 'none', fileName: null, fileType: null } : { answer: 'proof', fileName: 'proof.pdf', fileType: 'Signed form or contract' },
+        { answeredAt: '2026-10-21T10:00:00Z', answeredBy: db.session.name });
+      return ok(req);
+    }
     case 'POST alerts/review': {
       const alert = db.alerts.find((a) => a.id === seg[1]);
       if (!alert) return fail(404, 'Alert not found.');
@@ -211,7 +231,8 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       return ok(hold);
     }
     case 'POST uploads': {
-      const upload = { artifactId: `art-${9100 + db.uploads.length}`, source: String(body.source), fileName: String(body.fileName), sha256: String(body.sha256), receivedAt: '2026-09-30T09:00:00Z', rowsRead: Number(body.rows ?? 0), rowsRejected: 0 };
+      // A real upload arrives as a file (no JSON body): sample data records a placeholder row.
+      const upload = { artifactId: `art-${9100 + db.uploads.length}`, source: String(body.source ?? 'Internal do-not-contact list'), fileName: String(body.fileName ?? 'upload.csv'), sha256: String(body.sha256 ?? `${'0'.repeat(64)}`), receivedAt: '2026-09-30T09:00:00Z', rowsRead: Number(body.rows ?? 0), rowsRejected: 0 };
       db.uploads.unshift(upload);
       log('Uploaded', upload.fileName);
       return ok(upload);

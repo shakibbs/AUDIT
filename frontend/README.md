@@ -99,6 +99,23 @@ only masked (area code + last 4). The number page adds the
 now?"**. Revocation Integrity's **Opt-outs card** reads `/optouts` (the real STOP list from Django; "Dialer marked:
 Not checked yet" until Module 9).
 
+**Lead Provenance (Module 8)** keeps its existing cards (leads inspected, consent completeness, page match, signal
+levels, frequent signals, most often missing: sample data from `/leads` until the Lead Inspector modules) and adds,
+below them, from `/provenance` and `/proof-requests`: where this month's called numbers came from (ladder chart, top
+sources), the untraced list, uploaded lists (CRM, update uploads, dialer lists) with evidence, STOP numbers brought
+back and proof rate, and proof requests. Proof
+requests: Admins and the company's lawyer attach a file (multipart through `apiUpload`; the proxy passes bytes) or
+say "We have none". The number page says where the number came from; the Overview's attention strip counts proof
+requests waiting.
+
+**Partly real pages** (`MERGE_PATHS` in `server/backend.ts`: vault, settings, revocation, insureds, metrics,
+who-contact): Django sends only the fields it really has and the portal lays them over the sample (`overlay`: objects
+merged inside; lists of named items merged by code, id or name, so an item not built yet keeps its sample), so no card
+loses anything while later modules are built. `WRITE_PATHS` (who-contact) send changes to Django. `access-log` is fully real. The contact panel loads its contact by ID (`/contacts/<id>`).
+
+The **Upload centre** sends the file itself (multipart through `apiUpload`); Django keeps it, fingerprints it and reads
+its rows (CSV; policies and contracts may also be PDF or Word).
+
 Metric numbers: ours stay as they are (M38 = AI "Missed opt-outs"). Who You Contact uses M39–M48 from the
 v2 prototype, and its stale-registry check is **M49**.
 

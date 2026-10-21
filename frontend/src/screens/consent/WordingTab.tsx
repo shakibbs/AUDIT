@@ -13,6 +13,7 @@ export function WordingTab() {
       {(list) => list.length === 0 ? <Empty>No consent pages yet: they appear once CiV claims a certificate that names its page.</Empty> : (
         <div className="flex flex-col gap-4">
           {list.map((p) => <ConsentPageCard key={p.id} page={p} />)}
+          <p className="tiny m-0">Your mark records your own decision about a wording. It does not change the checklist result and is not a legal opinion from CiV.</p>
           <p className="tiny m-0">CiV visits each page as a normal visitor, about once a day, at phone and computer size. It never fills in a form.</p>
         </div>
       )}
