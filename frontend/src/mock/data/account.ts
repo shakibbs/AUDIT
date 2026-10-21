@@ -38,7 +38,7 @@ export const settings: Settings = {
     { kind: 'after-optout', label: 'Contacts after opt-out', email: true },
     { kind: 'page-change', label: 'Consent page changed', email: true },
     { kind: 'cert-expiry', label: 'Certificates nearing expiry', email: true },
-    { kind: 'test-deadline', label: 'Test opt-out past its deadline', email: true },
+    { kind: 'test-deadline', label: 'Opt-out past its deadline', email: true },
     { kind: 'source-stale', label: 'Source stale', email: true },
     { kind: 'vendor-drop', label: 'Vendor score drop', email: false },
     { kind: 'rule-change', label: 'Rule change that affects your settings', email: true },

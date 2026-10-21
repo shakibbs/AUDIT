@@ -82,8 +82,9 @@ contacts after; sample data until live sync).
 
 Data health (`/data-health`): the Overview's **Records completeness** box shows the latest month's percentage over
 every connected tool (each checked by its bill, its own count or its working days) with "Complete" or "Incomplete
-data" and a one-line reason, "Not available" when no tool gave a second number yet, or "Not yet measured". Conversation review stays "Not yet measured"
-until Module 9; "Nothing read yet" until the first record arrives.
+data" and a one-line reason, "Not available" when no tool gave a second number yet, or "Not yet measured". The
+"Opt-outs your dialer missed" card reads `conversationReview` (Module 9: AI review counts, missed, not marked at first
+check); "Not yet measured" until the AI has read anything; "Nothing read yet" until the first record arrives.
 
 **Consent results (Module 6, strict reading):** Contact Ledger rows show Verified / Weak / Conflicting / No proof /
 Pending / Not needed with the reason in words, the five checks ("Not yet measured" for checks CiV cannot run yet) and
@@ -96,8 +97,14 @@ real since Module 7: each consent page with its source (own form / vendor / uplo
 ⚠️ / ℹ️ / ⏳ needs AI), no approve/reject mark. Your certificates shows each one's source and phone match. Numbers appear
 only masked (area code + last 4). The number page adds the
 **calling window**, **owners of the number** and the real **seal**; Rulebook → Calendar & hours starts with **"Can I call
-now?"**. Revocation Integrity's **Opt-outs card** reads `/optouts` (the real STOP list from Django; "Dialer marked:
-Not checked yet" until Module 9).
+now?"**. Revocation Integrity's **Opt-outs card** reads `/optouts` (the real STOP list from Django).
+
+**Revocation (Module 9):** CiV has no paid test lines (owner decision): M08 / M09, the opt-out matrix, the
+time-to-stop chart and the "Opt-out measurement" card come from the client's real opt-outs (`/revocation`, merged), and
+the wording says "opt-outs", not "test opt-outs". The Opt-outs table shows "Dialer marked" from CiV's tool checks, each
+tool's answer, an amber "Urgent: a tool has not marked it", and "AI result · not counted in your score yet" (AI before
+its accuracy exam); its All / Open / Late / Contacted after STOP filters are tested. Who You Contact gets M41, M42, M48
+and M45 from Django once the AI has read anything; Overview M08 comes from `/metrics`.
 
 **Lead Provenance (Module 8)** keeps its existing cards (leads inspected, consent completeness, page match, signal
 levels, frequent signals, most often missing: sample data from `/leads` until the Lead Inspector modules) and adds,

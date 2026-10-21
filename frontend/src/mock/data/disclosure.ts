@@ -11,7 +11,7 @@ const ROWS: S[] = [
   ['LeadConduit', 3, 'Read-only API', '1 h ago', 'current', ['LPV', 'AFF'], true, false, null],
   ['Somos reassigned numbers', 1, 'CiV caller-agent account', '6 h ago', 'current', ['RND'], false, false, null],
   ['CiV consent page captures', 1, 'Headless capture service', '4 h ago', 'current', ['WEB', 'AFF'], false, false, null],
-  ['CiV test lines', 1, 'CiV-owned carrier mobile lines', '27 Sep', 'current', ['REV', 'IDD'], false, false, null],
+  ['Opt-out measurement', 3, 'Your real opt-outs, checked in your dialer, texting tool and CRM', '27 Sep', 'current', ['REV', 'IDD'], false, false, null],
   ['Internal do-not-contact list', 4, 'Upload', '28 Sep', 'current', ['IDN'], false, true, null],
   ['Policies, training, contracts', 4, 'Upload', '20 Sep', 'current', ['GOV', 'VND'], false, true, null],
   ['Complaint log', 4, 'Upload', '25 Sep', 'current', ['INC'], false, true, null],

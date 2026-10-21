@@ -56,6 +56,49 @@ describe('opt-outs card with real data', () => {
     expect(screen.getByText(/1 call · before the deadline/)).toBeInTheDocument();
   });
 
+  it('shows each tool, the urgent flag and an AI result not counted yet', async () => {
+    const { OptOutsTable } = await import('@/screens/revocation/OptOutsTable');
+    renderScreen(<OptOutsTable optOuts={[{ id: 'oo-2', phoneDisplay: '(916) •••-0002', phoneE164: null, how: 'Text · AI review', words: null,
+      at: '2026-10-01T16:00:00Z', deadline: '2026-10-16', businessDaysLeft: 8, deadlineProvisional: true, dialerMarked: true, contactsAfter: null,
+      tools: [{ name: 'Vicidial', marked: true, note: null }, { name: 'HubSpot', marked: false, note: null }], urgent: true, counted: false }]} />);
+    expect(screen.getByText('Urgent: a tool has not marked it')).toBeInTheDocument();
+    expect(screen.getByText('Vicidial: marked · HubSpot: not marked')).toBeInTheDocument();
+    expect(screen.getByText('AI result · not counted in your score yet')).toBeInTheDocument();
+  });
+
+  it('filters: All, Open, Late and Contacted after STOP', async () => {
+    const { OptOutsTable } = await import('@/screens/revocation/OptOutsTable');
+    const base = { phoneE164: null, how: 'Text · keyword', words: 'STOP', at: '2026-10-01T16:00:00Z', deadline: '2026-10-16', deadlineProvisional: false };
+    const contacted = (afterDeadline: boolean) => ({ count: 1, channel: 'Call', lastAt: '2026-10-20T15:00:00Z', afterDeadline });
+    renderScreen(<OptOutsTable optOuts={[
+      { ...base, id: 'open', phoneDisplay: '(916) •••-0001', businessDaysLeft: 4, dialerMarked: null, contactsAfter: null },
+      { ...base, id: 'open-called', phoneDisplay: '(916) •••-0002', businessDaysLeft: 2, dialerMarked: true, contactsAfter: contacted(false) },
+      { ...base, id: 'late-unmarked', phoneDisplay: '(916) •••-0003', businessDaysLeft: 0, dialerMarked: false, contactsAfter: null },
+      { ...base, id: 'late-called', phoneDisplay: '(916) •••-0004', businessDaysLeft: 0, dialerMarked: true, contactsAfter: contacted(true) },
+      { ...base, id: 'done', phoneDisplay: '(916) •••-0005', businessDaysLeft: 0, dialerMarked: true, contactsAfter: null },
+    ]} />);
+    const shown = () => screen.getAllByText(/\(916\) •••-000\d/).map((e) => e.textContent!.slice(-1)).join('');
+    const user = userEvent.setup();
+    expect(shown()).toBe('12345');
+    await user.click(screen.getByRole('button', { name: 'Open' }));
+    expect(shown()).toBe('12');
+    await user.click(screen.getByRole('button', { name: 'Late' }));
+    expect(shown()).toBe('34');
+    await user.click(screen.getByRole('button', { name: 'Contacted after STOP' }));
+    expect(shown()).toBe('24');
+    await user.click(screen.getByRole('button', { name: 'All' }));
+    expect(shown()).toBe('12345');
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('says "Nothing here." when a filter has no rows', async () => {
+    const { OptOutsTable } = await import('@/screens/revocation/OptOutsTable');
+    renderScreen(<OptOutsTable optOuts={[{ id: 'o', phoneDisplay: '(916) •••-0009', phoneE164: null, how: 'Text · keyword', words: 'STOP',
+      at: '2026-10-01T16:00:00Z', deadline: '2026-10-16', businessDaysLeft: 5, deadlineProvisional: false, dialerMarked: null, contactsAfter: null }]} />);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Late' }));
+    expect(screen.getByText('Nothing here.')).toBeInTheDocument();
+  });
+
   it('says so when there are no opt-outs yet', async () => {
     const { OptOutsTable } = await import('@/screens/revocation/OptOutsTable');
     renderScreen(<OptOutsTable optOuts={[]} />);

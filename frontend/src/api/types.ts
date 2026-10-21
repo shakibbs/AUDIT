@@ -190,6 +190,9 @@ export interface OptOut {
   deadline: string; businessDaysLeft: number; deadlineProvisional: boolean;
   /** null = not checked yet (Module 9). */
   dialerMarked: boolean | null; contactsAfter: { count: number; channel: string; lastAt: string; afterDeadline: boolean } | null;
+  /** Module 9: each tool's answer (null = can't tell), a tool not marked after the first check, and whether it counts in
+   * the score (an AI result before the AI passed its exam does not). */
+  tools?: { name: string; marked: boolean | null; note: string | null }[]; urgent?: boolean; counted?: boolean;
 }
 
 export interface VaultStats {

@@ -1,7 +1,7 @@
 import type { Revocation } from '@/api/types';
 import { Card } from '@/components/ui/Card';
 
-const mark = (ok: boolean | null) => ok === null ? <span className="pill pill-gray">Not tested</span> : ok ? <span className="pill pill-green">Honoured</span> : <span className="pill pill-red">Not honoured</span>;
+const mark = (ok: boolean | null) => ok === null ? <span className="pill pill-gray">Not checked</span> : ok ? <span className="pill pill-green">Honoured</span> : <span className="pill pill-red">Not honoured</span>;
 
 /** Which opt-out wordings each system honoured in tests: keywords and plain sentences. */
 export function WordingCoverage({ revocation }: { revocation: Revocation }) {

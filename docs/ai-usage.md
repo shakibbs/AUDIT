@@ -121,7 +121,7 @@ September 2026:
 
 | Job | Suggested model | Why |
 |---|---|---|
-| Call and text review (#1–#3) | Sonnet 5.5, tested against Haiku 4.5 and Opus 5.5 | High volume and needs judgment. **The accuracy gate picks the cheapest model that passes 95%** |
+| Call and text review (#1–#3) | Sonnet 5.5, tested against Haiku 4.5 and Opus 5.5 | High volume and needs judgment. **The accuracy gate picks the cheapest model that passes (every stop caught, 98% overall)** |
 | Contracts, policies, training, consent pages (#5–#7) | Opus 5.5 | Few documents, high stakes; the cost is small |
 | Court cases (#8) | Sonnet 5.5 in batch mode | Not urgent; batch is 50% cheaper |
 | Explanations and summaries (A–D) | Sonnet 5.5 | Good writing at a mid price |
@@ -147,7 +147,7 @@ Deepgram on real pilot recordings.
 
 | Safeguard | How it works | Setting |
 |---|---|---|
-| **Accuracy gate** | Before an AI job goes live, it is tested on hand-checked examples. It must agree with people at least 95% of the time. Calls and texts are tested separately | `ai_accuracy_min_items`, `ai_accuracy_pass_mark` 95%, `conv_review_accuracy_pass_mark` 95% |
+| **Accuracy gate** | Before an AI job goes live, it is tested on hand-checked examples. It must agree with people at least 95% of the time. Conversation review is stricter (owner decision 2026-10-21): every stop caught and 98% of all answers right. Calls and texts are tested separately | `ai_accuracy_min_items`, `ai_accuracy_pass_mark` 95%, `conv_review_accuracy_pass_mark` 98%, `conv_review_stop_catch_mark` 100% |
 | **Confidence floor** | Each answer comes with how sure the AI is. Below the floor, the result is "unclear" and changes nothing | `conv_review_min_confidence` 0.90; `ai_min_confidence` 0.85 for other jobs |
 | **Re-test on change** | A new model or a changed prompt re-runs the accuracy gate before results count again | Recorded in `ai_gate` |
 | **Labelled** | Every AI result shows "AI result" and its confidence | Portal and reports |

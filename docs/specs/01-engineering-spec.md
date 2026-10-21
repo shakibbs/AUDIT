@@ -701,9 +701,15 @@ don't call this number anymore" is.
 
 **Safeguards:** the feature runs only after passing its accuracy gate (≥
 `ai_accuracy_min_items` hand-labelled conversations, agreement ≥
-`conv_review_accuracy_pass_mark`, 95%, measured separately for calls and
-texts); every result is labelled "AI result" with its confidence; the gate is
-re-run when the model or prompt changes. CiV marks opt-outs **only in its own
+`conv_review_accuracy_pass_mark`, 98%, and every stop caught,
+`conv_review_stop_catch_mark`, 100%, measured separately for calls and
+texts; owner decision 2026-10-21); every result is labelled "AI result" with its
+confidence; the gate is re-run when the model or prompt changes, every 30 days,
+and fails at once when CiV staff report a real mistake. Until the AI passes, its
+stops still go on the STOP list and are still checked in the tools, but do not
+count against the client (M10, M38); "allowed contact again" and the new owner
+after "wrong number" wait for CiV staff. Below `conv_review_min_confidence` a
+possible stop is treated as a stop. CiV marks opt-outs **only in its own
 records** and never writes to the client's systems. Calls without a recording
 are "not reviewed". Counsel items C21 (AI deciding without a person) and C22
 (processing recordings and message text).

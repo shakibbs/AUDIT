@@ -35,10 +35,13 @@ export function OptOutsTable({ optOuts }: { optOuts: OptOut[] }) {
             {rows.map((o) => (
               <tr key={o.id} className={o.phoneE164 ? 'clickrow' : undefined} onClick={o.phoneE164 ? () => router.push(`/numbers/${encodeURIComponent(o.phoneE164!)}`) : undefined}>
                 <td className="mono font-semibold">{o.phoneDisplay}</td>
-                <td>{o.how}{o.words && <div className="tiny">{o.words}</div>}</td>
+                <td>{o.how}{o.words && <div className="tiny">{o.words}</div>}
+                  {o.counted === false && <div className="tiny" title="Found by the AI before it passed CiV's accuracy exam: still on your STOP list, not counted in your score.">AI result · not counted in your score yet</div>}</td>
                 <td className="mono tiny">{formatDateTime(o.at)}</td>
                 <td>{deadlineCell(o)}</td>
-                <td>{o.dialerMarked === null ? <span className="tiny">Not checked yet</span> : o.dialerMarked ? <span className="pill pill-green">Yes</span> : <span className="pill pill-red">No: block it now</span>}</td>
+                <td>{o.dialerMarked === null ? <span className="tiny">Not checked yet</span> : o.dialerMarked ? <span className="pill pill-green">Yes</span> : <span className="pill pill-red">No: block it now</span>}
+                  {o.urgent && o.dialerMarked !== false && <div><span className="pill pill-amber">Urgent: a tool has not marked it</span></div>}
+                  {o.tools && o.tools.length > 0 && <div className="tiny">{o.tools.map((t) => `${t.name}: ${t.marked === null ? 'not checked' : t.marked ? 'marked' : 'not marked'}`).join(' · ')}</div>}</td>
                 <td>{o.contactsAfter
                   ? <span className={`pill ${o.contactsAfter.afterDeadline ? 'pill-red' : 'pill-amber'}`}>
                       {o.contactsAfter.count} {o.contactsAfter.channel.toLowerCase()}{o.contactsAfter.count === 1 ? '' : 's'} · {o.contactsAfter.afterDeadline ? 'after the deadline' : 'before the deadline'}

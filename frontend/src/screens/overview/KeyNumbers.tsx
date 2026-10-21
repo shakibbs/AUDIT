@@ -24,7 +24,7 @@ export function KeyNumbers({ metrics, health, since }: { metrics: Metric[]; heal
       <KeyNumberCard tag="Contacts after opt-out" value={afterOptOut?.display ?? '—'} trend={trendOf(afterOptOut)}
         foot={afterOptOut?.note ?? ''} onClick={() => open('metric', 'M10')} />
       <KeyNumberCard tag="Median time to stop" value={stop?.display ?? '—'} trend={trendOf(stop)}
-        foot="From a test opt-out to every system stopping" onClick={() => open('metric', 'M08')} />
+        foot="From an opt-out to every system stopping" onClick={() => open('metric', 'M08')} />
       <KeyNumberCard tag="Opt-outs your dialer missed" value={review ? String(review.missed) : 'Not yet measured'} unit={review ? `of ${review.optOutsFound}` : undefined}
         bar={review ? { share: review.missed / Math.max(1, review.optOutsFound), caption: `${review.notMarkedFirstCheck} were not marked at first check`, tone: 'bad' } : undefined}
         foot={review ? `Found by AI review of ${review.reviewed.toLocaleString('en-US')} calls and texts` : 'Comes with AI review of calls and texts'} onClick={() => router.push('/revocation')} />

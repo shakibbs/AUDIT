@@ -303,8 +303,9 @@ counsel items C17–C18 in [05-counsel-brief.md](05-counsel-brief.md).
 | Key | Meaning | Default | Owner | Status | affects_status |
 |---|---|---|---|---|---|
 | `conv_review_enabled_channels` | Channels reviewed | call, text | Product | Set | no |
-| `conv_review_min_confidence` | Below this the result is `unclear` and no opt-out is marked | 0.90 | Product | Proposed (counsel C21) | yes |
-| `conv_review_accuracy_pass_mark` | Accuracy gate, measured separately for calls and texts | 95% | Product | Proposed (counsel C21) | yes |
+| `conv_review_min_confidence` | Below this a possible stop (opt-out or wrong number) is treated as a stop, the safe side; any other answer is `unclear` (owner decision 2026-10-21) | 0.90 | Product | Proposed (counsel C21) | yes |
+| `conv_review_accuracy_pass_mark` | Accuracy gate, all answers, measured separately for calls and texts (owner decision 2026-10-21) | 98% | Product | Proposed (counsel C21) | yes |
+| `conv_review_stop_catch_mark` | Accuracy gate, share of stops the AI must catch; one missed stop fails (owner decision 2026-10-21) | 100% | Product | Proposed (counsel C21) | yes |
 | `conv_review_thread_days` | How far back a text thread is read for context | 30 | Product | Set | yes |
 | `conv_review_text_quiet_minutes` | A text conversation counts as ended after this long with no new message | 10 | Engineering | Set | no |
 | `conv_review_partial_requests` | Whether a partial request (time window, channel) limits contact | not applied until counsel sets scope rules | Counsel | TBD (C21) | yes |
