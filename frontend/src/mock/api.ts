@@ -197,12 +197,6 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       alert.reviewed = true;
       return ok(alert);
     }
-    case 'PATCH consent-pages': {
-      const page = db.consentPages.find((p) => p.id === seg[1]);
-      if (!page) return fail(404, 'Page not found.');
-      Object.assign(page, body);
-      return ok(page);
-    }
     case 'POST legal-holds': {
       const hold = { id: `lh-${db.legalHolds.length + 1}`, scope: body.scope, target: body.target, reason: body.reason, setBy: `${db.session.name}`, setOn: '2026-09-30', releasedOn: null };
       db.legalHolds.unshift(hold as (typeof db.legalHolds)[number]);

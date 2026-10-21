@@ -48,3 +48,25 @@ describe('consent results on the portal', () => {
     expect(screen.getByText(/claim by/)).toBeInTheDocument();
   });
 });
+
+describe('the Wording tab (Module 7)', () => {
+  it('shows each consent page with its source, wording and checklist, without approve or reject', async () => {
+    const { WordingTab } = await import('@/screens/consent/WordingTab');
+    renderScreen(<WordingTab />);
+    expect(await screen.findByText('home-energy-match.example/form')).toBeInTheDocument();
+    expect(screen.getByText("Client's own form")).toBeInTheDocument();
+    expect(screen.getAllByText(/Consent box not ticked in advance/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/makes the call No proof/).length).toBe(1);
+    expect(screen.getAllByText(/needs AI, not measured yet/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Could not capture: The page answered 404/)).toBeInTheDocument();
+    expect(screen.queryByText('Approved')).not.toBeInTheDocument();
+  });
+
+  it('links to the photos of a page', async () => {
+    const { ConsentPageCard } = await import('@/screens/consent/ConsentPageCard');
+    render(<ConsentPageCard page={{ id: 'cpg-9', address: 'a.example/q', source: 'vendor', sourceLabel: 'From a vendor', firstSeen: '2026-10-01', lastSeen: '2026-10-20',
+      leads: 3, capturedAt: '2026-10-20T09:00:00Z', problem: '', wording: 'I agree…', draft: true, items: [],
+      photos: [{ viewport: '390x844', label: 'Phone', url: '/api/consent-pages/cpg-9/photo/390x844' }] }} />);
+    expect(screen.getByRole('link', { name: /Phone photo/ })).toHaveAttribute('href', '/api/consent-pages/cpg-9/photo/390x844');
+  });
+});

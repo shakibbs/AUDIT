@@ -53,12 +53,36 @@ export const consent: ConsentSummary = {
   expiring: [{ within: '7 days', count: 14 }, { within: '30 days', count: 42 }, { within: '90 days', count: 118 }],
 };
 
+const ITEMS: ConsentPage['items'] = [
+  { code: 'CC_CONSENT_TEXT', label: 'Asks for permission to call or text', effect: 'no_proof', result: 'pass' },
+  { code: 'CC_UNTICKED', label: 'Consent box not ticked in advance', effect: 'no_proof', result: 'pass' },
+  { code: 'CC_BUTTON_MATCH', label: '“By clicking …” names the real button', effect: 'wording', result: 'pass' },
+  { code: 'CC_NUMBER_SHOWN', label: 'Mentions the phone number', effect: 'wording', result: 'pass' },
+  { code: 'CC_FONT_SIZE', label: 'Text big enough (10 px, draft)', effect: 'wording', result: 'pass' },
+  { code: 'CC_CONTRAST', label: 'Text easy to read (contrast)', effect: 'wording', result: 'pass' },
+  { code: 'CC_ABOVE_BUTTON', label: 'Text above the button', effect: 'warning', result: 'pass' },
+  { code: 'CC_NO_SCROLL', label: 'Seen without scrolling', effect: 'warning', result: 'pass' },
+  { code: 'CC_SELLER_NAMED', label: 'Your company named', effect: 'info', result: 'pass' },
+  { code: 'CC_OPT_OUT', label: 'Says how to stop', effect: 'ai', result: 'not_measured' },
+  { code: 'CC_NOT_CONDITION', label: 'Says consent is not a condition of purchase', effect: 'ai', result: 'not_measured' },
+  { code: 'CC_AUTODIAL_DISCLOSED', label: 'Says calls may be automated', effect: 'ai', result: 'not_measured' },
+];
+const withFails = (...codes: string[]) => ITEMS.map((i) => (codes.includes(i.code) ? { ...i, result: 'fail' as const } : i));
+
+/** Sample pages (no photos in sample data). */
 export const consentPages: ConsentPage[] = [
-  { id: 'cp-1', url: 'go.sunpathsolar.com/quote', owner: 'yours', vendor: null, firstSeen: '2026-06-01', lastSeen: '2026-09-30', leads: 2140, checklistPassed: 11, checklistTotal: 12, missing: ['Consent is not a condition of purchase'], changedOn: '2026-09-28', wording: 'By clicking Get my quote, I agree that SunPath may call or text me at the number above using automated technology.', mark: 'unmarked' },
-  { id: 'cp-2', url: 'go.sunpathsolar.com/battery', owner: 'yours', vendor: null, firstSeen: '2026-06-01', lastSeen: '2026-09-30', leads: 860, checklistPassed: 12, checklistTotal: 12, missing: [], changedOn: null, wording: 'I agree that SunPath Residential Solar may contact me by call or text at the number shown, including with automated technology. Consent is not a condition of purchase. Reply STOP to opt out.', mark: 'approved' },
-  { id: 'cp-3', url: 'solar-savings-quotes.example/ca', owner: 'vendor', vendor: 'Vendor A · sub-ID 114', firstSeen: '2026-06-03', lastSeen: '2026-09-30', leads: 1420, checklistPassed: 12, checklistTotal: 12, missing: [], changedOn: null, wording: 'I consent to receive calls and texts from SunPath Residential Solar at this number, including by autodialer. Not required to purchase.', mark: 'approved' },
-  { id: 'cp-4', url: 'home-energy-match.example/form', owner: 'vendor', vendor: 'Vendor E · sub-ID 7', firstSeen: '2026-07-11', lastSeen: '2026-09-30', leads: 520, checklistPassed: 8, checklistTotal: 12, missing: ['Seller named', 'Automated contact disclosed', 'Number shown to the consumer', 'Text contrast'], changedOn: '2026-09-12', wording: 'By submitting, you agree to be contacted by our marketing partners.', mark: 'rejected' },
-  { id: 'cp-5', url: 'best-roof-deals.example/get-quote', owner: 'vendor', vendor: 'Vendor F', firstSeen: '2026-06-20', lastSeen: '2026-09-29', leads: 480, checklistPassed: 9, checklistTotal: 12, missing: ['Consent is not a condition of purchase', 'Consent above the button', 'Text contrast'], changedOn: null, wording: 'I agree to receive calls and texts from SunPath and its partners.', mark: 'unmarked' },
+  { id: 'cpg-1', address: 'go.sunpathsolar.com/quote', source: 'client_form', sourceLabel: "Client's own form", firstSeen: '2026-06-01', lastSeen: '2026-09-30',
+    leads: 2140, capturedAt: '2026-09-30T09:20:00Z', problem: '', photos: [], items: withFails('CC_FONT_SIZE'), draft: true,
+    wording: 'By clicking Get my quote, I agree that SunPath may call or text me at the number above using automated technology.' },
+  { id: 'cpg-2', address: 'solar-savings-quotes.example/ca', source: 'vendor', sourceLabel: 'From a vendor', firstSeen: '2026-06-03', lastSeen: '2026-09-30',
+    leads: 1420, capturedAt: '2026-09-30T09:24:00Z', problem: '', photos: [], items: ITEMS, draft: true,
+    wording: 'I consent to receive calls and texts from SunPath Residential Solar at this number, including by autodialer. Not required to purchase.' },
+  { id: 'cpg-3', address: 'home-energy-match.example/form', source: 'vendor', sourceLabel: 'From a vendor', firstSeen: '2026-07-11', lastSeen: '2026-09-30',
+    leads: 520, capturedAt: '2026-09-30T09:31:00Z', problem: '', photos: [], items: withFails('CC_UNTICKED', 'CC_SELLER_NAMED', 'CC_CONTRAST'), draft: true,
+    wording: 'By submitting, you agree to be contacted by our marketing partners.' },
+  { id: 'cpg-4', address: 'best-roof-deals.example/get-quote', source: 'uploaded_list', sourceLabel: 'From a vendor (uploaded list)', firstSeen: '2026-06-20',
+    lastSeen: '2026-09-29', leads: 480, capturedAt: '2026-09-30T09:35:00Z', problem: 'The page answered 404', photos: [], wording: '',
+    items: ITEMS.map((i) => ({ ...i, result: 'not_measured' as const })), draft: true },
 ];
 
 const cell = (hours: number | null, tests: number, tested = true) => ({ hours, tests, tested });
@@ -169,7 +193,7 @@ export const optOuts: OptOut[] = [
 
 /** Sample: certificates CiV found in the client's records (only the start of each ID is ever shown). */
 export const certificates: Certificate[] = [
-  { id: 'cc-3', provider: 'TrustedForm', ref: '7f3a91c2…', state: 'claimed', stateLabel: 'Claimed', seenAt: '2026-09-28T14:02:00Z', deadlineAt: '2026-10-01T14:00:00Z',
+  { id: 'cc-3', provider: 'TrustedForm', ref: '7f3a91c2…', source: "Client's own form", phoneMatch: true, state: 'claimed', stateLabel: 'Claimed', seenAt: '2026-09-28T14:02:00Z', deadlineAt: '2026-10-01T14:00:00Z',
     createdAt: '2026-09-28T13:58:00Z', expiresAt: '2029-09-28T13:58:00Z', page: 'solar.example.com/quote', usedBy: 4, problem: '' },
   { id: 'cc-2', provider: 'Jornaya', ref: 'A41C77E0…', state: 'waiting', stateLabel: 'Waiting to be claimed', seenAt: '2026-09-29T09:15:00Z', deadlineAt: '2026-10-02T09:10:00Z',
     createdAt: null, expiresAt: null, page: '', usedBy: 0, problem: '' },

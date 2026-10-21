@@ -142,23 +142,27 @@ export interface ConsentSummary {
 export interface Certificate {
   id: string; provider: string; ref: string; state: 'waiting' | 'claimed' | 'no_key' | 'lost'; stateLabel: string;
   seenAt: string; deadlineAt: string; createdAt: string | null; expiresAt: string | null; page: string; usedBy: number; problem: string;
+  source?: string; phoneMatch?: boolean | null;
 }
 
 /** The consent part of a number's page (strict results, current owner). */
 export interface ConsentPanel {
   owner: number | null;
   proofs: { id: string; kind: string; provider: string | null; madeAt: string | null; dateKnown: boolean; expiresAt: string | null;
-    state: string | null; tool: string; withdrawn: boolean; usedBy: number }[];
+    state: string | null; tool: string; withdrawn: boolean; usedBy: number; source?: string; phoneMatch?: boolean | null; page?: string }[];
   needs: { basis: Basis; status: ConsentStatus; proof: string | null }[]; needsFor: string | null;
   history: { at: string; contactAt: string; from: ConsentStatus | null; to: ConsentStatus; reason: string; frozen: boolean }[];
   frozen: number; pending: number; notMeasured: string[]; draftRules: boolean;
 }
 
+/** A consent form page from your certificates, with CiV's latest photos of it and the checklist read from them. */
 export interface ConsentPage {
-  id: string; url: string; owner: 'yours' | 'vendor'; vendor: string | null;
-  firstSeen: string; lastSeen: string; leads: number;
-  checklistPassed: number; checklistTotal: number; missing: string[];
-  changedOn: string | null; wording: string; mark: 'approved' | 'rejected' | 'unmarked';
+  id: string; address: string; source: 'client_form' | 'vendor' | 'uploaded_list' | 'unknown'; sourceLabel: string;
+  firstSeen: string; lastSeen: string; leads: number; capturedAt: string | null; problem: string;
+  photos: { viewport: string; label: string; url: string }[]; wording: string;
+  /** effect when an item fails: no_proof · wording (weak) · warning · info; ai = needs AI, not measured yet. */
+  items: { code: string; label: string; effect: 'no_proof' | 'wording' | 'warning' | 'info' | 'ai'; result: 'pass' | 'fail' | 'not_measured' }[];
+  draft: boolean;
 }
 
 export interface RevocationCell { hours: number | null; tested: boolean; tests: number }

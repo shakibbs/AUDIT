@@ -19,12 +19,14 @@ export function CertificatesCard() {
         {(list) => list.length === 0 ? <Empty>No certificates found in your records yet.</Empty> : (
           <div className="overflow-x-auto">
             <table className="tbl">
-              <thead><tr><th>Certificate</th><th>State</th><th>Found</th><th>Made</th><th>Expires</th><th>Page</th><th>Used by</th></tr></thead>
+              <thead><tr><th>Certificate</th><th>Source</th><th>State</th><th>Phone match</th><th>Found</th><th>Made</th><th>Expires</th><th>Page</th><th>Used by</th></tr></thead>
               <tbody>
                 {list.map((c) => (
                   <tr key={c.id}>
                     <td><span className="font-semibold">{c.provider}</span> <span className="mono text-[11.5px] text-txt-2">{c.ref}</span></td>
+                    <td className="whitespace-nowrap text-txt-2">{c.source ?? '—'}</td>
                     <td><span className={`pill ${PILL[c.state]}`}>{c.stateLabel}</span>{c.problem && <div className="tiny">{c.problem === 'NotFound' ? 'The provider does not have it' : c.problem}</div>}</td>
+                    <td>{c.phoneMatch === true ? '✅ Matches' : c.phoneMatch === false ? '❌ Not the number typed' : <span className="text-txt-3">Not checked</span>}</td>
                     <td className="whitespace-nowrap">{formatDate(c.seenAt)}{c.state === 'waiting' && <div className="tiny">claim by {formatDate(c.deadlineAt)}</div>}</td>
                     <td className="whitespace-nowrap">{c.createdAt ? formatDate(c.createdAt) : '—'}</td>
                     <td className="whitespace-nowrap">{c.expiresAt ? formatDate(c.expiresAt) : '—'}</td>

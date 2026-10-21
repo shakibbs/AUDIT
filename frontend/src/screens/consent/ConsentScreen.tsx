@@ -24,12 +24,7 @@ export function ConsentScreen() {
       <PageHead eyebrow="Evidence" title="Consent Integrity" sub="Whether each contact had permission on record, and how strong that record is.">
         <Seg label="View" options={TABS} value={tab} onChange={setTab} />
       </PageHead>
-      {tab === 'wording' ? (
-        <>
-          <div className="note-box mb-4">Sample data: capturing the consent wording on your pages comes with Module 7.</div>
-          <WordingTab />
-        </>
-      ) : (
+      {tab === 'wording' ? <WordingTab /> : (
         <Loader query={consent}>
           {(c) => tab === 'expiry' ? <ExpiryTab consent={c} /> : (
             <div className="grid gap-5 lg:grid-cols-2">

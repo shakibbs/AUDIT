@@ -90,8 +90,11 @@ Pending / Not needed with the reason in words, the five checks ("Not yet measure
 the proof used; "Not checked yet" (`NOT_CHECKED`) only in the minute before the engine runs, never a worst case. The
 number page adds a **Consent** card (current owner's proofs, what the latest contact needed, history of changes, not
 yet measured) and the real opt-outs in the timeline. Consent Integrity's Summary and Expiry tabs read `/consent`
-(pending and frozen counted apart), and a **Your certificates** card reads `/certificates`; the Wording tab stays
-sample data until Module 7. Numbers appear only masked (area code + last 4). The number page adds the
+(pending and frozen counted apart), and a **Your certificates** card reads `/certificates`; the Wording tab is
+real since Module 7: each consent page with its source (own form / vendor / uploaded list), CiV's photos (through
+`/consent-pages/.../photo/...`; the proxy passes bytes), the consent words and the checklist (✅ / ❌ with its effect /
+⚠️ / ℹ️ / ⏳ needs AI), no approve/reject mark. Your certificates shows each one's source and phone match. Numbers appear
+only masked (area code + last 4). The number page adds the
 **calling window**, **owners of the number** and the real **seal**; Rulebook → Calendar & hours starts with **"Can I call
 now?"**. Revocation Integrity's **Opt-outs card** reads `/optouts` (the real STOP list from Django; "Dialer marked:
 Not checked yet" until Module 9).

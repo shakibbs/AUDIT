@@ -20,6 +20,9 @@ export function ConsentCard({ consent }: { consent: ConsentPanel }) {
                 <span className="tiny block">
                   {p.madeAt ? `made ${formatDate(p.madeAt)}${p.dateKnown ? '' : ' (date not read yet)'}` : 'date unknown'}
                   {p.expiresAt ? ` · expires ${formatDate(p.expiresAt)}` : ''} · from {p.tool} · used by {p.usedBy} {p.usedBy === 1 ? 'contact' : 'contacts'}
+                  {p.source ? ` · ${p.source}` : ''}
+                  {p.phoneMatch === true ? ' · phone matches the form' : p.phoneMatch === false ? ' · phone NOT the one typed in the form' : ''}
+                  {p.page ? ` · page ${p.page} (see Consent Integrity → Wording)` : ''}
                 </span>
               </span>
               {p.withdrawn ? <span className="pill pill-gray">Withdrawn</span> : p.state ? <span className={`pill ${p.state === 'Claimed' ? 'pill-green' : p.state.startsWith('Lost') ? 'pill-red' : 'pill-gray'}`}>{p.state}</span> : null}
