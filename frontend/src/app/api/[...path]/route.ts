@@ -24,6 +24,8 @@ async function handle(request: NextRequest, { params }: Ctx): Promise<Response> 
     const sample = mockApi({ method: 'GET', path: `/${path.join('/')}`, query });
     if (sample.status === 403) return NextResponse.json(sample.body, { status: 403 });  // a page this view may not open
     if (!reply.ok || sample.status !== 200) return reply;
+    // Files (a report PDF) pass straight through; only JSON is laid over the sample.
+    if (!(reply.headers.get('content-type') ?? '').includes('application/json')) return reply;
     return NextResponse.json(overlay(sample.body, await reply.json()));
   }
   if (usesBackend(path)) {

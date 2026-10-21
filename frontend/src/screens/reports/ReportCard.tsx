@@ -1,7 +1,7 @@
 'use client';
 
 import { useSend } from '@/api/queries';
-import type { ReportType } from '@/api/types';
+import type { ReportRun, ReportType } from '@/api/types';
 import { Icon } from '@/components/ui/Icon';
 
 // Reports CiV can already make from real data: the file is downloaded straight away (the others are requested).
@@ -35,7 +35,13 @@ export function ReportCard({ report, period }: { report: ReportType; period: str
       </div>
       <button type="button" className="btn btn-ghost btn-sm mt-auto self-start" disabled={send.isPending || send.isSuccess}
         onClick={() => {
-          send.mutate({ method: 'POST', path: '/reports', body: { name: report.name, period } });
+          // Reports the backend makes (period audit report, metric export) download once ready.
+          send.mutate({ method: 'POST', path: '/reports', body: { name: report.name, period } }, {
+            onSuccess: (made) => {
+              const run = made as ReportRun | undefined;
+              if (run?.url && !READY_NOW[report.id]) download(run.url, `${report.id}-${monthId(period)}.${report.format === 'CSV' ? 'csv' : 'pdf'}`);
+            },
+          });
           if (READY_NOW[report.id]) download(READY_NOW[report.id](period), `${report.id}-${monthId(period)}.pdf`);
         }}>
         <Icon name="download" size={14} /> {send.isSuccess ? 'Requested' : report.addOn ? 'Request a quote' : 'Generate'}

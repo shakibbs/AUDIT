@@ -28,7 +28,7 @@ export function AlertsScreen() {
               <div className="grid gap-4 sm:grid-cols-3">
                 <Kpi tag="Not reviewed" value={String(fresh.length)} foot={`${fresh.filter((a) => a.severity === 'High').length} high severity`} />
                 <Kpi tag="Reviewed" value={String(list.length - fresh.length)} foot="Kept in the history" />
-                <Kpi tag="Email delivery" value="On" foot="Choose which alerts are emailed in Settings" />
+                <Kpi tag="Email delivery" value="Off" foot="Alerts are shown in the portal only" />
               </div>
               <Card title="Inbox" sub="Most severe first" flush right={<Seg label="Filter" options={FILTERS} value={filter} onChange={setFilter} />}>
                 {shown.length === 0 ? <Empty>Every alert has been reviewed.</Empty> : shown.map((a) => <AlertRow key={a.id} alert={a} />)}

@@ -4,12 +4,12 @@ import type { NextRequest } from 'next/server';
 /** First path segments Django answers today. */
 // The Data health card is /data-health (Django's own /api/health is the server check, not forwarded).
 // Pages already served by Django when BACKEND_URL is set; every other page still uses the sample data.
-const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health', 'contacts', 'evidence', 'can-call', 'optouts', 'consent', 'certificates', 'consent-pages', 'provenance', 'proof-requests', 'access-log', 'uploads', 'conduct', 'billed-numbers', 'position', 'hash-check'];
+const BACKEND_PATHS = ['session', 'users', 'invites', 'rulebook', 'reg-changes', 'rule-updates', 'sources', 'data-health', 'contacts', 'evidence', 'can-call', 'optouts', 'consent', 'certificates', 'consent-pages', 'provenance', 'proof-requests', 'access-log', 'uploads', 'conduct', 'billed-numbers', 'position', 'hash-check', 'alerts'];
 // Pages that are partly real: Django sends only the fields it really has; the rest still comes from the sample until
 // its module is built (nothing on the page is lost). Only reads; changes on these pages stay with the sample.
-const MERGE_PATHS = ['vault', 'settings', 'revocation', 'insureds', 'metrics', 'who-contact', 'readiness', 'leads', 'vendors', 'litigation', 'score', 'domains'];
+const MERGE_PATHS = ['vault', 'settings', 'revocation', 'insureds', 'metrics', 'who-contact', 'readiness', 'leads', 'vendors', 'litigation', 'score', 'domains', 'actions', 'reports'];
 // Changes on a partly real page that Django already saves (the rest stay with the sample).
-const WRITE_PATHS = ['who-contact'];
+const WRITE_PATHS = ['who-contact', 'actions', 'reports'];
 
 export function mergesBackend(path: string[], method: string): boolean {
   return Boolean(process.env.BACKEND_URL) && method === 'GET' && MERGE_PATHS.includes(path[0]);

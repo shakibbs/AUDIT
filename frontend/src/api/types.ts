@@ -52,7 +52,7 @@ export interface ScorePoint { period: string; label: string; score: number; grad
 
 export interface ScoreSummary {
   score: number; grade: Grade; rawGrade: Grade;
-  cap: { share: number; limit: number } | null;
+  cap: { share: number; limit: number | null } | null;
   checkpointsRun: number; checkpointsTotal: number; domainsMeasured: number; domainsTotal: number;
   projected: { score: number; grade: Grade; actions: number; clearsCap: boolean };
   previous: number;
@@ -99,11 +99,20 @@ export interface Action {
   assignee: string | null; due: string | null; overdue: boolean;
   status: 'open' | 'in_progress' | 'resolved';
   dispute: { note: string; by: string; at: string } | null;
+  /** Module 11 findings: the metric, masked example numbers (ref opens the number page), first seen, reopened. */
+  metric?: string; examples?: { label: string; ref: string }[]; numbersAffected?: number | null;
+  since?: string; reopened?: boolean; resolvedOn?: string | null;
+  /** Step 2: the client's decision with its note (kept in their workspace, never sent to insurers); the common
+   * response is a draft for their lawyers to review. */
+  decision?: { choice: 'accepted' | 'declined' | 'alternative'; note: string; by: string; at: string } | null;
+  fixStepDraft?: boolean;
 }
 
 export interface Alert {
   id: string; severity: Severity; kind: string; title: string; detail: string;
   at: string; domain: string; reviewed: boolean; routedTo: 'legal' | 'all';
+  /** Module 11: the condition went away by itself; who reviewed it. */
+  resolved?: boolean; reviewedBy?: string | null;
 }
 
 // ----- Evidence -----
@@ -291,7 +300,8 @@ export interface Source {
 export interface Upload { artifactId: string; source: string; fileName: string; sha256: string; receivedAt: string; rowsRead: number; rowsRejected: number }
 
 export interface ReportType { id: string; name: string; description: string; format: string; addOn: boolean }
-export interface ReportRun { id: string; name: string; period: string; requestedBy: string; at: string; status: 'ready' | 'queued' }
+/** Module 11: blocked = held back by the banned-word check; unavailable = that report type is not built yet; url downloads it. */
+export interface ReportRun { id: string; name: string; period: string; requestedBy: string; at: string; status: 'ready' | 'queued' | 'blocked' | 'unavailable'; url?: string | null; sha256?: string | null }
 
 // ----- Engagement -----
 export type RuleStatus = 'set' | 'proposed' | 'tbd';

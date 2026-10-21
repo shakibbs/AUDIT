@@ -149,3 +149,12 @@ domain is the mean of its metrics' scores, the Audit Score the mean of the measu
 "Partial: n of 6 factors measured · Draft bands". Pending factors are null and the Exposure spreads their weight over
 the measured ones. Fields not built yet (evidence coverage, confirmed-rules score, projected, unmeasured domains) still
 show the sample. The insurer Litigation page takes WebRecon's monthly numbers from `/litigation` (cards merged by id).
+
+**Findings, alerts and reports (Module 11):** the Action Queue and the Overview's "Things to fix" read `/actions`
+(findings in plain words, severity, masked examples, score impact, "Found again"); the action panel saves owner, due
+date, status, a decision with its note and a dispute (`PATCH /actions/<id>`, Admins and the company's lawyer only),
+and labels each common response "Draft · for your lawyers to review". The Alerts page and the Overview's alert box
+read `/alerts` (fully from Django: portal only, "Resolved", "Reviewed by"). The projected score is real (top 5
+findings fixed). Reports & Exports: Period audit report, Rulebook snapshot and Metric export are made by Django and
+download from the history; files pass through the proxy untouched; evidence file, certification pack and litigation
+package come with Module 14.

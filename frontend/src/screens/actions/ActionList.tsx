@@ -25,6 +25,7 @@ export function ActionList({ actions }: { actions: Action[] }) {
                 <button type="button" className="border-0 bg-transparent p-0 text-left text-[13px] font-semibold text-txt">{a.title}</button>
                 <div className="tiny">{a.why}</div>
                 {a.dispute && <span className="pill pill-amber mt-1">Finding contested</span>}
+                {a.reopened && <span className="pill pill-amber mt-1">Found again</span>}
               </td>
               <td><SeverityPill severity={a.severity} /></td>
               <td><DomainCode code={a.domain} /></td>

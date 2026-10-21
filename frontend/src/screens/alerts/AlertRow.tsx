@@ -18,6 +18,8 @@ export function AlertRow({ alert }: { alert: Alert }) {
         <div className="tiny mt-1.5 flex flex-wrap items-center gap-2">
           <span>{alert.kind}</span><span>·</span><span>{formatDateTime(alert.at)} UTC</span><DomainCode code={alert.domain} />
           {alert.routedTo === 'legal' && <span className="pill pill-gray">Sent to lawyers</span>}
+          {alert.resolved && <span className="pill pill-green">Resolved</span>}
+          {alert.reviewedBy && <span>Reviewed by {alert.reviewedBy}</span>}
         </div>
       </div>
       {alert.reviewed
