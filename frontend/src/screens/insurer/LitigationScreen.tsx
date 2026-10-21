@@ -19,7 +19,7 @@ export function LitigationScreen() {
           <div className="flex flex-col gap-5">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {d.headline.map((h) => (
-                <div key={h.label} className="card kpi">
+                <div key={h.id ?? h.label} className="card kpi">
                   <span className="kpi-tag">{h.label}</span>
                   <span className="kpi-val">{h.value}</span>
                   <span className="kpi-foot">{h.note}</span>
@@ -28,9 +28,9 @@ export function LitigationScreen() {
               ))}
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
-              <Card title="Class actions filed in February, by year" sub="Class filings have about quadrupled in three years">
-                <Columns label="Class actions filed in February" height={170} columns={d.classByYear.map((c, k) => ({ label: c.label, value: c.count, display: `${c.count} filings`, flagged: k === d.classByYear.length - 1 }))} />
-                <p className="tiny mb-0 mt-3">Source: TCPAWorld, 7 Apr 2026. The latest year is drawn in a second colour.</p>
+              <Card title={`Class actions filed in ${d.classMonth ?? 'February'}, by year`} sub={d.classMonth ? 'The same month in each year' : 'Class filings have about quadrupled in three years'}>
+                <Columns label={`Class actions filed in ${d.classMonth ?? 'February'}`} height={170} columns={d.classByYear.map((c, k) => ({ label: c.label, value: c.count, display: `${c.count} filings`, flagged: k === d.classByYear.length - 1 }))} />
+                <p className="tiny mb-0 mt-3">{d.classSource ?? 'Source: TCPAWorld, 7 Apr 2026.'} The latest year is drawn in a second colour.</p>
               </Card>
               <Card title="What a suit costs">
                 <dl className="m-0">

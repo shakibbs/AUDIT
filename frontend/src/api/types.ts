@@ -28,7 +28,8 @@ export const BASIS_LABEL: Record<Basis, string> = {
   civ_policy: 'CiV policy only',
 };
 
-export interface Period { id: string; label: string }
+/** A month in the picker; revisedOn: a locked month saved again after late data or a rule change (Module 10). */
+export interface Period { id: string; label: string; revisedOn?: string }
 
 export interface Session {
   signedIn: boolean;
@@ -63,6 +64,9 @@ export interface ScoreSummary {
   caps: CapStatus[];
   families: { family: Family; score: number | null }[];
   history: ScorePoint[];
+  /** Module 10: some of the six factors are not measured yet; the bands are drafts until counsel confirms them. */
+  partial?: { factorsMeasured: number; factors: number } | null; draftBands?: boolean;
+  exposure?: { value: number | null; grade: Grade | null; defect: number | null };
 }
 
 export interface CapStatus { name: string; held: boolean; detail: string }
@@ -369,7 +373,8 @@ export interface SearchHit { kind: 'domain' | 'metric' | 'number' | 'vendor' | '
 export type SourceGrade = 'A' | 'B' | 'C' | 'D' | 'S' | 'N';
 
 /** One reading of the six exposure factors (0–100, higher = more exposed) and the three pressure multipliers. */
-export interface ExposureReading { factors: number[]; venue: number; targeting: number; volume: number; source: string }
+/** factors: F1–F6, higher = worse; null = pending (nothing measured yet: left out, weight spread over the others). */
+export interface ExposureReading { factors: (number | null)[]; venue: number; targeting: number; volume: number; source: string }
 
 export interface Insured {
   id: string; name: string; industry: string; contactsPerMonth: number; selfReported: boolean;
@@ -390,8 +395,11 @@ export interface Insured {
 }
 
 export interface LitigationStats {
-  headline: { label: string; value: string; note: string; status: 'Verified' | 'Estimate'; source: string; url: string | null }[];
+  /** id: which card a real figure replaces (Module 10: WebRecon's monthly posts). */
+  headline: { id?: string; label: string; value: string; note: string; status: 'Verified' | 'Estimate'; source: string; url: string | null }[];
   classByYear: { label: string; count: number }[];
+  /** The month the class-action chart compares year by year, and its source line (real data only). */
+  classMonth?: string; classSource?: string;
   costs: { label: string; value: string; status: 'Statute' | 'Verified' | 'Estimate' }[];
   claimTypes: { type: string; hook: string; direction: string }[];
   study: { step: string; how: string; cost: string }[];

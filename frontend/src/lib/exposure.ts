@@ -10,9 +10,12 @@ export const exposureGrade = (x: number): Grade => (x < 25 ? 'A' : x < 40 ? 'B' 
 
 export interface ExposureResult { defect: number; multiplier: number; raw: number; exposure: number; grade: Grade; capped: boolean }
 
-/** Exposure = min(100, D × venue × targeting × volume), where D is the weighted sum of the six factors. */
+/** Exposure = min(100, D × venue × targeting × volume), where D is the weighted sum of the six factors. Pending
+ * factors (null) are left out and their weight spread over the measured ones (owner decision 2026-10-21). */
 export function exposureOf(r: ExposureReading): ExposureResult {
-  const defect = r.factors.reduce((sum, f, k) => sum + f * FACTOR_WEIGHTS[k], 0);
+  const measured = r.factors.map((f, k) => [f, FACTOR_WEIGHTS[k]] as const).filter((p): p is readonly [number, number] => p[0] !== null);
+  const share = measured.reduce((sum, [, w]) => sum + w, 0) || 1;
+  const defect = measured.reduce((sum, [f, w]) => sum + f * w, 0) / share;
   const multiplier = r.venue * r.targeting * r.volume;
   const raw = defect * multiplier;
   const exposure = Math.min(100, raw);

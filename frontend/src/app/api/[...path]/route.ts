@@ -22,6 +22,7 @@ async function handle(request: NextRequest, { params }: Ctx): Promise<Response> 
     const query = Object.fromEntries(request.nextUrl.searchParams);
     const reply = await forward(request, path);
     const sample = mockApi({ method: 'GET', path: `/${path.join('/')}`, query });
+    if (sample.status === 403) return NextResponse.json(sample.body, { status: 403 });  // a page this view may not open
     if (!reply.ok || sample.status !== 200) return reply;
     return NextResponse.json(overlay(sample.body, await reply.json()));
   }

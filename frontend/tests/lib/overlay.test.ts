@@ -26,3 +26,15 @@ describe('named lists', () => {
       leadSources: [{ id: 'ls-9f', name: 'SolarLeads Inc' }] });
   });
 });
+
+describe('insurer litigation page (Module 10)', () => {
+  it('real WebRecon cards replace their sample cards by id; the settlement card and the rest stay', async () => {
+    const { litigation } = await import('@/mock/data/insurer');
+    const real = { headline: [{ id: 'filings-year', label: 'Federal TCPA filings, 2026 so far', value: '1,907', note: '+20.2%', status: 'Verified', source: 'WebRecon', url: 'u' }],
+      classByYear: [{ label: 'Aug 2025', count: 120 }, { label: 'Aug 2026', count: 143 }], classMonth: 'August' };
+    const merged = overlay(litigation, real) as typeof litigation;
+    expect(merged.headline.map((h) => h.value)).toEqual(['1,907', '211', '$6.6M', '44%']);
+    expect(merged.classByYear).toEqual(real.classByYear);
+    expect(merged.costs).toEqual(litigation.costs);
+  });
+});

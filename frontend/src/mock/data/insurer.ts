@@ -88,10 +88,10 @@ export const insureds: Insured[] = [
 
 export const litigation: LitigationStats = {
   headline: [
-    { label: 'Federal TCPA filings, 2025', value: '2,810', note: '+0.8% vs 2,787 in 2024', status: 'Verified', source: 'WebRecon', url: 'https://webrecon.com/litigation-statistics/webrecon-dec-2025-stats-year-in-review' },
-    { label: 'Class actions filed, Feb 2026', value: '211', note: 'vs 148 in Feb 2025', status: 'Verified', source: 'TCPAWorld', url: 'https://tcpaworld.com/2026/04/07/tcpa-risk-up-20-to-start-the-year-february-2026-tcpa-class-action-filings-spike-to-record-211-new-complaint-and-2026-is-suddenly-eclipsing-the-monster-that-was-2025/' },
-    { label: 'Average class settlement', value: '$6.6M', note: 'Defense up to $2M', status: 'Verified', source: 'Insurance Business', url: 'https://www.insurancebusinessmag.com/us/news/claims/robocall-claims-on-the-up-but-many-underinsured-455359.aspx' },
-    { label: 'Repeat plaintiffs', value: '44%', note: 'of Dec 2025 plaintiffs had sued before', status: 'Verified', source: 'WebRecon', url: null },
+    { id: 'filings-year', label: 'Federal TCPA filings, 2025', value: '2,810', note: '+0.8% vs 2,787 in 2024', status: 'Verified', source: 'WebRecon', url: 'https://webrecon.com/litigation-statistics/webrecon-dec-2025-stats-year-in-review' },
+    { id: 'class-month', label: 'Class actions filed, Feb 2026', value: '211', note: 'vs 148 in Feb 2025', status: 'Verified', source: 'TCPAWorld', url: 'https://tcpaworld.com/2026/04/07/tcpa-risk-up-20-to-start-the-year-february-2026-tcpa-class-action-filings-spike-to-record-211-new-complaint-and-2026-is-suddenly-eclipsing-the-monster-that-was-2025/' },
+    { id: 'class-settlement', label: 'Average class settlement', value: '$6.6M', note: 'Defense up to $2M', status: 'Verified', source: 'Insurance Business', url: 'https://www.insurancebusinessmag.com/us/news/claims/robocall-claims-on-the-up-but-many-underinsured-455359.aspx' },
+    { id: 'repeat-plaintiffs', label: 'Repeat plaintiffs', value: '44%', note: 'of Dec 2025 plaintiffs had sued before', status: 'Verified', source: 'WebRecon', url: null },
   ],
   classByYear: [{ label: 'Feb 2023', count: 53 }, { label: 'Feb 2024', count: 91 }, { label: 'Feb 2025', count: 148 }, { label: 'Feb 2026', count: 211 }],
   costs: [

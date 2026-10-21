@@ -15,6 +15,12 @@ export function ScoreCard({ score }: { score: ScoreSummary }) {
         <span className={`pill ${bandClass(score.score)}`}>Grade {score.grade}{score.caps.some((c) => c.held) ? ' · held' : ''}</span>
       </div>
       <Gauge score={score.score} grade={score.grade} />
+      {(score.partial || score.draftBands) && (
+        <p className="tiny mb-0 mt-1 text-center">
+          {score.partial ? `Partial: ${score.partial.factorsMeasured} of ${score.partial.factors} factors measured` : ''}
+          {score.partial && score.draftBands ? ' · ' : ''}{score.draftBands ? 'Draft bands' : ''}
+        </p>
+      )}
       <div className="mt-2 text-center"><Delta value={score.score - score.previous} /></div>
 
       <div className="mt-4">
