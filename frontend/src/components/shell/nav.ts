@@ -33,6 +33,8 @@ export const NAV: NavGroup[] = [
 ];
 
 /** Account pages: in the account menu at the top right, not the sidebar. */
+// Settings and Users & Access are for the company's Admin only (owner, 2026-10-23).
+export const ADMIN_ONLY_PATHS = ['/settings', '/users'];
 export const ACCOUNT_LINKS: NavItem[] = [
   { href: '/setup', label: 'Setup & Readiness', icon: 'clipboard' },
   { href: '/settings', label: 'Settings', icon: 'settings' },

@@ -12,10 +12,10 @@ export function Sidebar({ session, open, onNavigate }: { session: Session; open:
   const pathname = usePathname();
   const underwriter = session.view === 'underwriter';
   // A real insurer's own name heads its menu; the sample keeps Falcon Risk.
-  const groups = underwriter ? UNDERWRITER_NAV.map((g, k) => (k === 0 && !session.sampleData ? { ...g, title: `${session.clientName} · underwriting` } : g)) : [...NAV, SHARED_WITH_INSURER];
+  const groups = underwriter ? UNDERWRITER_NAV.map((g, k) => (k === 0 && !session.sampleData ? { ...g, title: session.orgKind === 'client' ? `${session.clientName} · insurer view` : `${session.clientName} · underwriting` } : g)) : [...NAV, SHARED_WITH_INSURER];
   // Counts are client data; an underwriter never loads them.
-  const actions = useActions();
-  const alerts = useAlerts();
+  const actions = useActions(!underwriter);
+  const alerts = useAlerts(!underwriter);
   const counts = {
     actions: underwriter ? 0 : actions.data?.filter((a) => a.status !== 'resolved').length ?? 0,
     alerts: underwriter ? 0 : alerts.data?.filter((a) => !a.reviewed).length ?? 0,

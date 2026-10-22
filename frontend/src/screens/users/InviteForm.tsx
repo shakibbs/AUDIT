@@ -28,7 +28,7 @@ export function InviteForm() {
         <label className="flex items-center gap-2 pb-2.5 text-[13px]"><input type="checkbox" checked={form.isCounsel} onChange={(e) => setForm({ ...form, isCounsel: e.target.checked })} /> Is our lawyer</label>
         <button type="submit" className="btn btn-primary" disabled={send.isPending}>Send invitation</button>
       </form>
-      <p className="tiny mb-0 mt-3">{ROLE_LABEL[form.role]}: {ROLE_CAN[form.role]}. In lawyer-only mode, findings and alerts go only to people marked as the company’s lawyer.</p>
+      <p className="tiny mb-0 mt-3">{ROLE_LABEL[form.role]}: {ROLE_CAN[form.role]}. A lawyer can also review rule drafts, suggest law changes and sign statements.</p>
       {send.isError && <p className="mb-0 mt-2 text-[12.5px]" role="alert">{send.error.message}</p>}
     </Card>
   );

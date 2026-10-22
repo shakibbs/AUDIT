@@ -11,6 +11,7 @@ import { countOr } from '@/lib/notMeasured';
 import { usePortal } from '@/state/PortalContext';
 import { CoverageChip } from './CoverageChip';
 import { ExposureCell } from './ExposureCell';
+import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
 
 const pct = (v: number | null) => (v === null ? '—' : `${Math.round(v * 100)}%`);
@@ -26,6 +27,7 @@ export function PortfolioScreen() {
       <PageHead eyebrow={eyebrow} title="Portfolio" sub="Every insured on one scale, refreshed monthly by independent measurement. Unverified fields are priced at worst case. Select a row for the attestation." />
       <Loader query={insureds}>
         {(list) => {
+          if (!list.length) return <NoShares />;
           const rows = list.map((i) => ({ i, lm: lossModel(i) }));
           const total = rows.reduce((sum, r) => sum + (r.i.contactsPerMonth === null ? 0 : r.lm.expectedLoss), 0);
           return (

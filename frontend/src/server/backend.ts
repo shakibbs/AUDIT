@@ -11,7 +11,7 @@ export const SAMPLE_WHEN_REFUSED = ['rating-engine'];
 // its module is built (nothing on the page is lost). Only reads; changes on these pages stay with the sample.
 const MERGE_PATHS = ['vault', 'settings', 'revocation', 'insureds', 'metrics', 'who-contact', 'readiness', 'leads', 'vendors', 'litigation', 'score', 'domains', 'actions', 'reports'];
 // Changes on a partly real page that Django already saves (the rest stay with the sample).
-const WRITE_PATHS = ['who-contact', 'actions', 'reports'];
+const WRITE_PATHS = ['who-contact', 'actions', 'reports', 'settings', 'setup'];  // settings: alert email choices; setup: checklist ticks
 
 export function mergesBackend(path: string[], method: string): boolean {
   return Boolean(process.env.BACKEND_URL) && method === 'GET' && MERGE_PATHS.includes(path[0]);
@@ -50,7 +50,7 @@ export function overlay(sample: unknown, real: unknown): unknown {
 // The view switch is a sample-data feature; it stays on the mock.
 export function usesBackend(path: string[]): boolean {
   if (process.env.BACKEND_URL && WRITE_PATHS.includes(path[0])) return true;  // reads still merge (route.ts checks merges first)
-  return Boolean(process.env.BACKEND_URL) && BACKEND_PATHS.includes(path[0]) && path[1] !== 'view-as';
+  return Boolean(process.env.BACKEND_URL) && BACKEND_PATHS.includes(path[0]);
 }
 
 const PASS_HEADERS = ['cookie', 'content-type', 'x-csrftoken', 'origin', 'user-agent'];

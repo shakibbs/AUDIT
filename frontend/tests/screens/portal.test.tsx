@@ -113,11 +113,11 @@ describe('shell', () => {
     expect(screen.queryByText('page body')).not.toBeInTheDocument();
   });
 
-  it('locks a Member who is not the lawyer out when the engagement is counsel-directed', async () => {
-    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member', isCounsel: false, engagementMode: 'counsel_directed' } });
+  it('lets every Member use the whole portal (no lawyer-only mode, 2026-10-22)', async () => {
+    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member', isCounsel: false } });
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
-    expect(await screen.findByText('This engagement is counsel-directed')).toBeInTheDocument();
-    expect(screen.queryByText('page body')).not.toBeInTheDocument();
+    expect(await screen.findByText('page body')).toBeInTheDocument();
+    expect(screen.queryByText(/counsel-directed|direction of counsel/i)).not.toBeInTheDocument();
   });
 
   it('finds a domain from the search box and opens its panel', async () => {
@@ -278,8 +278,8 @@ describe('interactions', () => {
     await waitFor(() => expect(screen.queryByText('new.person@sunpath.example')).not.toBeInTheDocument());
   });
 
-  it('lets a lawyer Member in when the engagement is counsel-directed', async () => {
-    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member', isCounsel: true, engagementMode: 'counsel_directed' } });
+  it('lets a lawyer Member in', async () => {
+    mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member', isCounsel: true } });
     renderScreen(<PortalShell><p>page body</p></PortalShell>);
     expect(await screen.findByText('page body')).toBeInTheDocument();
   });

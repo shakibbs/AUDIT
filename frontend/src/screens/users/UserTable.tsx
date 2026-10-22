@@ -33,12 +33,20 @@ export function UserTable({ users }: { users: User[] }) {
                   <td>
                     <input type="checkbox" aria-label={`${u.name} is the company’s lawyer`} checked={u.isCounsel} disabled={!editable} onChange={(e) => change(u, { isCounsel: e.target.checked })} />
                   </td>
-                  <td>{u.status === 'active' ? <span className="pill pill-green">Active</span> : <span className="pill pill-gray">Invited</span>}</td>
+                  <td>
+                    {u.status === 'active' ? <span className="pill pill-green">Active</span> : u.status === 'expired' ? <span className="pill pill-amber">Invite expired</span> : <span className="pill pill-gray">Invited</span>}
+                    {u.sentAt && u.status !== 'active' && <div className="tiny mt-1">sent {formatDateTime(u.sentAt)}</div>}
+                  </td>
                   <td className="mono whitespace-nowrap text-[11.5px]">{formatDateTime(u.lastSeen)}</td>
                   <td className="text-right">
+                    {admin && u.status !== 'active' && (
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'POST', path: `/users/${u.id}/resend` })} aria-label={`Resend the invite to ${u.name || u.email}`}>
+                        {u.status === 'expired' ? 'Resend invite' : 'Resend'}
+                      </button>
+                    )}
                     {admin && u.id !== session?.userId && (
                       <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'DELETE', path: `/users/${u.id}` })} aria-label={`Remove access for ${u.name}`}>
-                        {u.status === 'invited' ? 'Cancel invite' : 'Remove access'}
+                        {u.status === 'active' ? 'Remove access' : 'Cancel invite'}
                       </button>
                     )}
                   </td>

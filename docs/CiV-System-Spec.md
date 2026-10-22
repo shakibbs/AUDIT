@@ -4122,7 +4122,7 @@ Underwriter sidebar = `UNDERWRITER_NAV`. It is one group, titled "Falcon Risk ·
 
 | Form | Request(s) | Behaviour |
 |---|---|---|
-| **SignInForm** | `POST /session/sign-in {email,password}` | Goes to `/` on success. "Forgot your password?" opens the reset form. |
+| **SignInForm** | `POST /session/sign-in {email,password}` | Goes to `/` on success. No "Forgot your password?": CiV staff send password links. |
 | **ResetRequestForm** | `POST /session/reset {email}` | Always answers "If that email has an account, a reset link is on its way. It works for 1 hour." |
 | **NewPasswordForm** | `POST /session/reset/confirm {link,password}` | Requires 12 or more characters and that the two entries match. Success: "Password changed … Other devices were signed out." |
 | **AcceptInviteForm** | `GET /invites/check?token=` → `{email,name,clientName}`, then `POST /invites/accept {token,password}` | 12 or more characters; signs the user in and goes to `/`. |

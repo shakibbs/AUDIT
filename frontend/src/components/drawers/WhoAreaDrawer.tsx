@@ -35,7 +35,7 @@ export function WhoAreaDrawer({ id, onClose }: { id: string; onClose: () => void
                 ))}
               </tbody>
             </table>
-            <p className="tiny mb-0 mt-2">Numbers are masked. Routed to counsel first.</p>
+            <p className="tiny mb-0 mt-2">Numbers are masked.</p>
           </div>
         )}
       </div>

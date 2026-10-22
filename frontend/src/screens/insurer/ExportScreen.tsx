@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useInsured, useSend } from '@/api/queries';
 import type { Insured } from '@/api/types';
@@ -12,6 +13,7 @@ import { CoverageConditions } from './CoverageConditions';
 import { InsuredPicker } from './InsuredPicker';
 import { PlainPayload } from './PlainPayload';
 import { RatingEngineCard } from './RatingEngineCard';
+import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
 
 /** The civ.attestation.v1 payload. The client's copy leaves out the insurer's own risk estimates (decision D36). */
@@ -35,16 +37,17 @@ function payloadFor(i: Insured, underwriter: boolean) {
 
 /** What a rating engine ingests, and the conditions that make the score part of the policy. */
 export function ExportScreen() {
-  const { underwriter, insuredId, eyebrow } = useViewer();
-  const insured = useInsured(insuredId);
+  const { underwriter, preview, insuredId, eyebrow, empty, ready } = useViewer();
+  const insured = useInsured(insuredId, ready);
   const [sent, setSent] = useState('');
   const send = useSend<{ ok: boolean; detail: string }>();
+  const client = useQueryClient();  // a failed send still refreshes the send history (2026-10-23)
   return (
     <>
       <PageHead eyebrow={eyebrow} title="Underwriting Export" sub={underwriter ? 'What a rating engine ingests, and the conditions that make the score a term of the policy.' : 'Exactly what your insurer receives about your company each month, except the insurer’s own risk estimates.'}>
         <InsuredPicker />
       </PageHead>
-      <Loader query={insured}>
+      {empty ? <NoShares /> : <Loader query={insured}>
         {(i) => {
           const payload = payloadFor(i, underwriter);
           const json = JSON.stringify(payload, null, 1);
@@ -53,14 +56,14 @@ export function ExportScreen() {
               <Card title="Attestation payload" sub="GET /v1/insureds/{id}/attestation?as_of=2026-09 · bearer token scoped to the carrier · every call logged in the insured’s access log">
                 <PlainPayload payload={payload} />
                 <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {underwriter && <button type="button" className="btn btn-primary btn-sm" disabled={send.isPending} onClick={() => send.mutate({ method: 'POST', path: '/rating-engine/send', body: { insured: i.id } }, { onSuccess: (r) => setSent(r.detail), onError: (e) => setSent(e.message) })}>Send to rating engine</button>}
+                  {underwriter && !preview && <button type="button" className="btn btn-primary btn-sm" disabled={send.isPending} onClick={() => send.mutate({ method: 'POST', path: '/rating-engine/send', body: { insured: i.id } }, { onSuccess: (r) => setSent(r.detail), onError: (e) => { setSent(e.message); void client.invalidateQueries({ queryKey: ['/rating-engine'] }); } })}>Send to rating engine</button>}
                   <button type="button" className="btn btn-ghost btn-sm" onClick={() => { void navigator.clipboard?.writeText(json); setSent('Copied'); }}>Copy JSON</button>
                   <span className="tiny" role="status">{sent}</span>
                 </div>
                 {!underwriter && <p className="tiny mb-0 mt-3">Your insurer’s copy also carries its own Exposure Indicator and loss estimate. Phone numbers, tokens, certificates, recordings, message text and agent names are never sent.</p>}
               </Card>
               <div className="flex flex-col gap-5">
-                {underwriter && <RatingEngineCard />}
+                {underwriter && !preview && <RatingEngineCard />}
                 <CoverageConditions />
                 <Card title="Monthly feed">
                   <dl className="m-0">
@@ -73,7 +76,7 @@ export function ExportScreen() {
             </div>
           );
         }}
-      </Loader>
+      </Loader>}
     </>
   );
 }

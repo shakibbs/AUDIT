@@ -5,7 +5,6 @@
 export type Role = 'admin' | 'member';
 /** What the portal shows: the client's own pages, or what its insurer's underwriter sees. A view, not a role. */
 export type View = 'owner' | 'underwriter';
-export type EngagementMode = 'direct' | 'counsel_directed';
 export type Grade = 'A' | 'B' | 'C' | 'D' | 'F';
 export type Tier = 1 | 2 | 3 | 4;
 /** NOT_CHECKED: the consent engine has not looked at it yet. Never a worst case. PENDING: a certificate not read yet,
@@ -35,9 +34,11 @@ export interface Session {
   signedIn: boolean;
   userId: string; name: string; initials: string; email: string;
   clientId: string; clientName: string; vertical: string;
-  role: Role; isCounsel: boolean; view: View; engagementMode: EngagementMode; plan: Plan;
+  role: Role; isCounsel: boolean; view: View; plan: Plan;
   /** 'insurer' in the underwriter view: insurer pages only, never a client's records. */
-  orgKind: 'client' | 'insurer';
+  orgKind: 'client' | 'insurer' | 'acquirer';
+  /** Owner decision 2026-10-22: client users switch their own view; insurers and locked Members cannot. */
+  canSwitchView?: boolean;
   sampleData: boolean; updatedAt: string;
   periods: Period[]; runs: Run[];
 }
@@ -110,7 +111,7 @@ export interface Action {
 
 export interface Alert {
   id: string; severity: Severity; kind: string; title: string; detail: string;
-  at: string; domain: string; reviewed: boolean; routedTo: 'legal' | 'all';
+  at: string; domain: string; reviewed: boolean;
   /** Module 11: the condition went away by itself; who reviewed it. */
   resolved?: boolean; reviewedBy?: string | null;
 }
@@ -399,7 +400,8 @@ export interface Settings {
   agreements: Agreement[]; usage: PlanUsage;
 }
 
-export interface User { id: string; name: string; email: string; role: Role; isCounsel: boolean; status: 'active' | 'invited'; lastSeen: string | null }
+/** status 'expired': an invite whose 7-day link ran out (kept in the list so the Admin can resend it, 2026-10-23). */
+export interface User { id: string; name: string; email: string; role: Role; isCounsel: boolean; status: 'active' | 'invited' | 'expired'; lastSeen: string | null; sentAt?: string }
 export interface AccessEntry { at: string; actor: string; role: Role; action: string; object: string }
 
 export interface SearchHit { kind: 'domain' | 'metric' | 'number' | 'vendor' | 'page' | 'insured'; id: string; label: string; hint: string }

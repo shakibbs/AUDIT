@@ -33,9 +33,11 @@ npm run build
 
 ## Users and views
 
-- **Roles:** client users are **Admin** or **Member**, plus an "is our lawyer" mark. In lawyer-only
-  (counsel-directed) mode, a Member who is not the lawyer sees a locked page.
-- **Owner / Underwriter** is a **view switch** in the account menu (sample data only), not a role. Underwriter view shows the
+- **Roles:** client users are **Admin** or **Member**, plus an "is our lawyer" mark. Everyone sees every page (no
+  lawyer-only mode since 2026-10-22); only the lawyer reviews rule drafts and suggests law changes; Admins and the
+  lawyer sign statements, decide findings, upload and export evidence; only Admins invite people and share with insurers. **Settings and Users & Access are for the Admin only** (not in
+  others' account menu; opening them shows "Only an Admin can open this page").
+- **Owner / Underwriter** is each client user's own **view switch** in the account menu (saved per person), not a role. Underwriter view shows the
   insurer pages: `/portfolio`, `/exposure`, `/integrity`, `/attestation`, `/litigation`, `/uw-export`,
   `/rulebook`, `/regulatory`. The owner never sees dollar figures.
 - Access is enforced in the shell (`src/lib/views.ts`) and in the API (403s). CiV staff never use this
@@ -179,3 +181,7 @@ the sheet in plain words (`PlainPayload`) and the insurer's rating engine settin
 off until it is plugged in).
 
 The full system description is in [docs/CiV-System-Spec.md](../docs/CiV-System-Spec.md) (also `.docx` and `.pdf`).
+
+**Passwords (2026-10-22):** the sign-in page has no "Forgot your password?" (CiV staff send password links). Account
+menu → **My account** (`/account`, open to every user, insurers too): who is signed in and **Change password**
+(current password, new one twice; `POST /session/password`).

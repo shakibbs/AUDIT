@@ -8,7 +8,6 @@ const CONDITIONS: [string, string][] = [
   ['Score review trigger', 'A score below 70 for two consecutive months triggers an underwriting review, not cancellation.'],
   ['Attestation currency', 'A sheet dated within 30 days accompanies the application and each renewal.'],
   ['Decision records', 'High findings carry a recorded decision within 30 days. The decision, not the fix, is the condition.'],
-  ['Counsel-directed routing', 'Alerts go to counsel first for the term.'],
   ['Vendor terms', 'Lead vendors supplying more than 10% of contacts have signed indemnification on file.'],
 ];
 

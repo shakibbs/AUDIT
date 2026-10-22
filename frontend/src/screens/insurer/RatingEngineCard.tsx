@@ -13,22 +13,24 @@ export function RatingEngineCard() {
   const [url, setUrl] = useState<string | null>(null);
   const [key, setKey] = useState('');
   const [monthly, setMonthly] = useState<boolean | null>(null);
+  const [done, setDone] = useState('');  // "Saved." / "Removed." (2026-10-23)
   if (!engine) return null;
   const shownUrl = url ?? engine.url;
   const shownMonthly = monthly ?? engine.monthly;
   return (
     <Card title="Your rating engine" sub="Where “Send to rating engine” delivers the sheet">
-      <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); send.mutate({ method: 'POST', path: '/rating-engine', body: { url: shownUrl, key, monthly: shownMonthly } }, { onSuccess: () => { setKey(''); setUrl(null); setMonthly(null); } }); }}>
+      <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); send.mutate({ method: 'POST', path: '/rating-engine', body: { url: shownUrl, key, monthly: shownMonthly } }, { onSuccess: () => { setKey(''); setUrl(null); setMonthly(null); setDone('Saved.'); } }); }}>
         <label className="label" htmlFor="re-url">Address (https)</label>
-        <input id="re-url" className="field" placeholder="https://rating.yourcompany.com/civ" value={shownUrl} onChange={(e) => setUrl(e.target.value)} />
+        <input id="re-url" className="field" placeholder="https://rating.yourcompany.com/civ" value={shownUrl} onChange={(e) => { setUrl(e.target.value); setDone(''); }} />
         <label className="label" htmlFor="re-key">Key</label>
-        <input id="re-key" type="password" autoComplete="off" className="field" placeholder={engine.keyHint ? `Saved, ends in ${engine.keyHint}. Type a new one to replace it.` : 'The key your rating engine gave you'} value={key} onChange={(e) => setKey(e.target.value)} />
+        <input id="re-key" type="password" autoComplete="off" className="field" placeholder={engine.keyHint ? `Saved, ends in ${engine.keyHint}. Type a new one to replace it.` : 'The key your rating engine gave you'} value={key} onChange={(e) => { setKey(e.target.value); setDone(''); }} />
         <label className="flex items-center gap-2 text-[12.5px]"><input type="checkbox" checked={shownMonthly} onChange={(e) => setMonthly(e.target.checked)} /> Send every month on its own (the 6th, after the month is locked)</label>
         <div className="flex flex-wrap gap-2">
           <button type="submit" className="btn btn-primary btn-sm" disabled={send.isPending}>Save</button>
-          {engine.url && <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'DELETE', path: '/rating-engine' })}>Remove</button>}
+          {engine.url && <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'DELETE', path: '/rating-engine' }, { onSuccess: () => setDone('Removed.') })}>Remove</button>}
         </div>
         {send.isError && <p className="tiny m-0 text-bad">{send.error.message}</p>}
+        {done && !send.isError && <p className="tiny m-0" role="status">{done}</p>}
       </form>
       <p className="tiny mb-0 mt-3">The key is locked when saved and never shown again. Each sheet is signed (HMAC-SHA256 with your key) so your system can check it came from CiV unchanged. Every send shows in the company’s access log.</p>
       {engine.sends.length > 0 && (

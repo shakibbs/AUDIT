@@ -12,6 +12,7 @@ import { countOr, shareOr } from '@/lib/notMeasured';
 import { AttestationRow } from './AttestationRow';
 import { InsuredPicker } from './InsuredPicker';
 import { StatementForm } from './StatementForm';
+import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
 
 // Small shares keep one decimal so 1.5% does not read as 2%.
@@ -22,14 +23,14 @@ const g = (i: Insured, measured: SourceGrade, value: unknown): SourceGrade => (v
 
 /** The standard underwriting data sheet. The client sees its own sheet without dollar figures (decision D36). */
 export function AttestationScreen() {
-  const { underwriter, insuredId, eyebrow } = useViewer();
-  const insured = useInsured(insuredId);
+  const { underwriter, insuredId, eyebrow, empty, ready } = useViewer();
+  const insured = useInsured(insuredId, ready);
   return (
     <>
       <PageHead eyebrow={eyebrow} title="Risk Attestation" sub="The standard underwriting data sheet. Every field states where it came from. Statements by the insured are signed and shown as statements; they never raise a score.">
         <InsuredPicker />
       </PageHead>
-      <Loader query={insured}>
+      {empty ? <NoShares /> : <Loader query={insured}>
         {(i) => {
           const worst = lossModel(i).worstCaseFields;
           const consent = i.consentProof ?? 0.6;
@@ -91,7 +92,7 @@ export function AttestationScreen() {
             </div>
           );
         }}
-      </Loader>
+      </Loader>}
     </>
   );
 }

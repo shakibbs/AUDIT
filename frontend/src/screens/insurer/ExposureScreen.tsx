@@ -9,18 +9,19 @@ import { exposureOf } from '@/lib/exposure';
 import { shareOr } from '@/lib/notMeasured';
 import { FactorTable } from './FactorTable';
 import { InsuredPicker } from './InsuredPicker';
+import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
 
 /** Exposure Indicator v2.2: six factors measure what the company does wrong; three multipliers measure the pressure on it. */
 export function ExposureScreen() {
-  const { insuredId, eyebrow } = useViewer();
-  const insured = useInsured(insuredId);
+  const { insuredId, eyebrow, empty, ready } = useViewer();
+  const insured = useInsured(insuredId, ready);
   return (
     <>
       <PageHead eyebrow={eyebrow} title="Exposure Indicator" sub="Six factors measure what the company does wrong; three multipliers measure the pressure on it. Higher means more exposed. The same factors are scored from public evidence before connection and from the company’s records after.">
         <InsuredPicker />
       </PageHead>
-      <Loader query={insured}>
+      {empty ? <NoShares /> : <Loader query={insured}>
         {(i) => {
           const { inside, outside } = i.exposure;
           const reading = inside ?? outside;
@@ -39,7 +40,7 @@ export function ExposureScreen() {
             </div>
           );
         }}
-      </Loader>
+      </Loader>}
     </>
   );
 }

@@ -7,5 +7,5 @@ export const CLIENT_ROLES: Role[] = ['admin', 'member'];
 
 export const ROLE_CAN: Record<Role, string> = {
   admin: 'Everything, including people, settings, evidence files and legal holds',
-  member: 'Sees the portal and works on findings; no people, settings or evidence files',
+  member: 'Sees the whole portal; cannot change people, settings or evidence files',
 };

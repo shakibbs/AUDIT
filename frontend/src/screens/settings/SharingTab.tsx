@@ -15,6 +15,8 @@ export function SharingTab() {
   const send = useSend<BuyerLink & { invited: boolean }>();
   const session = useSession().data;
   const [form, setForm] = useState(BLANK);
+  const stop = useSend();
+  const [stopped, setStopped] = useState('');  // its own request, so stopping never shows the share form's "Shared."
   const isAdmin = session?.role === 'admin';
   const set = (k: keyof typeof BLANK) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm({ ...form, [k]: e.target.value });
 
@@ -22,7 +24,7 @@ export function SharingTab() {
     <Card title="Share with your insurer" sub="Your insurer (or a company buying yours) sees your risk attestation, data integrity and exposure, never your contacts, numbers, findings or notes. Stop sharing at any time.">
       {isAdmin && (
         <form className="grid gap-3 md:grid-cols-[1fr_1.2fr_1fr_0.8fr_0.9fr_auto] md:items-end"
-          onSubmit={(e) => { e.preventDefault(); send.mutate({ method: 'POST', path: '/buyer-links', body: form }, { onSuccess: () => setForm(BLANK) }); }}>
+          onSubmit={(e) => { e.preventDefault(); setStopped(''); send.mutate({ method: 'POST', path: '/buyer-links', body: form }, { onSuccess: () => setForm(BLANK) }); }}>
           <div><label className="label" htmlFor="sh-name">Company</label><input id="sh-name" className="field" placeholder="Falcon Risk" value={form.name} onChange={set('name')} /></div>
           <div><label className="label" htmlFor="sh-email">Underwriter&apos;s email</label><input id="sh-email" type="email" className="field" placeholder="j.merchant@falconrisk.com" value={form.email} onChange={set('email')} /></div>
           <div><label className="label" htmlFor="sh-person">Their name</label><input id="sh-person" className="field" value={form.person} onChange={set('person')} /></div>
@@ -32,6 +34,7 @@ export function SharingTab() {
           <button type="submit" className="btn btn-primary btn-sm" disabled={!form.email.trim() || send.isPending}>Share</button>
         </form>
       )}
+      {stopped && !send.isSuccess && <p className="tiny mb-0 mt-2" role="status">Stopped sharing with {stopped}.</p>}
       {send.isSuccess && <p className="tiny mb-0 mt-2">{send.data?.invited ? 'Shared. An invite to set a password was sent to them.' : 'Shared.'}</p>}
       {send.isError && <p className="tiny mb-0 mt-2 text-bad">{send.error.message}</p>}
       {!isAdmin && <p className="tiny m-0">Only an Admin can share or stop sharing.</p>}
@@ -45,7 +48,7 @@ export function SharingTab() {
                   <td className="font-semibold">{l.org}<div className="tiny">{l.kind === 'acquirer' ? 'Acquirer' : 'Insurer'} · shared by {l.grantedBy}</div></td>
                   <td>{formatDate(l.grantedOn)}</td><td>{l.endsOn ? formatDate(l.endsOn) : '—'}</td>
                   <td>{l.active ? <span className="pill pill-green">Sharing</span> : <span className="pill pill-gray">Stopped{l.stoppedOn ? ` ${formatDate(l.stoppedOn)}` : ''}</span>}</td>
-                  <td className="text-right">{l.active && isAdmin && <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'POST', path: `/buyer-links/${l.id}/revoke` })}>Stop sharing</button>}</td>
+                  <td className="text-right">{l.active && isAdmin && <button type="button" className="btn btn-ghost btn-sm" onClick={() => { send.reset(); stop.mutate({ method: 'POST', path: `/buyer-links/${l.id}/revoke` }, { onSuccess: () => stop.reset() }); setStopped(l.org); }}>Stop sharing</button>}</td>
                 </tr>
               ))}</tbody>
             </table>

@@ -9,7 +9,7 @@ import { Toggle } from '@/components/ui/Toggle';
 export function NotificationsTab({ settings }: { settings: Settings }) {
   const send = useSend();
   return (
-    <Card title="Email notifications" sub="Every alert appears in the inbox; choose which are also emailed" flush>
+    <Card title="Email notifications" sub="Every alert appears in the inbox; choose which are also emailed to your company's Admins" flush>
       {settings.notifications.map((n) => (
         <div key={n.kind} className="row-item">
           <span className="flex-1 text-[13.5px] font-semibold">{n.label}</span>

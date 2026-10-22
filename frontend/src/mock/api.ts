@@ -1,5 +1,5 @@
 // In-memory stand-in for the Django API. One pure function serves the dev route handler and the tests.
-import type { CheckColumn, DataHealth, EngagementMode, HashCheck, RatingEngine, Role, SearchHit, Session, View } from '@/api/types';
+import type { CheckColumn, DataHealth, HashCheck, RatingEngine, Role, SearchHit, Session, View } from '@/api/types';
 import { gradeOf } from '@/lib/format';
 import { accessLog, readiness, settings, users } from './data/account';
 import { reportRuns, reportTypes, sources, uploads } from './data/disclosure';
@@ -33,10 +33,10 @@ function visibleSession(): Session {
   const s = db.session;
   const runs = s.runs.filter((r) => r.outputVisibility === 'client');
   if (s.view === 'underwriter') {
-    return { ...s, runs: [], orgKind: 'insurer', userId: 'u-uw', name: 'J. Merchant', initials: 'JM', email: 'j.merchant@falconrisk.example',
+    return { ...s, runs: [], orgKind: 'insurer', canSwitchView: true, userId: 'u-uw', name: 'J. Merchant', initials: 'JM', email: 'j.merchant@falconrisk.example',
       clientId: 'falcon', clientName: 'Falcon Risk Services', vertical: 'Underwriting pilot · 5 insureds' };
   }
-  return { ...s, runs, orgKind: 'client' };
+  return { ...s, runs, orgKind: 'client', canSwitchView: true };
 }
 
 // An underwriter reaches only insurer data: never a client's contacts, findings, alerts or sources (v3 §9a).
@@ -202,13 +202,16 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       return ok(visibleSession());
     }
     case 'POST session/sign-out': db.session.signedIn = false; return ok(visibleSession());
-    case 'POST session/reset': return ok({ sent: true });
+    case 'POST session/password': {
+      if (!body.current) return fail(400, 'Your current password is not right.');
+      if (String(body.password ?? '').length < 12) return fail(400, 'This password is too short. It must contain at least 12 characters.');
+      return ok({ done: true });
+    }
     // Sample data only: switch the view, or see the portal as another role or engagement mode.
     case 'POST session/view-as': {
       if (body.view) db.session.view = body.view as View;
       if (body.role) db.session.role = body.role as Role;
       if (typeof body.isCounsel === 'boolean') db.session.isCounsel = body.isCounsel;
-      if (body.engagementMode) db.session.engagementMode = body.engagementMode as EngagementMode;
       return ok(visibleSession());
     }
     case 'PATCH actions': {
@@ -325,6 +328,7 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       n.email = Boolean(body.email);
       return ok(n);
     }
+    case 'POST users/resend': return ok(db.users.find((u) => u.id === seg[1]) ?? {});
     case 'POST users': {
       if (db.session.role !== 'admin') return fail(403, 'Only an Admin can do this.');
       if (!body.email) return fail(400, 'Enter an email address.');

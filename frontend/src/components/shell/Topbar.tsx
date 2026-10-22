@@ -3,6 +3,7 @@
 import type { Session } from '@/api/types';
 import { Icon } from '@/components/ui/Icon';
 import { Freshness } from './Freshness';
+import { InsuredCount } from './InsuredCount';
 import { PeriodSelect } from './PeriodSelect';
 import { SearchBox } from './SearchBox';
 import { UserMenu } from './UserMenu';
@@ -19,7 +20,7 @@ export function Topbar({ session, onMenu }: { session: Session; onMenu: () => vo
         {/* The data on screen: how fresh it is, and which month. */}
         <div className="flex items-center gap-2.5">
           {underwriter
-            ? <span className="hidden whitespace-nowrap text-[12px] text-txt-2 xl:inline">Attestations refresh monthly · 5 insureds</span>
+            ? <InsuredCount />
             : <Freshness updatedAt={session.updatedAt} />}
           {!underwriter && <PeriodSelect periods={session.periods} />}
         </div>

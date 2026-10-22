@@ -6,7 +6,7 @@ import type { Session } from '@/api/types';
 
 const OPTIONS = [{ id: 'owner', label: 'Owner' }, { id: 'underwriter', label: 'Underwriter' }] as const;
 
-/** Sample data only: switch between the client owner's portal and what the insurer's underwriter sees. */
+/** Each client user's own switch (saved for them only): their portal, or their own company as their insurer sees it. */
 export function ViewAsSwitch({ session, onChosen }: { session: Session; onChosen?: () => void }) {
   const send = useSend();
   const router = useRouter();

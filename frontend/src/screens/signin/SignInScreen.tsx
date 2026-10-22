@@ -5,11 +5,10 @@ import { useSession } from '@/api/queries';
 import { AcceptInviteForm } from './AcceptInviteForm';
 import type { Mode } from './mode';
 import { NewPasswordForm } from './NewPasswordForm';
-import { ResetRequestForm } from './ResetRequestForm';
 import { SignInBrand } from './SignInBrand';
 import { SignInForm } from './SignInForm';
 
-/** Sign in, ask for a reset link, choose a new password, or accept an invite. */
+/** Sign in, choose a new password (from a link CiV staff sent), or accept an invite. */
 export function SignInScreen({ initial = { kind: 'sign-in' } }: { initial?: Mode }) {
   const [mode, setMode] = useState<Mode>(initial);
   const sampleData = Boolean(useSession().data?.sampleData);
@@ -22,8 +21,7 @@ export function SignInScreen({ initial = { kind: 'sign-in' } }: { initial?: Mode
     <div className="grid min-h-screen lg:grid-cols-2">
       <SignInBrand />
       <div className="flex items-center justify-center p-6">
-        {mode.kind === 'sign-in' && <SignInForm sampleData={sampleData} onForgot={() => setMode({ kind: 'reset' })} />}
-        {mode.kind === 'reset' && <ResetRequestForm onBack={toSignIn} />}
+        {mode.kind === 'sign-in' && <SignInForm sampleData={sampleData} />}
         {mode.kind === 'new-password' && <NewPasswordForm link={mode.link} onDone={toSignIn} />}
         {mode.kind === 'invite' && <AcceptInviteForm token={mode.token} />}
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession, useSettings } from '@/api/queries';
+import { useSettings } from '@/api/queries';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { Seg } from '@/components/ui/Seg';
@@ -16,7 +16,6 @@ const TABS = [{ id: 'company', label: 'Company' }, { id: 'notifications', label:
 export function SettingsScreen() {
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('company');
   const settings = useSettings();
-  const session = useSession().data;
   return (
     <>
       <PageHead eyebrow="Account" title="Settings" sub="Company facts, email notifications, your plan and your agreements.">
@@ -25,7 +24,7 @@ export function SettingsScreen() {
       <Loader query={settings}>
         {(s) => (
           <>
-            {tab === 'company' && session && <CompanyTab settings={s} session={session} />}
+            {tab === 'company' && <CompanyTab settings={s} />}
             {tab === 'notifications' && <NotificationsTab settings={s} />}
             {tab === 'plan' && <PlanTab settings={s} />}
             {tab === 'agreements' && <AgreementsTab settings={s} />}

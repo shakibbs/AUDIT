@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { apiUpload } from '@/api/client';
-import { useUploads } from '@/api/queries';
+import { useSession, useUploads } from '@/api/queries';
 import type { Source } from '@/api/types';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
@@ -16,6 +16,8 @@ const DOCUMENTS_OK = 'Policies, training, contracts';
 /** Upload a file for a source that accepts uploads; shows the fingerprint recorded for each file. */
 export function UploadCentre({ sources }: { sources: Source[] }) {
   const accepting = sources.filter((s) => s.acceptsUpload);
+  const session = useSession().data;
+  const canUpload = Boolean(session && (session.role === 'admin' || session.isCounsel));  // Admins and the lawyer (owner, 2026-10-22)
   const [source, setSource] = useState(accepting.find((s) => s.status === 'not_supplied')?.name ?? accepting[0]?.name ?? '');
   const [file, setFile] = useState<File | null>(null);
   const uploads = useUploads();
@@ -57,7 +59,8 @@ export function UploadCentre({ sources }: { sources: Source[] }) {
             <input type="file" accept={source === DOCUMENTS_OK ? '.csv,text/csv,.pdf,.doc,.docx' : '.csv,text/csv'} className="sr-only" aria-label="File to upload" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </label>
         </div>
-        <button type="submit" className="btn btn-primary" disabled={!file || busy}>{busy ? 'Uploading…' : 'Upload'}</button>
+        <button type="submit" className="btn btn-primary" disabled={!file || busy || !canUpload}>{busy ? 'Uploading…' : 'Upload'}</button>
+        {!canUpload && <span className="tiny">Only an Admin or your lawyer can upload.</span>}
         {error && <div className="tiny w-full" style={{ color: 'var(--bad-ink)' }}>{error}</div>}
       </form>
       <Loader query={uploads}>

@@ -16,8 +16,8 @@ function useGet<T>(path: string, query: Query = {}, enabled = true) {
 export const useSession = () => useQuery({ queryKey: ['/session'], queryFn: () => apiGet<Session>('/session') });
 export const useScore = (period?: string) => useGet<ScoreSummary>('/score', { period });
 export const useDomains = (period?: string) => useGet<Domain[]>('/domains', { period });
-export const useActions = () => useGet<Action[]>('/actions');
-export const useAlerts = () => useGet<Alert[]>('/alerts');
+export const useActions = (enabled = true) => useGet<Action[]>('/actions', {}, enabled);
+export const useAlerts = (enabled = true) => useGet<Alert[]>('/alerts', {}, enabled);
 export const useContacts = (status: string, q: string) => useGet<Contact[]>('/contacts', { status, q });
 export const useConsent = () => useGet<ConsentSummary>('/consent');
 export const useContact = (id: string) => useGet<Contact>(`/contacts/${encodeURIComponent(id)}`);
@@ -55,8 +55,11 @@ export const useSettings = () => useGet<Settings>('/settings');
 export const useUsers = () => useGet<User[]>('/users');
 export const useAccessLog = () => useGet<AccessEntry[]>('/access-log');
 export const useHealth = () => useGet<DataHealth>('/data-health');
-export const useInsureds = (enabled = true) => useGet<Insured[]>('/insureds', {}, enabled);
-export const useInsured = (id: string) => useGet<Insured>(`/insureds/${id}`);
+// Insurer pages always ask afresh (on opening and when the tab comes back), so a company that stopped sharing
+// disappears at once instead of after the usual 30 seconds.
+const FRESH = { staleTime: 0, refetchOnWindowFocus: true } as const;
+export const useInsureds = (enabled = true) => useQuery({ queryKey: ['/insureds', {}], queryFn: () => apiGet<Insured[]>('/insureds', {}), enabled, ...FRESH });
+export const useInsured = (id: string, enabled = true) => useQuery({ queryKey: [`/insureds/${id}`, {}], queryFn: () => apiGet<Insured>(`/insureds/${id}`, {}), enabled, ...FRESH });
 export const useLitigation = () => useGet<LitigationStats>('/litigation');
 export const useSearch = (q: string) => useGet<SearchHit[]>('/search', { q }, q.trim().length >= 2);
 

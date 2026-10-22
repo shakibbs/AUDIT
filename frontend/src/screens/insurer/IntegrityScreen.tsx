@@ -9,18 +9,19 @@ import { BasisMixCard } from './BasisMixCard';
 import { ConflictsCard } from './ConflictsCard';
 import { InsuredPicker } from './InsuredPicker';
 import { ReconciliationCard } from './ReconciliationCard';
+import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
 
 /** Can these numbers be trusted? Evidence coverage, completeness, conflicts and unknown calling systems. */
 export function IntegrityScreen() {
-  const { insuredId, eyebrow } = useViewer();
-  const insured = useInsured(insuredId);
+  const { insuredId, eyebrow, empty, ready } = useViewer();
+  const insured = useInsured(insuredId, ready);
   return (
     <>
       <PageHead eyebrow={eyebrow} title="Data Integrity" sub="Can these numbers be trusted? CiV never takes a statement as a measurement, and checks totals against sources the company does not control.">
         <InsuredPicker />
       </PageHead>
-      <Loader query={insured}>
+      {empty ? <NoShares /> : <Loader query={insured}>
         {(i) => (
           <div className="flex flex-col gap-5">
             <div className="note-box" role="note"><strong>Unverified counts as worst case.</strong> A field CiV cannot verify takes its pessimistic value. What the company states can lower a score, never raise it.</div>
@@ -37,7 +38,7 @@ export function IntegrityScreen() {
             <ReconciliationCard insured={i} />
           </div>
         )}
-      </Loader>
+      </Loader>}
     </>
   );
 }

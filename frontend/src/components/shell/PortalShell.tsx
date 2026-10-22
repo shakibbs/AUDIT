@@ -9,7 +9,6 @@ import { PortalProvider } from '@/state/PortalContext';
 import { Banners } from './Banners';
 import { Disclaimer } from './Disclaimer';
 import { DrawerHost } from './DrawerHost';
-import { Locked } from './Locked';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { ViewBlocked } from './ViewBlocked';
@@ -31,8 +30,6 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   if (signedOut) return null;
 
   const s = session.data;
-  // Lawyer-only mode: findings and alerts reach only Admins and users marked as the company's lawyer.
-  const locked = s.engagementMode === 'counsel_directed' && s.role === 'member' && !s.isCounsel;
   const block = viewBlock(s.view, pathname);
   return (
     <PortalProvider>
@@ -43,7 +40,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           <Topbar session={s} onMenu={() => setMenuOpen(true)} />
           <main className="mx-auto max-w-[1320px] px-5 pb-10 pt-7 lg:px-8">
             <Banners session={s} />
-            {locked ? <Locked /> : block !== 'none' ? <ViewBlocked block={block} /> : children}
+            {block !== 'none' ? <ViewBlocked block={block} /> : children}
             <Disclaimer />
           </main>
         </div>
