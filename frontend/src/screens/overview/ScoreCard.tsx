@@ -7,7 +7,19 @@ import { bandClass, formatCount } from '@/lib/format';
 
 /** The Audit Score with everything that qualifies it: caps, evidence coverage, confirmed-rules score, projection. */
 export function ScoreCard({ score }: { score: ScoreSummary }) {
-  const coverage = Math.round(score.evidenceCoverage * 100);
+  const coverage = score.evidenceCoverage === null ? null : Math.round(score.evidenceCoverage * 100);
+  if (score.score === null || score.grade === null) {
+    return (
+      <section className="card card-pad flex flex-col">
+        <h3 className="mb-3 flex items-center gap-2 text-[15px]">Audit Score <Info text="The average of every measured domain score. Unverified inputs count at their worst-case value." /></h3>
+        <p className="m-0 text-center font-display text-[28px] font-extrabold text-txt-3">Not measured yet</p>
+        <p className="tiny mb-0 mt-2 text-center">The score appears after CiV has read and scored a month of your calls and texts.</p>
+        <dl className="m-0 mt-4 border-t border-line pt-1">
+          <div className="kv"><dt>Checkpoints run</dt><dd className="mono">{formatCount(score.checkpointsRun)} of {formatCount(score.checkpointsTotal)}</dd></div>
+        </dl>
+      </section>
+    );
+  }
   return (
     <section className="card card-pad flex flex-col">
       <div className="mb-1 flex items-center justify-between">
@@ -21,14 +33,14 @@ export function ScoreCard({ score }: { score: ScoreSummary }) {
           {score.partial && score.draftBands ? ' · ' : ''}{score.draftBands ? 'Draft bands' : ''}
         </p>
       )}
-      <div className="mt-2 text-center"><Delta value={score.score - score.previous} /></div>
+      {score.previous !== null && <div className="mt-2 text-center"><Delta value={score.score - score.previous} /></div>}
 
       <div className="mt-4">
         <div className="mb-1.5 flex justify-between text-[12.5px]">
           <span className="flex items-center gap-1.5 text-txt-2">Evidence coverage <Info text="How much of the score rests on records CiV checked itself or read from your systems. Statements and missing sources count for nothing." /></span>
-          <span className="mono font-semibold">{coverage}%</span>
+          <span className="mono font-semibold">{coverage === null ? 'Not measured' : `${coverage}%`}</span>
         </div>
-        <Meter label="Evidence coverage" value={coverage} limit={100} />
+        {coverage !== null && <Meter label="Evidence coverage" value={coverage} limit={100} />}
       </div>
 
       {score.caps.length > 0 && (
@@ -43,8 +55,8 @@ export function ScoreCard({ score }: { score: ScoreSummary }) {
       )}
 
       <dl className="m-0 mt-3 border-t border-line pt-1">
-        <div className="kv"><dt className="flex items-center gap-1.5">Confirmed-rules score <Info text="The score using only settings counsel has confirmed. Domains that depend on a pending setting are left out." /></dt><dd className="mono">{score.confirmedScore.toFixed(1)}</dd></div>
-        <div className="kv"><dt className="flex items-center gap-1.5">Projected <Info text="An estimate if the top open problems are resolved. A projection, not a measurement." /></dt><dd><span className="mono">{score.projected.score.toFixed(1)}</span> · grade {score.projected.grade}</dd></div>
+        <div className="kv"><dt className="flex items-center gap-1.5">Confirmed-rules score <Info text="The score using only settings counsel has confirmed. Domains that depend on a pending setting are left out." /></dt><dd className="mono">{score.confirmedScore === null ? 'Not measured' : score.confirmedScore.toFixed(1)}</dd></div>
+        <div className="kv"><dt className="flex items-center gap-1.5">Projected <Info text="An estimate if the top open problems are resolved. A projection, not a measurement." /></dt><dd>{score.projected ? <><span className="mono">{score.projected.score.toFixed(1)}</span> · grade {score.projected.grade}</> : 'No open problems to fix'}</dd></div>
         <div className="kv"><dt>Checkpoints run</dt><dd className="mono">{formatCount(score.checkpointsRun)} of {formatCount(score.checkpointsTotal)}</dd></div>
       </dl>
     </section>

@@ -50,7 +50,7 @@ export const SHARED_WITH_INSURER: NavGroup = { title: 'Shared with your insurer'
 
 /** Underwriter view: the insurer's own pages only (owner, 2026-10-22: no Engagement pages for the insurer). */
 export const UNDERWRITER_NAV: NavGroup[] = [
-  { title: 'Falcon Risk · underwriting', items: [
+  { title: 'Underwriting', items: [
     { href: '/portfolio', label: 'Portfolio', icon: 'grid' },
     { href: '/exposure', label: 'Exposure Indicator', icon: 'target' },
     { href: '/integrity', label: 'Data Integrity', icon: 'shield' },

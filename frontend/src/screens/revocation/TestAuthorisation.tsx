@@ -8,9 +8,9 @@ export function TestAuthorisation({ revocation }: { revocation: Revocation }) {
   return (
     <Card title="Opt-out measurement" sub="Measured from your real opt-outs in your own tools">
       <dl className="m-0">
-        <div className="kv"><dt>Signed</dt><dd>{formatDate(a.signedOn)}</dd></div>
+        <div className="kv"><dt>Signed</dt><dd>{a.signedOn ? formatDate(a.signedOn) : 'Not signed yet'}</dd></div>
         <div className="kv"><dt>Measurement window</dt><dd>{formatDate(a.windowFrom)} – {formatDate(a.windowTo)}</dd></div>
-        <div className="kv"><dt>Channels</dt><dd>{a.channels.join(', ')}</dd></div>
+        <div className="kv"><dt>Channels</dt><dd>{a.channels.length ? a.channels.join(', ') : 'None yet'}</dd></div>
         <div className="kv"><dt>Opt-outs measured</dt><dd className="mono">{revocation.tests} in {revocation.windowDays} days</dd></div>
       </dl>
     </Card>

@@ -26,8 +26,10 @@ export function ReadinessTab({ readiness }: { readiness: Readiness }) {
             { label: 'Ready', value: count('ready'), color: 'var(--ok)' }, { label: 'Partial', value: count('partial'), color: 'var(--warn)' }, { label: 'Missing', value: count('missing'), color: 'var(--bad)' },
           ]} />
         </Card>
-        <Card title="Preview on the sample" sub={`Consent status of the ${readiness.sampleNumbers} sample numbers`}>
-          <StackedBar height={18} label="Preview status mix" segments={readiness.preview.map((p) => ({ label: p.status, value: p.count, color: STATUS_COLOR[p.status] }))} />
+        <Card title="Preview on recent numbers" sub={`Consent status of the ${readiness.sampleNumbers} most recent numbers contacted`}>
+          {readiness.preview.length
+            ? <StackedBar height={18} label="Preview status mix" segments={readiness.preview.map((p) => ({ label: p.status, value: p.count, color: STATUS_COLOR[p.status] }))} />
+            : <p className="m-0 text-[13px] text-txt-2"><span className="pill pill-gray mr-2">Not measured</span>No checked contacts yet.</p>}
         </Card>
       </div>
       <Card title="What each check found" sub="Items needing a fix first" flush>

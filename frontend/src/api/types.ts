@@ -34,33 +34,30 @@ export interface Session {
   signedIn: boolean;
   userId: string; name: string; initials: string; email: string;
   clientId: string; clientName: string; vertical: string;
-  role: Role; isCounsel: boolean; view: View; plan: Plan;
+  role: Role; isCounsel: boolean; view: View; plan: Plan | null;
   /** 'insurer' in the underwriter view: insurer pages only, never a client's records. */
   orgKind: 'client' | 'insurer' | 'acquirer';
   /** Owner decision 2026-10-22: client users switch their own view; insurers and locked Members cannot. */
   canSwitchView?: boolean;
-  sampleData: boolean; updatedAt: string;
-  periods: Period[]; runs: Run[];
-}
-
-export interface Run {
-  runId: string; label: string; rulebookVersion: string; rulebookStatus: 'draft' | 'provisional' | 'approved';
-  variant: 'single' | 'strict' | 'lenient'; outputVisibility: 'client' | 'internal'; engine: string;
+  /** The last time CiV read something new from the company's tools; null = nothing read yet. */
+  updatedAt: string | null;
+  periods: Period[];
 }
 
 // ----- Your position -----
 export interface ScorePoint { period: string; label: string; score: number; grade: Grade; event: string | null }
 
+/** Every number is null until the month has a saved score ("Not measured", never a sample value). */
 export interface ScoreSummary {
-  score: number; grade: Grade; rawGrade: Grade;
+  score: number | null; grade: Grade | null; rawGrade: Grade | null;
   cap: { share: number; limit: number | null } | null;
   checkpointsRun: number; checkpointsTotal: number; domainsMeasured: number; domainsTotal: number;
-  projected: { score: number; grade: Grade; actions: number; clearsCap: boolean };
-  previous: number;
+  projected: { score: number; grade: Grade; actions: number; clearsCap: boolean } | null;
+  previous: number | null;
   /** Share of the score backed by proof CiV checked itself, 0–1 (shown beside every score). */
-  evidenceCoverage: number;
+  evidenceCoverage: number | null;
   /** Score using only Rulebook values marked Set; the figure that holds if the Rulebook is challenged. */
-  confirmedScore: number;
+  confirmedScore: number | null;
   /** The three grade caps, in the order they apply. */
   caps: CapStatus[];
   families: { family: Family; score: number | null }[];
@@ -196,7 +193,8 @@ export interface Revocation {
   rows: { channel: string; cells: RevocationCell[] }[];
   distribution: { label: string; count: number }[];
   wording: { phrase: string; kind: 'keyword' | 'plain words'; dialer: boolean | null; messaging: boolean | null }[];
-  authorisation: { signedOn: string; windowFrom: string; windowTo: string; channels: string[] };
+  /** signedOn: the Annex C date, null until signed; the window is the last windowDays days. */
+  authorisation: { signedOn: string | null; windowFrom: string; windowTo: string; channels: string[] };
 }
 
 export interface OptOut {
@@ -210,12 +208,14 @@ export interface OptOut {
 }
 
 export interface VaultStats {
-  artifacts: string; anchors: number; deletedUnderRetention: number; lastAnchor: string; engagedSince: string;
+  artifacts: string; anchors: number; deletedUnderRetention: number; lastAnchor: string | null; engagedSince: string;
   coverage: { label: string; state: 'covered' | 'partial' | 'before' }[];
 }
 
 export interface Position {
   phone: string; date: string; insideCoverage: boolean;
+  /** The number's evidence file address when CiV has contacts with it (2026-10-23). */
+  ref?: string | null;
   rows: { label: string; value: string; source: string }[];
 }
 
@@ -234,6 +234,8 @@ export interface EvidenceContact {
 export interface ProofElement {
   number: number; element: string; applies: boolean; present: boolean | null;
   tier: Tier | null; hash: string | null; source: string | null; capturedAt: string | null;
+  /** Who holds the original consent proof (2026-10-23), when CiV knows. */
+  holder?: string | null;
 }
 
 export interface EvidenceFile {
@@ -276,8 +278,9 @@ export interface Conduct {
   hoursOfDay: { hour: string; count: number; outside: boolean }[];
 }
 
+/** null = not measured yet (signal levels and page match need lead inspection data CiV does not read yet). */
 export interface Leads {
-  inspected: number; few: number; some: number; high: number; completeness: number; pageMatch: number;
+  inspected: number; few: number | null; some: number | null; high: number | null; completeness: number | null; pageMatch: number | null;
   signals: { label: string; count: number }[]; missing: { label: string; count: number }[];
 }
 
@@ -387,14 +390,14 @@ export interface Readiness {
 }
 
 export interface PlanUsage {
-  plan: Plan; limit: number; used: number; monthlyPrice: string; nextPlan: Plan | null;
+  plan: Plan; limit: number | null; used: number; monthlyPrice: string | null; nextPlan: Plan | null;
   history: { label: string; used: number }[]; overLimitMonths: number; rule: string;
 }
 
 export interface Agreement { name: string; status: 'signed' | 'pending'; date: string | null; detail: string }
 
 export interface Settings {
-  company: { name: string; vertical: string; states: string[]; brands: string[]; forum: string; engaged: string };
+  company: { name: string; vertical: string; states: string[]; brands: string[]; forum: string | null; engaged: string };
   contacts: { role: string; name: string; email: string }[];
   notifications: { kind: string; label: string; email: boolean }[];
   agreements: Agreement[]; usage: PlanUsage;

@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { mockApi } from '../src/mock/api';
+import { mockApi } from './fixtures/api';
 
 // Routes every /api/* call in tests through the same mock the dev server uses.
 export const server = setupServer(

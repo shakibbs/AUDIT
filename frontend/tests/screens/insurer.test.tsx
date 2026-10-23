@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { PortalShell } from '@/components/shell/PortalShell';
 import { findBannedWords } from '@/lib/wording';
-import { mockApi } from '@/mock/api';
+import { mockApi } from '@fixtures/api';
 import { AttestationScreen } from '@/screens/insurer/AttestationScreen';
 import { ExportScreen } from '@/screens/insurer/ExportScreen';
 import { ExposureScreen } from '@/screens/insurer/ExposureScreen';
@@ -84,7 +84,7 @@ describe('view switch', () => {
     await user.click(await screen.findByRole('button', { name: 'Account menu' }));
     await user.click(screen.getByRole('button', { name: 'Underwriter' }));
     await waitFor(() => expect(navState.push).toHaveBeenCalledWith('/portfolio'));
-    expect(await screen.findByText('Falcon Risk · underwriting')).toBeInTheDocument();
+    expect(await screen.findByText('Falcon Risk Services · underwriting')).toBeInTheDocument();
     expect(screen.getByText('J. Merchant')).toBeInTheDocument();
   });
 });

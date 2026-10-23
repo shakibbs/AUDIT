@@ -1,4 +1,4 @@
-// In-memory stand-in for the Django API. One pure function serves the dev route handler and the tests.
+// Test fixture: an in-memory stand-in for the Django API, used only by the automatic tests (never by the portal).
 import type { CheckColumn, DataHealth, HashCheck, RatingEngine, Role, SearchHit, Session, View } from '@/api/types';
 import { gradeOf } from '@/lib/format';
 import { accessLog, readiness, settings, users } from './data/account';
@@ -31,12 +31,11 @@ const fail = (status: number, detail: string): MockResponse => ({ status, body: 
 
 function visibleSession(): Session {
   const s = db.session;
-  const runs = s.runs.filter((r) => r.outputVisibility === 'client');
   if (s.view === 'underwriter') {
-    return { ...s, runs: [], orgKind: 'insurer', canSwitchView: true, userId: 'u-uw', name: 'J. Merchant', initials: 'JM', email: 'j.merchant@falconrisk.example',
+    return { ...s, orgKind: 'insurer', canSwitchView: true, userId: 'u-uw', name: 'J. Merchant', initials: 'JM', email: 'j.merchant@falconrisk.example',
       clientId: 'falcon', clientName: 'Falcon Risk Services', vertical: 'Underwriting pilot · 5 insureds' };
   }
-  return { ...s, runs, orgKind: 'client', canSwitchView: true };
+  return { ...s, orgKind: 'client', canSwitchView: true };
 }
 
 // An underwriter reaches only insurer data: never a client's contacts, findings, alerts or sources (v3 §9a).
@@ -62,7 +61,7 @@ function scoreFor(period: string | undefined) {
     ...score, score: point.score, grade: point.grade, rawGrade: gradeOf(point.score), cap: null,
     confirmedScore: Math.round((point.score - 1.7) * 10) / 10, caps: [],
     previous: i > 0 ? score.history[i - 1].score : point.score, history: score.history.slice(0, i + 1),
-    families: score.families.map((f) => ({ ...f, score: f.score === null ? null : Math.round((f.score - (score.score - point.score)) * 10) / 10 })),
+    families: score.families.map((f) => ({ ...f, score: f.score === null ? null : Math.round((f.score - ((score.score ?? 0) - point.score)) * 10) / 10 })),
   };
 }
 
@@ -116,7 +115,7 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'optouts': return ok(optOuts);
     case 'who-contact': return ok(db.whoContact);
     case 'vault': return ok(vault);
-    case 'position': return ok({ ...position, phone: q.phone || position.phone, date: q.date || position.date, insideCoverage: (q.date || position.date) >= '2026-05-01' });
+    case 'position': return ok({ ...position, sample: true, ref: '+14805550923', phone: q.phone || position.phone, date: q.date || position.date, insideCoverage: (q.date || position.date) >= '2026-05-01' });
     case 'hash-check': {
       const found = (q.hash ?? '').trim().toLowerCase() === KNOWN_HASH;
       const result: HashCheck = found
@@ -149,8 +148,9 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'search': return ok(search(q.q ?? ''));
     case 'insureds': {
       if (!seg[1]) return underwriter ? ok(insureds) : fail(403, 'Only the insurer sees its portfolio.');
-      if (!underwriter && seg[1] !== OWN_INSURED) return fail(403, 'You can see only your own company.');
-      const insured = insureds.find((x) => x.id === seg[1]);
+      // A client asks for its own company as 'own' (the backend's own sheet).
+      if (!underwriter && seg[1] !== 'own') return fail(403, 'You can see only your own company.');
+      const insured = insureds.find((x) => x.id === (seg[1] === 'own' ? OWN_INSURED : seg[1]));
       return insured ? ok(insured) : fail(404, 'Insured not found.');
     }
     case 'litigation': return underwriter ? ok(litigation) : fail(403, 'Only the insurer sees this page.');

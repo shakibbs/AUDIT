@@ -1,48 +1,36 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { apiUpload } from '@/api/client';
 import { useSession, useVendorContracts } from '@/api/queries';
-import type { VendorContract } from '@/api/types';
 import { Card } from '@/components/ui/Card';
 import { formatDate } from '@/lib/format';
+import { useContractUpload } from './useContractUpload';
 
 /** Add a contract for any vendor (picked from the list or typed), and the contracts already on file. */
 export function AddContractCard({ vendorNames }: { vendorNames: string[] }) {
   const session = useSession().data;
   const contracts = useVendorContracts();
-  const client = useQueryClient();
+  const { busy, upload } = useContractUpload();
   const [vendor, setVendor] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [endsOn, setEndsOn] = useState('');
   const [days, setDays] = useState('');
   const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
   const canAdd = Boolean(session && (session.role === 'admin' || session.isCounsel));
   const list = contracts.data ?? [];
 
   async function save() {
     if (!file || !vendor.trim()) return;
-    const form = new FormData();
-    form.append('vendor', vendor.trim());
-    form.append('file', file);
-    if (endsOn) form.append('endsOn', endsOn);
-    if (days) form.append('disputeDays', days);
-    setBusy(true);
     setMessage('');
     try {
-      const saved = await apiUpload<VendorContract>('/vendor-contracts', form);
+      const saved = await upload({ vendor, file, endsOn, disputeDays: days });
       setMessage(`Saved the contract for ${saved.vendor}.`);
       setVendor('');
       setFile(null);
       setEndsOn('');
       setDays('');
-      await client.invalidateQueries();
     } catch (e) {
       setMessage(e instanceof Error ? e.message : 'The contract could not be saved.');
-    } finally {
-      setBusy(false);
     }
   }
 

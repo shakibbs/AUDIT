@@ -5,6 +5,7 @@ import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { usePortal } from '@/state/PortalContext';
 import { BulkExport } from './BulkExport';
+import { QuickReportDownload } from './QuickReportDownload';
 import { ReportCard } from './ReportCard';
 import { ReportHistory } from './ReportHistory';
 
@@ -12,10 +13,13 @@ export function ReportsScreen() {
   const reports = useReports();
   const { period } = usePortal();
   const periods = useSession().data?.periods ?? [];
-  const label = (periods.find((p) => p.id === period) ?? periods[0])?.label ?? '';
+  const chosen = periods.find((p) => p.id === period) ?? periods[0];
+  const label = chosen?.label ?? '';
   return (
     <>
-      <PageHead eyebrow="Disclosure" title="Reports & Exports" sub={`Downloads for ${label}. Change the month in the top bar.`} />
+      <PageHead eyebrow="Disclosure" title="Reports & Exports" sub={`Downloads for ${label}. Change the month in the top bar.`}>
+        <QuickReportDownload period={chosen?.id ?? ''} label={label} />
+      </PageHead>
       <Loader query={reports}>
         {(r) => (
           <div className="flex flex-col gap-5">

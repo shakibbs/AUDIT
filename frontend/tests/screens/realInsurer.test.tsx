@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import type { Insured } from '@/api/types';
-import { mockApi } from '@/mock/api';
+import { mockApi } from '@fixtures/api';
 import { AttestationScreen } from '@/screens/insurer/AttestationScreen';
 import { ExportScreen } from '@/screens/insurer/ExportScreen';
 import { ExposureScreen } from '@/screens/insurer/ExposureScreen';

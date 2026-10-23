@@ -25,8 +25,8 @@ export function SharingTab() {
       {isAdmin && (
         <form className="grid gap-3 md:grid-cols-[1fr_1.2fr_1fr_0.8fr_0.9fr_auto] md:items-end"
           onSubmit={(e) => { e.preventDefault(); setStopped(''); send.mutate({ method: 'POST', path: '/buyer-links', body: form }, { onSuccess: () => setForm(BLANK) }); }}>
-          <div><label className="label" htmlFor="sh-name">Company</label><input id="sh-name" className="field" placeholder="Falcon Risk" value={form.name} onChange={set('name')} /></div>
-          <div><label className="label" htmlFor="sh-email">Underwriter&apos;s email</label><input id="sh-email" type="email" className="field" placeholder="j.merchant@falconrisk.com" value={form.email} onChange={set('email')} /></div>
+          <div><label className="label" htmlFor="sh-name">Company</label><input id="sh-name" className="field" placeholder="Insurer or buyer name" value={form.name} onChange={set('name')} /></div>
+          <div><label className="label" htmlFor="sh-email">Underwriter&apos;s email</label><input id="sh-email" type="email" className="field" placeholder="name@insurer.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value.toLowerCase() })} /></div>
           <div><label className="label" htmlFor="sh-person">Their name</label><input id="sh-person" className="field" value={form.person} onChange={set('person')} /></div>
           <div><label className="label" htmlFor="sh-kind">They are</label>
             <select id="sh-kind" className="field" value={form.kind} onChange={set('kind')}><option value="insurer">Insurer</option><option value="acquirer">Acquirer</option></select></div>

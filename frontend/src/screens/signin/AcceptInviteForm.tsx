@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { apiGet } from '@/api/client';
 import { useSend } from '@/api/queries';
+import type { Session } from '@/api/types';
 import { FormError } from './FormError';
 
 interface InviteInfo { email: string; name: string; clientName: string }
@@ -13,11 +14,11 @@ interface InviteInfo { email: string; name: string; clientName: string }
 export function AcceptInviteForm({ token }: { token: string }) {
   const info = useQuery({ queryKey: ['/invites/check', token], queryFn: () => apiGet<InviteInfo>('/invites/check', { token }), retry: false });
   const [password, setPassword] = useState('');
-  const send = useSend();
+  const send = useSend<Session>();
   const router = useRouter();
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    send.mutate({ method: 'POST', path: '/invites/accept', body: { token, password } }, { onSuccess: () => router.push('/') });
+    send.mutate({ method: 'POST', path: '/invites/accept', body: { token, password } }, { onSuccess: (session) => router.push(session?.view === 'underwriter' ? '/portfolio' : '/') });
   }
   if (info.isError) return <div className="card card-pad w-full max-w-[400px]"><FormError message={info.error.message} /></div>;
   return (

@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
-import { mockApi } from '@/mock/api';
+import { mockApi } from '@fixtures/api';
 import { ExportScreen } from '@/screens/insurer/ExportScreen';
 import { renderScreen } from '../utils';
 

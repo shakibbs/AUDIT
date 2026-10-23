@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { Session } from '@/api/types';
 import { Banners } from '@/components/shell/Banners';
-import { session } from '@/mock/data/session';
+import { session } from '@fixtures/data/session';
 import { renderScreen } from '../utils';
 
 describe('month banners (Module 10)', () => {

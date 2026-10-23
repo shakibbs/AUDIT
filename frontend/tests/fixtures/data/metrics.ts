@@ -40,8 +40,6 @@ const ROWS: Row[] = [
   ['M30', 'Disputable Lead Value', 'Lead provenance', 212, '212 leads', '3 without price, left out of the total', 'Dispute candidates inside each vendor’s dispute window.', 'CiV', '', 'none', 'Lead prices from LeadConduit'],
 ];
 
-export const METRIC_GROUPS = ['Permission', 'Stopping', 'Who you contact', 'How you contact', 'Records and controls', 'Lead provenance'];
-
 /** Four monthly points ending at the current value; earlier months are a little worse. */
 function history(value: number | null, better: Metric['better'], seed: number): (number | null)[] {
   if (value === null) return [null, null, null, null];

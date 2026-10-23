@@ -1,41 +1,30 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { apiUpload } from '@/api/client';
 import { useSession } from '@/api/queries';
-import type { Vendor, VendorContract } from '@/api/types';
+import type { Vendor } from '@/api/types';
 import { formatDate } from '@/lib/format';
+import { useContractUpload } from './useContractUpload';
 
 /** A vendor's contract: what is on file, and (Admins and the company's lawyer) a form to add a new one. */
 export function ContractForm({ vendor }: { vendor: Vendor }) {
   const session = useSession().data;
-  const client = useQueryClient();
+  const { busy, upload } = useContractUpload();
   const [file, setFile] = useState<File | null>(null);
   const [endsOn, setEndsOn] = useState('');
   const [days, setDays] = useState('');
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
   const canAdd = Boolean(session && (session.role === 'admin' || session.isCounsel));
   const c = vendor.contract;
 
   async function save() {
     if (!file) return;
-    const form = new FormData();
-    form.append('vendor', vendor.name);
-    form.append('file', file);
-    if (endsOn) form.append('endsOn', endsOn);
-    if (days) form.append('disputeDays', days);
-    setBusy(true);
     setError('');
     try {
-      await apiUpload<VendorContract>('/vendor-contracts', form);
+      await upload({ vendor: vendor.name, file, endsOn, disputeDays: days });
       setFile(null);
-      await client.invalidateQueries();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The contract could not be saved.');
-    } finally {
-      setBusy(false);
     }
   }
 

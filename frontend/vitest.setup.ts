@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
-import { resetMock } from './src/mock/api';
+import { resetMock } from './tests/fixtures/api';
 import { server } from './tests/msw';
 import { navState, resetNav } from './tests/nav';
 

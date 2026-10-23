@@ -3,15 +3,14 @@ import type { Grade, Tier } from '@/api/types';
 export const NOT_MEASURED = 'Not measured';
 
 export const formatScore = (value: number | null): string => (value === null ? NOT_MEASURED : value.toFixed(1));
-export const formatPercent = (value: number | null): string => (value === null ? NOT_MEASURED : `${value.toFixed(1)}%`);
 export const formatCount = (n: number): string => n.toLocaleString('en-US');
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /** "30 Sep 2026" (UTC). */
 export function formatDate(iso: string | null): string {
-  if (!iso) return '—';
-  const d = new Date(iso);
+  const d = new Date(iso ?? '');
+  if (!iso || Number.isNaN(d.getTime())) return '—';
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
@@ -47,4 +46,3 @@ export const TIER_LABEL: Record<Tier, string> = {
   4: 'Tier 4 · uploaded by you',
 };
 
-export const formatTiers = (tiers: Tier[]): string => (tiers.length === 0 ? '—' : `Tier ${tiers.join(' + ')}`);

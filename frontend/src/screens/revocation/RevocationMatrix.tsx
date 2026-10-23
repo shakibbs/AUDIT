@@ -19,6 +19,7 @@ export function RevocationMatrix({ revocation }: { revocation: Revocation }) {
             <tr><th>Opt-out sent by</th>{revocation.systems.map((s) => <th key={s.name}>{s.name}{!s.contacting && <span className="block normal-case tracking-normal text-txt-3">does not contact</span>}</th>)}</tr>
           </thead>
           <tbody>
+            {revocation.rows.length === 0 && <tr><td className="text-txt-2">Not measured yet: no opt-out has been checked in your tools.</td></tr>}
             {revocation.rows.map((row) => (
               <tr key={row.channel}>
                 <td className="font-semibold">{row.channel}</td>

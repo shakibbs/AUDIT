@@ -16,20 +16,18 @@ npm run lint
 npm run build
 ```
 
-### Sample data or the real backend
+### The backend is required (no sample data)
 
-- **Sample data only (default):** any email and password signs in; every page uses the mock API in `src/mock/`.
-  With `BACKEND_URL` set, sign-in, users, invites, Rulebook, Regulatory Changes, Source Registry (tool list) and the
-  Overview's Data health card, Contact Ledger, number pages and "Can I call now?" come from Django. The Upload
-  centre is unchanged.
-- **With the Django backend:** create `.env.local` with
+Since 2026-10-23 **every page comes from the Django backend**: the portal never shows sample data. Create
+`.env.local` with
 
-  ```
-  BACKEND_URL=http://localhost:8000
-  ```
+```
+BACKEND_URL=http://localhost:8000
+```
 
-  and restart `npm run dev`. Sign-in, sign-out, password reset, invites and the Users page then go to Django.
-  Every other page still shows sample data until its backend module is built.
+and restart `npm run dev`. Without `BACKEND_URL` every `/api` call answers 503 "The CiV server address is not set".
+Anything CiV does not measure yet comes back empty or null, and the page says **"Not measured"** (with the reason),
+never a made-up number. The old sample lives only in `tests/fixtures/` for the automatic tests.
 
 ## Users and views
 
@@ -51,8 +49,8 @@ npm run build
 |---|---|
 | `src/app/(portal)/*/page.tsx` | One route per page; each only renders its screen |
 | `src/app/sign-in` | Sign-in, password reset, new password and invite links |
-| `src/app/api/[...path]/route.ts` | Serves `/api/*`: login endpoints to Django when `BACKEND_URL` is set, the rest from the mock |
-| `src/server/` | Forwarding to Django (`backend.ts`) and session merge (`mergeSession.ts`) |
+| `src/app/api/[...path]/route.ts` | Serves `/api/*`: every request goes to Django |
+| `src/server/backend.ts` | Forwarding to Django (cookies, CSRF, visitor address; file names, privacy and `X-Not-Found` headers back) |
 | `src/screens/<page>/` | One folder per page; one component per file |
 | `src/components/ui` | Shared building blocks (cards, pills, drawer, tabs) |
 | `src/components/charts` | Hand-drawn SVG/HTML charts |
@@ -61,10 +59,9 @@ npm run build
 | `src/api/types.ts` | **The contract with the backend** |
 | `src/api/queries.ts` | One hook per endpoint |
 | `src/api/client.ts` | Fetch wrapper (sends the CSRF token Django needs) |
-| `src/mock/` | `api.ts` (the mock) and `data/` (fixtures) |
 | `src/lib/wording.ts` | Banned-wording guard; tests scan every screen and fixture |
 | `src/lib/exposure.ts`, `src/lib/lossModel.ts` | Exposure Indicator v2.2 and loss model v0 math |
-| `tests/` | Mock API tests and screen tests |
+| `tests/` | Screen tests; `tests/fixtures/` holds the test-only stand-in API and its data (alias `@fixtures`) |
 
 ## Pages
 
@@ -80,7 +77,7 @@ Rulebook (two tabs: **Settings** with search and status filter, and **Calendar &
 and limits by state, opt-out timing, time-zone order) and **Regulatory Changes** (draft rule values that the
 company's lawyer can agree or disagree with, and "Suggest a change") come from Django when `BACKEND_URL` is set.
 Revocation Integrity starts with the **Opt-outs** card (every opt-out with its business-day deadline, dialer marked,
-contacts after; sample data until live sync).
+contacts after).
 
 Data health (`/data-health`): the Overview's **Records completeness** box shows the latest month's percentage over
 every connected tool (each checked by its bill, its own count or its working days) with "Complete" or "Incomplete
@@ -109,7 +106,7 @@ its accuracy exam); its All / Open / Late / Contacted after STOP filters are tes
 and M45 from Django once the AI has read anything; Overview M08 comes from `/metrics`.
 
 **Lead Provenance (Module 8)** keeps its existing cards (leads inspected, consent completeness, page match, signal
-levels, frequent signals, most often missing: sample data from `/leads` until the Lead Inspector modules) and adds,
+levels, frequent signals, most often missing from `/leads`; signal levels, frequent signals and page match say "Not measured" until lead inspection exists) and adds,
 below them, from `/provenance` and `/proof-requests`: where this month's called numbers came from (ladder chart, top
 sources), the untraced list, uploaded lists (CRM, update uploads, dialer lists) with evidence, STOP numbers brought
 back and proof rate, and proof requests. Proof
@@ -117,10 +114,11 @@ requests: Admins and the company's lawyer attach a file (multipart through `apiU
 say "We have none". The number page says where the number came from; the Overview's attention strip counts proof
 requests waiting.
 
-**Partly real pages** (`MERGE_PATHS` in `server/backend.ts`: vault, settings, revocation, insureds, metrics,
-who-contact): Django sends only the fields it really has and the portal lays them over the sample (`overlay`: objects
-merged inside; lists of named items merged by code, id or name, so an item not built yet keeps its sample), so no card
-loses anything while later modules are built. `WRITE_PATHS` (who-contact) send changes to Django. `access-log` is fully real. The contact panel loads its contact by ID (`/contacts/<id>`).
+**Every page is real** (2026-10-23): the proxy forwards each request to Django and passes the answer back unchanged
+(no sample filled in). Django sends each page's full shape: fixed words (metric and domain names, Who You Contact
+areas, setup checklist labels, report types, litigation reference text) come from the backend too; values not measured
+yet are null or empty. The company's own insurer pages read `/insureds/own`, the same sheet its insurer receives. The
+contact panel loads its contact by ID (`/contacts/<id>`).
 
 The **Upload centre** sends the file itself (multipart through `apiUpload`); Django keeps it, fingerprints it and reads
 its rows (CSV; policies and contracts may also be PDF or Word).
@@ -149,8 +147,8 @@ Set `BACKEND_URL` in Vercel's environment variables once the backend is hosted.
 factor map read the saved scores (`/score`, `/domains` merged by code, `exposure.inside` on `/insureds/<ref>`): a
 domain is the mean of its metrics' scores, the Audit Score the mean of the measured domains, and the score card adds
 "Partial: n of 6 factors measured · Draft bands". Pending factors are null and the Exposure spreads their weight over
-the measured ones. Fields not built yet (evidence coverage, confirmed-rules score, projected, unmeasured domains) still
-show the sample. The insurer Litigation page takes WebRecon's monthly numbers from `/litigation` (cards merged by id).
+the measured ones. Fields not measured yet (confirmed-rules score, unmeasured domains, a month with no contacts) say "Not measured".
+The insurer Litigation page takes WebRecon's monthly numbers and the fixed reference cards from `/litigation`.
 
 **Findings, alerts and reports (Module 11):** the Action Queue and the Overview's "Things to fix" read `/actions`
 (findings in plain words, severity, masked examples, score impact, "Found again"); the action panel saves owner, due
@@ -161,8 +159,7 @@ findings fixed). Reports & Exports: Period audit report, Rulebook snapshot and M
 download from the history; files pass through the proxy untouched; evidence file, certification pack and litigation
 package come with Module 14.
 
-**Vendors (Module 12):** the Vendor Ledger reads `/vendors` (scorecards from Django; the sample shows only without a
-backend). Admins and the company's lawyer upload a vendor contract (`AddContractCard`, `ContractForm`: private file,
+**Vendors (Module 12):** the Vendor Ledger reads `/vendors` (scorecards from Django). Admins and the company's lawyer upload a vendor contract (`AddContractCard`, `ContractForm`: private file,
 end date, dispute days) and see lead dispute candidates (`DisputeList`, `/vendor-contracts`, `/vendor-disputes`).
 
 **Evidence vault (Module 14):** the evidence file per number exports as PDF or JSON (`/evidence-file`), Bulk export
@@ -173,7 +170,7 @@ Admins and the company's lawyer only.
 with its insurer or acquirer by email and can stop at any time. The client's Risk Attestation page has the signed
 statements box (`StatementForm`, `/statements`: Admins and the lawyer). A real insurer signs in to the underwriter
 view: Portfolio, Exposure, Data Integrity, Risk Attestation, Litigation and Underwriting Export come only from Django
-(header `x-civ-viewer: buyer`, no sample), and anything not measured shows "Not measured". Underwriting Export shows
+(header `x-civ-viewer: buyer`), and anything not measured shows "Not measured". Underwriting Export shows
 the sheet in plain words (`PlainPayload`) and the insurer's rating engine settings (`RatingEngineCard`,
 `/rating-engine`; "Send to rating engine" really sends). The insurer menu has no Engagement pages.
 
@@ -185,3 +182,8 @@ The full system description is in [docs/CiV-System-Spec.md](../docs/CiV-System-S
 **Passwords (2026-10-22):** the sign-in page has no "Forgot your password?" (CiV staff send password links). Account
 menu → **My account** (`/account`, open to every user, insurers too): who is signed in and **Change password**
 (current password, new one twice; `POST /session/password`).
+
+**Evidence Vault and Reports (2026-10-23):** the Vault has a **Verify a file** card (the file's SHA-256 is made in the
+browser; only that is sent), "No daily seal yet" before the first seal, the real deleted count, and the lookup links to
+that number's own evidence file. Reports & Exports has a **Download the <month> audit report (PDF)** button. A number's
+evidence file shows **Who holds it** for each consent proof.

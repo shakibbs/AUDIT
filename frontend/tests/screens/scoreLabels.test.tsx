@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { score } from '@/mock/data/domains';
+import { score } from '@fixtures/data/domains';
 import { ScoreCard } from '@/screens/overview/ScoreCard';
 
 describe('Audit Score labels (Module 10)', () => {

@@ -10,7 +10,7 @@ export function ProofElements({ file }: { file: EvidenceFile }) {
     <Card title="Proof elements" sub={`${present} of ${file.proofElements.length} present`} flush>
       <div className="overflow-x-auto">
         <table className="tbl">
-          <thead><tr><th>#</th><th>Element</th><th>On record</th><th>Source</th><th>Captured by</th><th>Captured (UTC)</th><th>Fingerprint</th></tr></thead>
+          <thead><tr><th>#</th><th>Element</th><th>On record</th><th>Source</th><th>Who holds it</th><th>Captured by</th><th>Captured (UTC)</th><th>Fingerprint</th></tr></thead>
           <tbody>
             {file.proofElements.map((p) => (
               <tr key={p.number}>
@@ -18,6 +18,7 @@ export function ProofElements({ file }: { file: EvidenceFile }) {
                 <td className="font-semibold">{p.element}</td>
                 <td>{p.present === null ? <span className="pill pill-gray">Not measured</span> : p.present ? <span className="pill pill-green">Present</span> : <span className="pill pill-red">Not met</span>}</td>
                 <td className="text-txt-2">{p.source ?? '—'}</td>
+                <td className="text-txt-2">{p.holder ?? '—'}</td>
                 <td>{p.tier ? <TierChip tier={p.tier} /> : '—'}</td>
                 <td className="mono whitespace-nowrap text-[11.5px]">{formatDateTime(p.capturedAt)}</td>
                 <td className="mono text-[11.5px]">{truncateHash(p.hash)}</td>

@@ -2,7 +2,7 @@
 
 import { useInsureds } from '@/api/queries';
 
-/** The insurer's top bar: how many companies share with it right now (not the sample's five). */
+/** The insurer's top bar: how many companies share with it right now. */
 export function InsuredCount() {
   const n = useInsureds().data?.length;
   const count = n === undefined ? '' : n === 0 ? ' · No insureds yet' : ` · ${n} ${n === 1 ? 'insured' : 'insureds'}`;

@@ -11,7 +11,7 @@ import { SignInForm } from './SignInForm';
 /** Sign in, choose a new password (from a link CiV staff sent), or accept an invite. */
 export function SignInScreen({ initial = { kind: 'sign-in' } }: { initial?: Mode }) {
   const [mode, setMode] = useState<Mode>(initial);
-  const sampleData = Boolean(useSession().data?.sampleData);
+  useSession();  // asking who is signed in also gives the browser its CSRF cookie, which every form below needs
   const toSignIn = () => {
     window.history.replaceState(null, '', '/sign-in');
     setMode({ kind: 'sign-in' });
@@ -21,7 +21,7 @@ export function SignInScreen({ initial = { kind: 'sign-in' } }: { initial?: Mode
     <div className="grid min-h-screen lg:grid-cols-2">
       <SignInBrand />
       <div className="flex items-center justify-center p-6">
-        {mode.kind === 'sign-in' && <SignInForm sampleData={sampleData} />}
+        {mode.kind === 'sign-in' && <SignInForm />}
         {mode.kind === 'new-password' && <NewPasswordForm link={mode.link} onDone={toSignIn} />}
         {mode.kind === 'invite' && <AcceptInviteForm token={mode.token} />}
       </div>

@@ -1,6 +1,6 @@
 # Comply iV (CiV) — System Specification
 
-Version: 22 October 2026 · covers Modules 1–16. Written from the code in the AUDIT (portal, docs) and Audit-backend repositories.
+Version: 23 October 2026 · covers Modules 1–16, the user system and the fixes from the full browser test. Written from the code in the AUDIT (portal, docs) and Audit-backend repositories.
 
 ## Contents
 
@@ -113,9 +113,9 @@ CiV states facts and measurements. It does not give legal advice; how to respond
 | Who | Where | What they do |
 |---|---|---|
 | Client Admin | Client portal | Connects tools, uploads files, manages users, shares with insurers, signs statements, sees everything for the company |
-| Client Member | Client portal | Reads pages; in lawyer-only (counsel-directed) mode a Member who is not the lawyer is locked out |
-| Client lawyer | Client portal (Member or Admin with the lawyer flag) | Reviews Rulebook drafts (agree, disagree, suggest), confirms spoken consent, signs statements, receives findings first in counsel-directed mode |
-| CiV staff | Admin panel (/civ-admin/) | Onboards clients, approves Rulebook changes, reviews proof files, oversees insurers, runs the system; separate login from clients |
+| Client Member | Client portal | Sees every page except Settings and Users & Access (Admin only); cannot change people, settings or evidence files |
+| Client lawyer | Client portal (Member or Admin with the lawyer flag) | Only the lawyer reviews Rulebook drafts (agree, disagree, suggest) and suggests law changes; with Admins: signs statements, decides findings, uploads, exports evidence, sets legal holds |
+| CiV staff | Admin panel (/civ-admin/) | Onboards clients (with the client Admin's invitation), approves Rulebook changes, reviews proof files, manages insurers, sends password links, runs the system; separate login from clients; every staff member has full access for now |
 | Insurer or acquirer | Insurer portal (same portal, underwriter view) | Sees only companies that share with it: Portfolio, Exposure, Data Integrity, Risk Attestation, Litigation, Underwriting Export |
 
 ## How the parts fit together
@@ -131,7 +131,7 @@ CiV states facts and measurements. It does not give legal advice; how to respond
         |  JSON over HTTPS (session cookie + CSRF)
         v
  Next.js portal (AUDIT repo, frontend/)
-   - /api/* route forwards to Django; partly real pages are laid over sample data
+   - /api/* route forwards every request to Django (no sample data)
    - Client view, and underwriter (insurer) view
         |
         v
@@ -145,7 +145,7 @@ CiV states facts and measurements. It does not give legal advice; how to respond
 
 ## The main flow, end to end
 
-1. **Onboarding.** CiV staff create the client and move it through its stages; the client's Admin is invited and sets a password.
+1. **Onboarding.** CiV staff create the client with its Admin's name and email; the Admin gets an invitation link, chooses a password, and invites their own team (with a lawyer tick box).
 2. **Connecting.** The Admin (or CiV with a connect link) saves a read-only key for each tool. The key is encrypted at once and never shown again.
 3. **Fetching.** Every 2 minutes the sync workers ask each tool for new calls, texts, contacts and leads. Hourly catch-ups and a nightly full sweep fill gaps. Phone numbers are turned into **phone codes** (keyed per client) the moment they arrive; the number itself is never stored.
 4. **Normalizing.** Every record becomes one standard **contact event** (who, when, channel, direction, which tool, source grade), with duplicates across tools merged and each number's ownership period ("epoch") tracked.
@@ -168,7 +168,9 @@ CiV states facts and measurements. It does not give legal advice; how to respond
 - **Not measured is not the worst case on screens.** A metric CiV has not built or cannot measure says "Not measured"; scoring then treats it as described in the scoring chapter.
 - **Every company's data is locked in the database itself** (row-level security), not only in the code.
 - **Files are private and kept 4 years**, then deleted with their fingerprints kept; legal holds stop deletion.
-- **Alerts are in the portal only**, never by email.
+- **Alerts are in the portal**, and each company's **Admins** can also get them by email (they choose which types in Settings → Notifications).
+- **Nobody types a password for someone else.** People join by an invitation link and choose their own password; CiV staff send password links; everyone changes their own in My account. There is no "Forgot password".
+- **Seeing vs doing.** Every client user sees every page except Settings and Users & Access (Admin only); what they can change depends on their role (Admin, Member, lawyer). Each person has their own "View as" switch.
 - **The AI is plugged into fixed slots** (conversation review, speech-to-text, document reading). Until a slot is switched on, nothing is sent anywhere. Every AI must pass an accuracy exam before its answers count.
 
 ## Module map
@@ -218,7 +220,7 @@ unless they start with `frontend/`.
 - **Passwords:** Argon2 for new hashes; BCryptSHA256 accepted and upgraded on next sign-in. Validators: user-attribute similarity, **min length 12**, common-password, numeric-only.
 - **Cookies/sessions:** `SESSION_COOKIE_HTTPONLY=True`, `SAMESITE='Lax'`, `SECURE` and `CSRF_COOKIE_SECURE` = not DEBUG, `SESSION_COOKIE_AGE = 12 hours`, `PASSWORD_RESET_TIMEOUT = 1 hour`. Session engine = Django default (database, table `django_session`).
 - **REST framework:** JSON renderer only; auth classes `apps.accounts.authentication.ClientSessionAuthentication` then `apps.buyers.authentication.BuyerSessionAuthentication` (Module 15); default permission `AllowAny` (each view sets its own); `UNAUTHENTICATED_USER=None`.
-- **Email:** `MAILERS` backend from `EMAIL_BACKEND`, default **console** (emails print to the terminal, not delivered). `DEFAULT_FROM_EMAIL` default `CiV <no-reply@complyiv.com>`. `PORTAL_URL` (default `http://localhost:3000`) is the base for email links.
+- **Email (Gmail, 2026-10-23):** with `GMAIL_USER` + `GMAIL_APP_PASSWORD` in `.env` (a Google app password), `MAILERS` uses Gmail SMTP (smtp.gmail.com:587, TLS); without them emails print to the terminal. `DEFAULT_FROM_EMAIL` = `Comply iV <GMAIL_USER>` (else `CiV <no-reply@complyiv.com>`). Every email uses one design (`apps/accounts/mailer.py`, `templates/emails/base.html`: heading, lines, one button, plain-text copy). `PORTAL_URL` is the base for portal links, `ADMIN_URL` for staff welcome links.
 - **Admin theme:** `UNFOLD = unfold_config(PORTAL_URL)` (see Admin panel).
 - **Celery:** `REDIS_URL` → broker; without it broker `memory://` and `CELERY_TASK_ALWAYS_EAGER=True` (jobs run at once, in-process). `EAGER_PROPAGATES=True`, `IGNORE_RESULT=True`, `ACKS_LATE=True` (crashed worker's job re-runs), `PREFETCH_MULTIPLIER=1`, timezone UTC. `CELERY_TASK_ROUTES`: `apps.captures.tasks.capture_pages` → queue `capture`.
 - **Hooks:** `SYNC_HOOKS_ENABLED` (default false). Only when true is `/hooks/<connection_id>` routed (owner decision 2026-10-16: polling only).
@@ -381,10 +383,11 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 
 ### Roles and flags
 - **Admin**: may invite (POST /api/users), change role/lawyer flag (PATCH), turn off users / cancel invites (DELETE).
-- **Member**: read-only on Users page; any signed-in user can GET.
-- **is_counsel** (lawyer flag): in lawyer-only mode (`Client.counsel_directed`, default True) findings and alerts go only to these users (comment in models; enforcement lives in other apps).
+- **Member**: sees every page except Settings and Users & Access, which are Admin only (2026-10-23; the server refuses `/api/access-log`, `/api/settings`, `/api/buyer-links`; `GET /api/users` gives non-Admins names only, to assign a finding).
+- **is_counsel** (lawyer flag): only lawyers review rule drafts and suggest law changes; lawyers and Admins sign statements, decide findings, upload and export evidence. There is **no lawyer-only mode** (removed 2026-10-22, migration `clients/0007`): every user sees alerts and findings.
+- **view** (`client_user.view`, owner/underwriter): each client user's own "View as" switch (`POST /api/session/view-as`); Underwriter shows only their own company with real data, as their insurer sees it. Insurers are always Underwriter and cannot switch.
 - Rule: a company must keep **at least one active Admin** (`LAST_ADMIN = 'A company needs at least one active Admin.'`). A user cannot turn off themselves.
-- (Underwriter is a view switch in the portal, not a role.)
+- (Underwriter is a per-person view switch, not a role.)
 
 ### Sessions (apps/accounts/session.py)
 - Own session keys `civ_client_user_id`, `civ_client_auth_hash` (so a staff login in the same browser never counts as a client).
@@ -406,22 +409,26 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 - `MAX_FAILURES = 5`, `WINDOW = 15 minutes`. Locked when ≥5 `sign_in_failed` access-log rows for that email in the last 15 min. Effectively a rolling 15-minute lock. Counter is the access log itself (no separate table). Applies per email (not per IP).
 
 ### Session data returned (serializers/session.py: session_data)
-`signedIn`, `userId`, `name`, `initials` (first letters of first two words), `email`, `role`, `isCounsel`, `clientId`, `clientName`, `vertical` (= client.industry), `engagementMode` (`counsel_directed` or `direct`), `plan` (display name), `updatedAt` (max `SyncCursor.last_event_at` for the client — "last time CiV read something new"; omitted if none), `periods` (from `apps.scoring.snapshots.periods`). Not signed in → `{signedIn:false}`. For a buyer: `buyers.session.session_data` (view `underwriter`, `sampleData:false`).
+`signedIn`, `userId`, `name`, `initials` (first letters of first two words), `email`, `role`, `isCounsel`, `view`, `orgKind` (`client`), `canSwitchView`, `clientId`, `clientName`, `vertical` (= client.industry), `plan` (display name; may be null), `updatedAt` (max `SyncCursor.last_event_at` for the client — "last time CiV read something new"; null until anything is read, and the top bar then says "Nothing read yet"), `periods` (from `apps.scoring.snapshots.periods`). The session has no `sampleData` and no `runs` field. Not signed in → `{signedIn:false}`. For a buyer: `buyers.session.session_data` (view `underwriter`, `canSwitchView: false`, `plan: null`, `updatedAt: null`, `periods: []`).
 
-### Password reset (views/password_reset.py, tokens.py, emails.py)
-1. POST `/api/session/reset` {email}: always answers `{sent:true}` (no enumeration). If an active user of an active client exists, email link `PORTAL_URL/sign-in?reset=<uid>.<token>`. Log `password_reset_requested`.
+### Passwords (views/password_reset.py, change_password.py, tokens.py, emails.py)
+There is **no "Forgot password"** (owner, 2026-10-22/23): the sign-in page has no link and `POST /api/session/reset` no longer exists. New passwords come from:
+- a **password link CiV staff send** (client page → Users → *Send password link*; Insurers page → a person → *Send password link*, link starts `b-` for buyers; Staff → *Send password link* / welcome link), and
+- **My account → Change password** (`POST /api/session/password {current, password}`, every client user and insurer): wrong current passwords count toward the sign-in lock; the new one must differ from the current one; other devices are signed out, this one stays in; logged `password_changed`.
+1. Link: `PORTAL_URL/sign-in?reset=<uid>.<token>` (buyers `reset=b-<uid>.<token>`).
 2. Token = `ClientResetTokenGenerator` (Django PasswordResetTokenGenerator with own salt `civ.accounts.ClientResetTokenGenerator`, so staff tokens can't be reused); valid `PASSWORD_RESET_TIMEOUT` = 1 hour; becomes invalid after password change (Django behaviour).
 3. POST `/api/session/reset/confirm` {link:"uid.token", password}: validate token, password validators (12+ etc.), `set_password` (ends old sessions), log `password_reset_done` → `{done:true}`; bad → 400 "This link has expired or was already used. Ask for a new one."
 
 ### Invites (views/invites.py, views/users.py)
 1. Admin POST `/api/users` {email, name?, role (default member), isCounsel (default false)}. Refused if the email already has a ClientUser or BuyerUser ("That email already has an account.").
-2. Old unused invites for the same email at that client are deleted (new replaces old). New `Invite` with `token_hash`, `expires_at = now + 7 days`.
-3. Email `PORTAL_URL/sign-in?invite=<token>` ("use within 7 days"). Log `invite_sent`. Returns invite row (201).
+2. A **waiting** invite for the same email is never replaced silently: the request is refused with "… already has an invite (sent <date>). Use Resend, or Cancel it and invite again." An **expired** one is replaced. New `Invite` with `token_hash`, `expires_at = now + 7 days` (shared helper `apps/accounts/invites.py`, also used by the staff panel).
+3. Email `PORTAL_URL/sign-in?invite=<token>`: "invited … as an Admin / a Member [and the company's lawyer]", one use, 7 days. Log `invite_sent`. Returns invite row (201).
 4. GET `/api/invites/check?token=` → `{email, name, clientName}` if invite unused, unexpired, client active; else tries a buyer invite (Module 15); else 400 "This invite has expired or was already used. Ask your Admin for a new one."
 5. POST `/api/invites/accept` {token, password}: creates ClientUser with invite's role and lawyer flag, marks `used_at`, signs in, logs `invite_accepted`. If the token is not a client invite → `accept_buyer` (creates BuyerUser, signs in as buyer).
 
 ### Users page API (views/users.py)
-- GET `/api/users` (any client user): active users (`id 'u-<pk>'`, name, email, role, isCounsel, status `active`, lastSeen=last_login) + open invites (`id 'inv-<pk>'`, status `invited`).
+- GET `/api/users`: for the Admin, active users (`id 'u-<pk>'`, name, email, role, isCounsel, status `active`, lastSeen) + every unused invite (`id 'inv-<pk>'`, status `invited` or `expired`, `sentAt`); for others, names only.
+- POST `/api/users/inv-<pk>/resend` (Admin): a new 7-day link; the old one stops working.
 - PATCH `/api/users/u-<pk>` (Admin): {role?, isCounsel?}; blocks demoting the last Admin; log `user_changed` "email role=… lawyer=…".
 - DELETE `/api/users/inv-<pk>` (Admin): cancels an unused invite, log `invite_cancelled`. DELETE `/api/users/u-<pk>`: sets `is_active=False` (kept for the log), not self, not last Admin; log `user_turned_off`. 204.
 - POST `/api/session/sign-out` (signed in): logs `sign_out`; for buyers just clears buyer keys.
@@ -435,18 +442,22 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 ### Admin panel parts
 - `ClientUserAdmin`: hidden from menu (`has_module_permission=False`); a person's own page opened from the company's Users tab. Fields client, email, name, role, is_counsel, is_active, last_login, created_at. New users get an unusable password. Action "Send a link to set their password" (logs `password_link_sent`).
 - `InviteAdmin`: hidden from menu; read-only; no add; token_hash excluded.
-- `ClientUserInline` (Users tab on client page): add/edit people; `can_delete=False` (use Is active); per-row button "Send password link" (POST to `/civ-admin/clients/client/<client_id>/users/<user_id>/password-link/`, needs perm `accounts.change_clientuser`). `save_users`: lowercases email, new user → unusable password + reset email; logs `user_added`/`user_changed`.
-- `InviteInline` (Invites tab): read-only.
+- `ClientUserInline` (Users tab on client page): edit people (no adding here; people are invited); `can_delete=False` (use Is active); per-row button "Send password link" (POST to `/civ-admin/clients/client/<client_id>/users/<user_id>/password-link/`, perm `accounts.change_clientuser`); logs `user_changed`.
+- `NewInviteInline` ("Invite someone" tab): name, email, role, "is our lawyer" → invitation link (`invite_by_staff`, logged `invite_sent`).
+- `InviteInline` (Invites tab): every invite with Sent / Joined / Expired and **Resend invitation** (`/civ-admin/clients/client/<id>/invites/<invite_id>/resend/`); one row per invite, no repeated heading.
+- **New client:** the Add client company form requires "Client Admin's name" and "Client Admin's email"; saving sends that person an Admin invitation.
 
 ### Frontend pages fed
-`frontend/src/app/sign-in/page.tsx` (sign-in, `?reset=`, `?invite=`), `(portal)/users` (Users & Access). Next.js `src/server/backend.ts` forwards `session`, `users`, `invites`, `access-log` to Django when `BACKEND_URL` is set; `mergeSession.ts` joins Django's session with mock-only fields (sample months/view switch; `sampleData:true` for client users).
+`frontend/src/app/sign-in/page.tsx` (sign-in, `?reset=`, `?invite=`), `(portal)/users` (Users & Access, Admin only), `(portal)/account` (My account, everyone). The portal sends these requests (like every `/api` request) straight to Django through `src/server/backend.ts: forward()`; the session the portal shows is Django's session as it is. Django decides each person's view (`view`, `canSwitchView`). The sign-in page first calls `GET /api/session` to get the CSRF cookie. After sign-in or accepting an invite, a person in the Underwriter view goes to `/portfolio`; everyone else goes to `/`.
 
 ## CiV staff accounts (apps/staff)
 
 - **Purpose:** CiV's own team; `AUTH_USER_MODEL`. Opens the admin panel only, never the client API.
 - **Table:** `staff_user` (`StaffUser`, AbstractBaseUser + PermissionsMixin): `email` unique (login), `name`, `is_active`, `created_at`, `is_superuser`, groups, user_permissions, password, last_login. `is_staff` is a property = `is_active` (every active staff account may open the panel; what it can do comes from permissions).
-- **Manager:** `create_user` / `create_superuser` (email lowercased, required). Created via `manage.py createsuperuser`.
-- **Admin:** `StaffUserAdmin` (Unfold forms; fieldsets: email/name/password; Access: is_active, is_superuser, groups, user_permissions; History). `GroupAdmin` re-registered ("Permission groups", e.g. who may approve rule changes).
+- **Manager:** `create_user` / `create_superuser` (email lowercased, required). The first one via `manage.py createsuperuser`.
+- **Adding staff (2026-10-22/23):** Staff → Add: name and email only; the person is made a full-access superuser (per-person permissions come later) and gets a **welcome link** (`staff_welcome` table, 7 days, one use, hash kept) to `/civ-admin/welcome/?token=…` where they choose their own password. "Send password link" (button on the person's page, and a list action) sends a new welcome link; Django's "set this user's password" page is switched off (403), and no password code is shown.
+- **Sign-in lock:** the panel's login (`apps/staff/login.py`, `admin.site.login_form`) locks an email after 5 wrong passwords in 15 minutes, like the portal; wrong tries are logged `staff_sign_in_failed`.
+- **Admin:** `StaffUserAdmin` (fieldsets: email/name/password link; Access: is_active, is_superuser, user_permissions; History). There is no Permission groups page (removed 2026-10-22).
 - **Permissions actually checked in code:** `clients.change_client` (onboarding toggles), `accounts.change_clientuser` (password link), `connections.change_connection` (test/connect link), `documents.view_clientdocument` (open document), custom `regulatory.approve_ruleupdate` ("Can approve rule updates (changes the Rulebook)"), `regulatory.add_regchange`. Plus standard Django model admin permissions.
 
 ---
@@ -455,20 +466,20 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 
 - **Purpose:** look, menu and dashboard of `/civ-admin/` (Django admin + Unfold), styled like the portal.
 - **theme.py (`unfold_config`)**: SITE_TITLE "CiV admin", SITE_HEADER "Comply iV"; `SITE_URL` = PORTAL_URL; teal palette (600 `#0e8c7f` = portal --brand) and portal neutrals; custom `civ.css`/`civ.js`; environment tag "Local" (warning) when DEBUG, "Live" (danger) otherwise.
-- **Sidebar menu:** Overview → Dashboard · Clients → Client companies, Proof requests · Insurers → Insurers and acquirers · Rules → Rulebook, Rulebook check, Regulatory changes, New law items, Client suggestions · AI → AI answers, AI exam results, Extra exam questions · CiV team → CiV staff, Permission groups · Records → Access log, Client reports, Failed-job cleanups (purge_log), Missed records (sync_gap).
+- **Sidebar menu:** Overview → Dashboard · Clients → Client companies, Proof requests · Insurers → Insurers and acquirers · Rules → Rulebook, Rulebook check, Regulatory changes, New law items, Client suggestions · AI → AI answers, AI exam results, Extra exam questions · CiV team → CiV staff · Records → Access log, Client reports, Failed-job cleanups (purge_log), Missed records (sync_gap).
 - **base.py `CivModelAdmin`:** base for every admin section; `eyebrow` label + `page_sub` line via templates `admin_panel/page_head_list.html` and `page_head_form.html`.
 - **civ.js:** first visit sets light theme and 248 px sidebar (localStorage `adminTheme`, `sidebarWidth`); moves tabs under the page heading where `[data-civ-tabs-after]` exists; whole list row clickable (Ctrl/Cmd opens new tab).
 - **userlinks.html:** top bar: environment label, actions, light/dark toggle button.
 - **dashboard.py (`DASHBOARD_CALLBACK`)** tiles:
   1. Active clients (+ onboarding · trial · paused counts).
-  2. Client users (active).
-  3. Open invites (unused, unexpired).
-  4. Connections connected (+ waiting, failed or stale).
-  5. Renewals · 30 days (`renewals_within(30)`).
-  6. Rulebook: "Rules needing a decision" = pending count from `apps.rulebook.health.check()` (foot: not set · proposed · set), or "No Rulebook loaded".
-  7. New law items (state new, level High; + all new).
+  2. Client users (active) → client list sorted by users.
+  3. Open invites (unused, unexpired) → clients with waiting invites (`?attention=invites`).
+  4. Connections working (+ waiting, failed or stale) → clients with failed or stale connections (`?attention=connections`).
+  5. Renewals · 30 days (`renewals_within(30)`) → clients renewing within 30 days (`?attention=renewals`).
+  6. Rulebook: "Rules needing a decision" = pending count from `apps.rulebook.health.check()` ("Rules that change results and are not decided yet · N rules in all"), or "No Rulebook loaded".
+  7. New law items · high priority (state new, level High; foot: all new) → filtered law items.
   8. Sign-ins · 24 h (+ failed, + "locked now" = emails with ≥5 failures in 15 min).
-  Lists: 8 newest active clients (name, plan, users, lawyer-only, start, access level); last 10 access-log rows.
+  Lists: 8 newest active clients (name, plan, users, start, access level); last 10 access-log rows (Who in plain words: "CiV (automatic)" for jobs, "Not signed in" before sign-in).
 
 ---
 
@@ -476,7 +487,7 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 
 - **Purpose:** the client company record; stage (lifecycle); company admin page that hosts all tabs.
 - **Tables:**
-  - `client` (`Client`): `name` (unique), `industry`, `brand_names` (one per line; Module 7 seller check / docai), `plan` `starter|growth|enterprise` (default growth), `start_date`, `counsel_directed` ("lawyer-only mode", default **True**), `access_level` 0–4 (not editable; set by connections), `status` ("stage") `trial|onboarding|active|paused|ended` (default onboarding), `status_changed_at`, `is_active` (follows status; Ended = off), `created_at`.
+  - `client` (`Client`): `name` (unique), `industry`, `brand_names` (one per line; Module 7 seller check / docai), `plan` `starter|growth|enterprise` (default growth), `start_date`, `access_level` 0–4 (not editable; set by connections), `status` ("stage") `trial|onboarding|active|paused|ended` (default onboarding), `status_changed_at`, `is_active` (follows status; Ended = off), `created_at`.
   - `client_status_change` (`StatusChange`): client, old_status, new_status, reason (300), changed_at, changed_by FK→staff_user.
 - **Logic:**
   - `Client.can_sync` = status in Trial/Onboarding/Active → Paused and Ended stop live sync (checked in `apps/sync/engine.py` and `sync/views.py`).
@@ -484,14 +495,14 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
   - Ended → `is_active=False` → sign-in, invites, resets, sessions refused (all check `client.is_active`).
   - Access level ladder (`apps/connections/access_level.py`): each level needs the one below: 1 = dialer or SMS connected; 2 = + certificates; 3 = + lead feed; 4 = + CRM. CONNECTED or STALE both count. Refreshed by a connections signal on save and by `sync/health.py`.
   - Stage pill colours: trial blue, onboarding amber, active green, paused gray, ended red.
-- **Admin (`ClientAdmin`)**: list columns Name, Stage, Industry, Plan, Onboarding ("x of 7"), Data access ("Level n of 4"), Users, Connections ("n of m connected"), Renews (amber inside notice period). Filters status, plan, counsel_directed, access_level. Search name, industry, users' email/name. Form fields: name, industry, plan, start_date, status, "Reason for stage change", status_since, counsel_directed, access level, created_at. Tabs (inlines): Connections, Contract & billing, Documents, Users, Invites, Consent pages (read-only, GET only). New company: only Connections, Contract, Documents tabs.
+- **Admin (`ClientAdmin`)**: list columns Name, Stage, Industry, Plan, Onboarding ("x of 7"), Data access ("Level n of 4"), Users, Connections ("n of m connected"), Renews (amber inside notice period). Filters Needs attention (waiting invites, failed connections, renewing within 30 days), status, plan, access_level. Search name, industry, users' email/name. Form fields (a new client also asks for its Admin's name and email): name, industry, plan, start_date, status, "Reason for stage change", status_since, counsel_directed, access level, created_at. Tabs (inlines): Connections, Contract & billing, Documents, Users, Invites, Consent pages (read-only, GET only). New company: only Connections, Contract, Documents tabs.
   - Summary tiles: Data access, Connections, Users, Open invites, Certificates (claimed · waiting · no key · lost), Records completeness (link), Provenance tile, AI tile. Onboarding card, stage history (last 20), Activity (last 10 access-log entries) + "Full access log" link.
   - Extra admin URLs under `/civ-admin/clients/client/<client_id>/`: `connections/<id>/test/`, `connections/<id>/send-link/`, `documents/<id>/open/`, `onboarding/<step>/`, `consent-pages/<capture_id>/photo/`, `completeness/`, `users/<user_id>/password-link/`.
 - **API endpoints (apps/clients/api.py, all `IsClientUser`):**
-  - GET `/api/settings`: `company` {name, vertical, states (distinct `ContactEvent.recipient_state`), engaged (start_date)}, `agreements` (Service agreement, Annex C, DPA, Signed statement: signed/pending + date from latest `ClientDocument` of that kind with `signed_on`), `usage` (from onboarding/readiness).
-  - GET `/api/revocation`: `optouts.measures.revocation_page(client)` + `authorisation.signedOn` = latest signed Annex C date or "—".
+  - GET `/api/settings`: `company` {name, vertical, brands (from `Client.brand_names`), states (distinct `ContactEvent.recipient_state`), forum (null), engaged (start_date), contacts (the active Admins and lawyers, each with name, email and role "Admin", "Lawyer" or "Admin · Lawyer")}, `agreements` (Service agreement, Annex C, DPA, Signed statement: signed/pending + date from latest `ClientDocument` of that kind with `signed_on`), `usage` (from onboarding/readiness).
+  - GET `/api/revocation`: `optouts.measures.revocation_page(client)` + `authorisation` {`signedOn` = latest signed Annex C date or null, `windowFrom` / `windowTo` = the last 90 days, `channels` = the channels of the client's real opt-outs}.
   - GET `/api/billed-numbers`: CSV `billed-numbers.csv`, columns "number (masked)", "first contact", "contacts this month" (masked labels only, never the number).
-- **Frontend pages fed:** `(portal)/settings` (merge path `settings`), `(portal)/revocation` (merge path), billed-numbers download.
+- **Frontend pages fed:** `(portal)/settings`, `(portal)/revocation`, billed-numbers download (all shown as Django sends them).
 
 ---
 
@@ -512,10 +523,10 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 - **API:** GET `/api/readiness` (IsClientUser) → `readiness(client)`:
   - Window: last 30 days of outbound, primary `ContactEvent`s. `numbersPerMonth` = distinct `phone_token`s. `recommendedPlan` by `PLANS` = Starter ≤10,000, Growth ≤50,000, Scale ≤250,000, else Enterprise.
   - Checks (name, how, state ready/partial/missing, detail, fix): Dialer / SMS / CRM connection (ready when CONNECTED or STALE and sync state live or catching_up; dialer goes partial if any calls lack `dial_mode`, "counted as autodialed"); Consent proof (sample of up to **100** recent numbers, non-self-asserted, not withdrawn proofs); Certificate retention (lost claims, or claimed certs expiring within 365 days); Consent pages (photographed OK vs known); Lead records (untraced provenance in 30 days); Internal do-not-contact list (uploaded?); History depth (ready if earliest record ≥ **4 years** back — time to sue); Documents (DNC check records and reassigned-number query logs uploaded).
-  - `canStart` = dialer or SMS check not missing. `preview` = strict consent results on the sample (VERIFIED/WEAK/CONFLICTING/NO_PROOF). `setup` rows: caller IDs, pages, vendors, campaigns ("all treated as marketing", owner decision), states.
-  - `usage(client)` (used by /api/settings): this month + 3 before, distinct numbers per month, plan limit, `overLimitMonths` (consecutive from latest), `nextPlan`, `monthlyPrice` = contract price ÷ period months (monthly 1, quarterly 3, yearly 12).
+  - `canStart` = a dialer or texting tool check is `ready` (connected and read lately). `preview` = strict consent results on the recent numbers (VERIFIED/WEAK/CONFLICTING/NO_PROOF); `[]` when there are no results. `notMeasured` = the metrics that cannot be measured yet because an upload is missing (M11, M12, M13). `setup` rows, in a fixed order, each with `label` and `detail` from `SETUP_LABELS` (`not_supplied()` gives the text for an empty row): caller IDs, pages, vendors, campaigns ("all treated as marketing", owner decision), states.
+  - `usage(client)` (used by /api/settings): this month + 3 before, distinct numbers per month, plan `limit` (null for Enterprise), `overLimitMonths` (consecutive from latest), `nextPlan`, `monthlyPrice` = contract price ÷ period months (monthly 1, quarterly 3, yearly 12; null without a contract price), `rule` (the move-up rule text, `USAGE_RULE`).
   - `billed_numbers(client)`: this month's distinct tokens with masked label, first contact date, count.
-- **Frontend pages fed:** `(portal)/setup` (merge path `readiness`), Settings → Plan & usage.
+- **Frontend pages fed:** `(portal)/setup`, Settings → Plan & usage.
 
 ---
 
@@ -524,12 +535,12 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 - **Purpose:** who did what, when — append-only audit trail for every module.
 - **Table:** `access_log` (`AccessEntry`): `at` (auto, indexed), `actor_kind` `client_user|staff|system|buyer|anonymous`, `actor_id`, `actor_label`, `client_id` (bigint, indexed, no FK), `action` (indexed, 64), `object` (254), `ip_address`.
 - **Immutability:** model `save()` raises if pk exists; `delete()` raises. DB trigger `access_log_no_update_or_delete` (function `access_log_block_changes`) raises on any UPDATE/DELETE, even bulk (migration 0002).
-- **recorder.record(action, request=, actor_kind=system, actor_id, actor_label, client_id, object)**: the only writer; IP = `REMOTE_ADDR`.
+- **recorder.record(action, request=, actor_kind=system, actor_id, actor_label, client_id, object)**: the only writer; IP = `client_ip()`: when `REMOTE_ADDR` is a private or loopback address (one of our own proxies), the last `X-Forwarded-For` entry; otherwise `REMOTE_ADDR` (tested in `tests/access_log/test_forwarded_ip.py`).
 - **labels.py:** plain words + pill colour per action (≈60 actions: sign_in, sign_in_failed, sign_in_locked, password/invite/user/document/contract/stage/onboarding/connection/reg-change/opt-out/certificate/source/rule/proof/upload/attestation/client_key events …). Unknown action → capitalised words, gray.
 - **API:** GET `/api/access-log` (IsClientUser): the company's last **300** entries, newest first: at, actor (person name; "CiV team" for staff; "CiV" for system; else label or "Not signed in"), role (`civ` for non-client), action label, object. Note: any client user (not only Admin) can read it.
 - **Admin:** "Access log" list, read-only for everyone (no add/change/delete); columns When, Who (actor label or the email tried), What (pill), Object, Company, IP; filters actor_kind, action; date hierarchy; `?client_id__exact=` allowed.
 - **Also used as:** the lockout counter (accounts), dashboard sign-in tile.
-- **Frontend:** Users & Access → Access log (BACKEND_PATHS `access-log`).
+- **Frontend:** Users & Access → Access log (`/api/access-log`).
 
 ---
 
@@ -576,7 +587,7 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
   - GET `/api/vault`: `artifacts` (fingerprint count, formatted), `anchors` (count), `lastAnchor` (day or "—"), `engagedSince`, `coverage` (last 12 months: `before` start, `covered` past month with records, `partial` otherwise).
   - GET `/api/position?phone=&date=YYYY-MM-DD`: (anchoring/position.py) number normalized + tokenized (never stored); returns masked phone, date, `insideCoverage` (date ≥ start_date), rows as of end of that day: Phone epoch, Consent proof, Consent page as of date (capture, Tier 1), Lead source, Contact log (tier from grade A1…D4), Opt-out history, Internal list, Consent status (strict result + Rulebook version). 400 "Enter a date." / "Enter a full phone number."
   - GET `/api/hash-check?hash=`: found?, artifact "system · record id", capturedAt, anchoredOn (seal day), tier.
-- **Frontend:** `(portal)/vault` (merge path `vault`; `position`, `hash-check` in BACKEND_PATHS).
+- **Frontend:** `(portal)/vault` (`/api/vault`, `/api/position`, `/api/hash-check`).
 
 ---
 
@@ -606,19 +617,15 @@ Background jobs set their own scope (`ledger_job`, `Tokenizer`, `seal` do; teste
 - **Table:** `client_document`: client FK, `kind` agreement | annex_c (test opt-out permission) | statement (Insured states) | dpa | other, `title`, `file` (stored at `client-docs/<client_id>/<uuid hex><ext>`), `link` (URL alternative), `signed_on`, `original_name`, `sha256`, `size`, `uploaded_by` FK→staff, `uploaded_at`.
 - **Rules:** allowed extensions pdf, png, jpg, jpeg, docx; max **20 MB**; a file or a link required ("Add a file or a link.").
 - **Flow (admin Documents tab, `save_documents`):** deleted docs → file removed from disk + log `document_removed`; new/changed file → SHA-256 (`fingerprint.sha256_of`), size, original name, uploaded_by; log `document_added`/`document_changed`. Uploading agreement/annex_c ticks the onboarding step.
-- **Open (`views.open_document`)**: staff only, perm `documents.view_clientdocument`; logs `document_opened`; `FileResponse` inline for PDF/PNG/JPEG else attachment; headers `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`. Never a public URL (MEDIA_ROOT not served).
+- **Open (`views.open_document`)**: staff only, perm `documents.view_clientdocument`; logs `document_opened`; `FileResponse` inline for PDF/PNG/JPEG else attachment; headers `X-Content-Type-Options: nosniff`, `Cache-Control: private, no-store`. Never a public URL (MEDIA_ROOT not served); the file box shows no "currently: <link>" (it pointed at a public address that does not exist), only the row's Open button. Sizes read "193 bytes", "1.3 KB", "3.4 MB".
 - **Used by:** `/api/settings` agreements, `/api/revocation` Annex C date, onboarding.
 
 ---
 
 ## Frontend bridge (cross-cutting, frontend/src)
 
-- `src/app/api/[...path]/route.ts` serves every `/api/*` for the portal. With `BACKEND_URL` set:
-  - `search`: Django numbers/vendors + mock pages/domains/metrics (max 10).
-  - MERGE_PATHS (GET only): `vault, settings, revocation, insureds, metrics, who-contact, readiness, leads, vendors, litigation, score, domains, actions, reports` → Django fields laid over sample (`overlay`: lists merged by `code`/`id`/`name`). A response with header `X-CiV-Viewer: buyer` passes through unchanged (only litigation overlays sample).
-  - BACKEND_PATHS (fully Django): `session, users, invites, rulebook, reg-changes, rule-updates, sources, data-health, contacts, evidence, can-call, optouts, consent, certificates, consent-pages, provenance, proof-requests, access-log, uploads, conduct, billed-numbers, position, hash-check, alerts, vendor-contracts, vendor-disputes, evidence-file, evidence-bundle, legal-holds, buyer-links, statements, rating-engine`. WRITE_PATHS: `who-contact, actions, reports`. `view-as` stays on mock.
-  - Everything else → mock sample data.
-- `forward()` passes headers cookie, content-type, x-csrftoken, origin, user-agent; body as bytes; returns cookies.
+- `src/app/api/[...path]/route.ts` serves every `/api/*` for the portal and forwards **every** request to Django with `forward()` (`src/server/backend.ts`). Without `BACKEND_URL` it answers 503 "The CiV server address is not set (BACKEND_URL)." The portal holds no sample data: every page shows only what Django sends (owner decision 2026-10-23).
+- `forward()` passes the request headers cookie, content-type, x-csrftoken, origin, user-agent and x-forwarded-for; sends the body as bytes; and returns x-civ-viewer, content-disposition, cache-control, x-content-type-options, x-not-found and every set-cookie.
 - In Docker the browser never talks to Django directly; portal uses `http://backend:8000`.
 
 ---
@@ -846,7 +853,7 @@ Rulebook pages and a monthly Rulebook snapshot PDF.
   counts by status; **Needs a decision** = TBD rules with `affects_status`, each with the number of active clients
   that made outbound contacts in that place in the last 30 days (US = every client with a contact), most affected
   first; **Not confirmed by a lawyer** = Proposed, `affects_status`, not `counsel_approved`.
-- **History** (`/admin/rulebook/rulevalue/history/<key>/`): each value by place with from / until, status, Rulebook
+- **History** (`/civ-admin/rulebook/rulevalue/rule-history/<key>/`, own name since 2026-10-23 so it no longer clashes with Django's per-row history; the History button on a rule's page opens it): each value by place with from / until, status, Rulebook
   version, changed by, approved by, source.
 - Admin dashboard tile **"Rules needing a decision"** (`apps/admin_panel/dashboard.py:rulebook_tile`): count of
   pending; foot "N not set · N proposed · N set"; links to the check page.
@@ -919,7 +926,7 @@ admin approve a draft so it enters the Rulebook from its start date. Adding a la
    approved_by (email), approved_at; `apply_update` on the current internal version (old value ends the day before,
    new starts; overlap refused → nothing saved, error message "Not approved: ..."). Then `rules_changed` is sent with
    `from_date = effective_from` (consent results from that date are rechecked) and `rule_update_approved` is logged.
-9. **Reject** → state rejected, kept on record (inline cannot be deleted), logged `rule_update_rejected`.
+9. **Reject** → state rejected, kept on record, logged `rule_update_rejected`. A **waiting** draft can be deleted (Delete tick box on its row, logged `rule_update_deleted`); approved and rejected ones stay. A whole law change can be deleted while none of its updates is approved (its drafts go with it, and a law item it came from goes back to New).
 10. A later reload of the YAML re-applies all approved updates.
 
 ### Logic and rules
@@ -966,7 +973,7 @@ admin approve a draft so it enters the Rulebook from its start date. Adding a la
 - **Regulatory changes** (`RegChangeAdmin`): list title, jurisdiction, status pill, date, rules it touches, counsel
   pill (checked green / to check amber); filters status, review, jurisdiction; search; date hierarchy. Inline tab
   **Rule updates** with columns incl. "Clients' lawyers" summary and Approve / Reject buttons ("Waiting for an
-  approver" for staff without the permission). Updates cannot be deleted.
+  approver" for staff without the permission). Only waiting drafts can be deleted.
 - **Client suggestions** (`ClientSuggestionAdmin`): read only except `handled` and `civ_note`; no add / delete;
   shows company.
 
@@ -1118,7 +1125,7 @@ read-only, with the client's key locked (encrypted). Staff add connections in th
 derives the client's **data access level 0–4**.
 
 ### Data it receives / where from
-- Keys typed by CiV staff in the admin (Account ID / API key / API secret fields) for `api_key` tools.
+- Keys typed by CiV staff in the admin (Account ID / API key / API secret fields) for `api_key` tools, plus a visible **"Time zone or region"** dropdown (`connection.setting`, 2026-10-23): US time zones first, then others, and the Genesys regions; not a secret, editable later. Five9, Convoso and Vicidial read their times in it (older connections that kept the time zone in the secret still work); Genesys uses it as its region.
 - For `oauth` tools ("Sign in with…": RingCentral, NICE CXone, Talkdesk, Salesforce, HubSpot, Zoho, GoHighLevel,
   Dynamics 365) no key is typed; staff email the client's Admins a link. The CRM adapters expect `access_token`, `refresh_token`, `instance_url` inside the locked credentials.
 - Test calls (one read-only call per tool) — endpoints listed under testers below.
@@ -1128,11 +1135,11 @@ Kinds (`Kind`): `dialer`, `sms` (Texting tool), `certificates`, `lead_feed` (Lea
 
 | Code | Name | Kind | Auth | account → | key → | secret → |
 |---|---|---|---|---|---|---|
-| five9 | Five9 | dialer | api_key | Username (reports only) | Password | Report time zone |
-| convoso | Convoso | dialer | api_key | – | Auth token | Account time zone |
+| five9 | Five9 | dialer | api_key | Username (reports only) | Password | – (time zone in the setting box) |
+| convoso | Convoso | dialer | api_key | – | Auth token | – (time zone in the setting box) |
 | ringcentral | RingCentral | dialer | oauth | | | |
-| vicidial | Vicidial | dialer | api_key | Database server host:port/database | Read-only DB user | Password |
-| genesys | Genesys Cloud | dialer | api_key | Client ID | Client secret | Region |
+| vicidial | Vicidial | dialer | api_key | Database server host:port/database | Read-only DB user | Password (server time zone in the setting box) |
+| genesys | Genesys Cloud | dialer | api_key | Client ID | Client secret | – (region in the setting box) |
 | nice_cxone | NICE CXone | dialer | oauth | | | |
 | talkdesk | Talkdesk | dialer | oauth | | | |
 | readymode | ReadyMode | dialer | api_key | Account domain | API key | – |
@@ -1246,7 +1253,7 @@ None of its own (health job in sync touches status).
 
 ### Admin panel parts
 Client page → Connections tab: fields provider, label, account, key, secret, Status pill, **Sync** column
-(Live / Catching up / Stale / Never read, "last read X ago · N records read · problem: <ErrorType> (n× in a row)";
+(Live / Catching up / Stale / Not read yet ("CiV starts reading as soon as the connection test passes"), "last read X ago · N records read · problem: <ErrorType> (n× in a row)";
 "Not read yet — its adapter comes when a client needs it" for tools without adapter; "waiting for the client to
 click Allow" for OAuth without cursor), Saved key ("Saved · hidden"), last checked, last message, action button.
 Summary tile "data access level" on the client page (README).
@@ -1810,9 +1817,8 @@ Setup & Readiness, Lead Provenance / Vendor pages (vendor leads).
 
 ## 7. Portal screens (frontend)
 
-Routing: `frontend/src/server/backend.ts` forwards to Django when `BACKEND_URL` is set. Fully real (BACKEND_PATHS)
-includes `sources`, `data-health`, `uploads`, `contacts`, `evidence`, `can-call`, `provenance`… Partly real
-(MERGE_PATHS: Django fields overlaid on sample data, reads only) includes `readiness`, `insureds`, `settings`.
+Routing: the portal forwards every `/api` request to Django (`frontend/src/server/backend.ts: forward()`), and each
+screen shows Django's answer as it is.
 
 ### Source Registry (`/sources`, `frontend/src/screens/sources/`)
 - `SourcesScreen.tsx` — `useSources()` → `GET /api/sources`. KPIs: Current (x of total), Stale (names), Not supplied
@@ -1832,22 +1838,21 @@ includes `sources`, `data-health`, `uploads`, `contacts`, `evidence`, `can-call`
   every 2 minutes, hourly catch-up", link to Source Registry.
 - `KeyNumbers.tsx` — Records completeness tile (`recordsCompleteness`, `completenessNote`; click → /sources) and
   conversation review numbers.
-- `AttentionBanner.tsx` — "Records completeness below the floor" (when < `completenessFloor`), proof requests waiting.
+- `AttentionBanner.tsx` — "Records completeness below the floor" (only when completeness is measured and < `completenessFloor`), proof requests waiting.
 - `components/shell/Freshness.tsx` — top-bar dot from `GET /api/sources` (amber + "N source stale").
 
 ### Setup & Readiness (`frontend/src/screens/setup/`)
-- `SetupScreen.tsx` tabs Readiness report / Setup checklist, `useReadiness()` → `GET /api/readiness` (merged with
-  sample).
+- `SetupScreen.tsx` tabs Readiness report / Setup checklist, `useReadiness()` → `GET /api/readiness`.
 - Backend `apps/onboarding/readiness.py:readiness` (IsClientUser): checks by name — Dialer connection, SMS
   connection, CRM connection (missing / partial "Not read recently" / ready "Connected and read by API (tools)"; dialer
   partial when dial mode missing on X% of calls), Consent proof (up to 100 recent numbers), Certificate retention,
   Consent pages, Lead records (traced), Internal do-not-contact list (uploaded?), History depth (≥4 years ready),
-  Documents (DNC check records + RND logs uploaded); `canStart` = dialer or SMS not missing; `numbersPerMonth`
+  Documents (DNC check records + RND logs uploaded); `canStart` = a dialer or texting tool check is ready (read lately); `numbersPerMonth`
   (distinct outbound primary numbers, 30 days); `recommendedPlan` (Starter ≤10k, Growth ≤50k, Scale ≤250k, else
-  Enterprise); `preview` of strict consent statuses; `setup` rows (caller-ids, pages, vendors, campaigns "all treated
-  as marketing", states). `notMeasured` and other fields come from the sample.
-- `ReadinessTab.tsx` KPIs: Can the audit start?, Checks ready x of y, Recommended plan, Would be not measured
-  (sample); preview stacked bar; checks table. `ChecklistTab.tsx` setup checklist meter.
+  Enterprise, limit null); `preview` of strict consent statuses ([] when none); `setup` rows in a fixed order (`SETUP_LABELS`:
+  caller-ids, pages, vendors, campaigns "all treated as marketing", states); `notMeasured` (M11/M12/M13 while their uploads are missing).
+- `ReadinessTab.tsx` KPIs: Can the audit start?, Checks ready x of y, Recommended plan, Would be not measured;
+  "Preview on recent numbers" stacked bar; checks table. `ChecklistTab.tsx` setup checklist meter.
 
 ### Lead Provenance uploads card
 `frontend/src/screens/leads/UploadsCard.tsx` — "Uploaded lists" from `GET /api/provenance` (import batches: numbers,
@@ -2259,9 +2264,8 @@ Each contact row gets five states: `pass` · `fails` · `gap` · `not_reached` �
 - **Contact Ledger** (`frontend/src/screens/ledger/LedgerScreen.tsx`, `/contacts` + `/consent`).
 - **Evidence file / number page** (`frontend/src/screens/evidence/EvidenceFileScreen.tsx`, `/evidence/<ref>`):
   Standing card (worst status), `ConsentCard` (consent block), `ContactTimeline`, `ProofElements`, "Came from" line.
-- Frontend proxy: `consent`, `certificates`, `consent-pages`, `provenance`, `proof-requests`, `evidence`, `contacts`
-  are full backend paths (`frontend/src/server/backend.ts BACKEND_PATHS`); `leads` and `vendors` are MERGE paths
-  (real fields over sample fields).
+- Frontend proxy: `consent`, `certificates`, `consent-pages`, `provenance`, `proof-requests`, `evidence`, `contacts`,
+  `leads` and `vendors` all go straight to Django (`frontend/src/server/backend.ts: forward()`).
 
 ## 3. Page capture (apps/captures) — Module 7 steps 3, 4, 6
 
@@ -2421,10 +2425,10 @@ client's own form).
   time, tool, CRM record ID, note; max 200), `uploads` (last 50 upload batches: label, system, numbers,
   `withEvidence`, `stopBroughtBack`, `optOutsCleared`, `asked`, `proofRate`), `missing` (Module 7 checklist items
   failing, counted in certificates per page).
-- `GET /api/leads` — `inspected` (CRM records created this month), `completeness` (% of this month's certificates
-  whose page passed every no_proof/wording item, among pages with a photo), `missing`.
+- `GET /api/leads` — `inspected` (CRM records created this month + uploaded vendor lead rows (`VendorLead`) received this month), `completeness` (% of this month's certificates
+  whose page passed every no_proof/wording item, among pages with a photo; null when none was judged), `few` / `some` / `high` / `pageMatch` (null: not measured), `signals` ([]), `missing`.
 - `GET /api/vendors` — Vendor Ledger (delegates to `apps.vendors.portal.vendors_page`, Module 12).
-- `GET /api/search?q=` — numbers (≥4 digits; masked) → evidence file refs; vendor names (≥2 chars) → vendor refs.
+- `GET /api/search?q=` — numbers (≥4 digits; masked) → evidence file refs; vendor names (≥2 chars, from CRM records and vendor lead files) → vendor refs; domains and metrics (from `apps/metrics/catalog.py`); pages (`CLIENT_PAGES`, account pages included). At most 10 hits. The portal adds nothing.
 
 ### Scheduled jobs
 - `provenance` → `apps.provenance.tasks.rebuild_provenance`, every 30 min (`crontab(minute='*/30')`).
@@ -2435,7 +2439,7 @@ client's own form).
 
 ### Frontend pages fed
 - **Lead Provenance** (`frontend/src/screens/leads/LeadsScreen.tsx`): KPIs (Leads inspected, Consent completeness,
-  Page match — sample), "Leads by signal level" and "Most frequent signals" (sample), "Most often missing" (`/leads`);
+  Page match), "Leads by signal level", "Most frequent signals" and "Most often missing" (all `/leads`; "Not measured" while null or empty);
   `LadderCard`, `TopSourcesCard`, `UntracedCard`, `UploadsCard` (`/provenance`); `ProofRequestsCard`
   (`/proof-requests`).
 - Evidence file "Came from" line and the "lead source" proof element (`/evidence/<ref>` `cameFrom`).
@@ -2503,7 +2507,7 @@ mark it valid (with the consent date) or not valid. The proof rate per list = va
 - `purge-old-proof-files` → `apps.provenance.tasks.purge_old_proof_files`, 04:50 UTC daily.
 
 ### Admin panel parts
-- **Admin → Proof requests** (`ProofRequestAdmin`, eyebrow "Records"): list (sent, company, masked number, list,
+- **Admin → Proof requests** (`ProofRequestAdmin`, eyebrow "Clients", as in the menu): list (sent, company, masked number, list,
   answer — Waiting / Overdue / Proof attached / We have none — and check pill amber/green/red), filters (answer,
   review, file type, client), search. No add, no delete. Detail: read-only facts + "Open file" button (logged,
   needs `provenance.view_proofrequest`); editable `review`, `consent_date`, `review_note`. Validation: valid needs a
@@ -3198,8 +3202,7 @@ M19 (legal-basis results with no_proof/conflicting — note M19 uses the same fi
 - `apps/findings/api.py:row, can_decide, ActionsView, ActionView`.
 
 ### API endpoints
-- `GET /api/actions` — any client user, but in lawyer-only (counsel-directed) mode only Admins and the company lawyer;
-  others get `[]` (uses `alerts.api.can_see`).
+- `GET /api/actions` — any client user (no lawyer-only mode since 2026-10-22).
 - `PATCH /api/actions/f-<id>` — Admin or company lawyer only (403 otherwise).
 
 ### Scheduled jobs
@@ -3253,9 +3256,13 @@ Ordering newest `at` first. Never deleted.
 4. Returns count of unreviewed, unresolved alerts.
 
 ### API endpoints
-- `GET /api/alerts` — any client user; in counsel-directed mode only Admins and the company lawyer (`can_see`), others
-  get `[]`. Up to 500 rows: id `al-<pk>`, severity, kind, title, detail (+ "Resolved <d Mon>."), at, domain, reviewed,
-  routedTo (`legal` / `all`), resolved, reviewedBy.
+- `GET /api/alerts` — any client user. Up to 500 rows: id `al-<pk>`, severity, kind, title, detail (+ "Resolved <d
+  Mon>."), at, domain, reviewed, resolved, reviewedBy.
+- **Alert emails (2026-10-23, `apps/alerts/emails.py`):** when an alert first appears, or comes back after being
+  resolved, the company's active **Admins only** get one email (title, detail, severity, "Open Alerts" button) if the
+  Admin chose email for that type in Settings → Notifications (`alert_email_choice`; defaults all on except Vendor score
+  drop; `PATCH /api/settings/email/notifications {kind, email}`, Admin only). `alert.emailed_at` records it; a mail
+  problem never stops alerts.
 - `POST /api/alerts/al-<id>/review` — anyone who can see it; sets reviewed/by/at once; logged `alert_reviewed`.
 
 ### Scheduled jobs
@@ -3338,8 +3345,9 @@ of all figures + disclaimer. A hit → report saved as `blocked` with the words,
 
 ### Admin panel
 `ReportAdmin` (Admin → Records → "Client reports"): read-only list (made_at, client, name, period, status, banned,
-made_by), filters status/client; no add/change. Purpose: staff see blocked reports and fix the wording; the client then
-makes it again.
+made_by), filters status/client; no add/change. A report's page has a **Download** button
+(`/civ-admin/reports/report/<id>/download/`, logged `report_downloaded` by staff; files are private, no public link) and
+shows "Banned words: …" in plain words. Purpose: staff see blocked reports and fix the wording; the client then makes it again.
 
 ### Frontend pages fed
 Reports & Exports (`/reports`: ReportsScreen, ReportCard Generate, BulkExport), Evidence file screen (POST of an
@@ -3667,7 +3675,7 @@ Lets a client share its monthly **risk attestation** (a standard underwriting da
 2. "Send to rating engine": `POST /api/rating-engine/send {insured:'c-<id>'}` → newest snapshot (only if sharing, else 404) → `engines.send`: unlock key, `JsonPost.send` re-checks address, body = `sheet_of(snapshot)` = payload + `companyId`, `version`, `sha256`, `madeAt`, JSON sorted keys; headers `Authorization: Bearer <key>`, `X-CiV-Signature: sha256=<HMAC-SHA256(key, body)>`, `X-CiV-Sheet-Sha256`, UA "CiV attestation sender"; no redirects (`_NoRedirect`); 15 s timeout; 2xx = accepted. Row in `rating_send`; access log `attestation_sent` / `attestation_send_failed` on the company. Reply 200 if ok else 502.
 3. Monthly (`send_monthly`, 6th 06:30): for each active org with `monthly=True`, each active link, last month's newest **locked** snapshot, sent once (skips if an ok send of that snapshot exists).
 
-**Security checks (step 4)** — `tests/buyers/test_security.py`: tries every `/api/` route as a signed-in insurer; only `session, insureds, insureds/<ref>, litigation, rating-engine, health, invites/check` (reads) and `session/sign-in, session/sign-out, invites/accept, rating-engine, rating-engine/send, session/reset` (writes) may answer 2xx; nothing read or sent contains phone codes, record ids or `statementRows`; guessing another company's id → 404; access ends when sharing is revoked, an acquirer's end date passes, the org is blocked or the person is turned off; one insurer never sees another's engine; the key never comes back.
+**Security checks (step 4)** — `tests/buyers/test_security.py`: tries every `/api/` route as a signed-in insurer; only `session, insureds, insureds/<ref>, litigation, rating-engine, health, invites/check` (reads) and `session/sign-in, session/sign-out, invites/accept, rating-engine, rating-engine/send, session/password` (writes) may answer 2xx; nothing read or sent contains phone codes, record ids or `statementRows`; guessing another company's id → 404; access ends when sharing is revoked, an acquirer's end date passes, the org is blocked or the person is turned off; one insurer never sees another's engine; the key never comes back.
 
 ### Logic and rules
 - One buyer org per email domain; free-mail addresses are their own org; a client can never add a person to another company's insurer.
@@ -3708,7 +3716,7 @@ Lets a client share its monthly **risk attestation** (a standard underwriting da
 - `apps.buyers.tasks.monthly_rating_sends` — 6th of each month 06:30 UTC (runs in `all_clients()`).
 
 ### Admin panel parts
-- `apps/buyers/admin.py:BuyerOrgAdmin` (sidebar group "Insurers" → "Insurers and acquirers", `admin:buyers_buyerorg_changelist`): list name, domain, kind, active, People count, Companies sharing; filters kind/active; only `is_active` editable; no add, no delete. Inlines: people (name, email, last login, active toggle), links (read-only).
+- `apps/buyers/admin.py:BuyerOrgAdmin` (sidebar group "Insurers" → "Insurers and acquirers", `admin:buyers_buyerorg_changelist`): list name, domain, kind, active, People count, Companies sharing; filters kind/active; only `is_active` editable (blocks the whole insurer); no add. Inlines (2026-10-23): **People (joined)** (name, email, last login, active toggle, **Send password link**, Delete tick box), **Waiting invitations** (Sent / Expired with **Resend** and **Cancel**), **Companies sharing** (client, granted by/at, until, status, **Stop sharing**, which the company sees in its log). **Delete** an insurer from its page after an "Are you sure?" page: its people, invitations, sharing and rating engine go; each company that shared gets a log line "Insurer deleted by CiV".
 - No admin for statements, snapshots, rating engines or sends.
 
 ### Frontend pages fed
@@ -3965,10 +3973,12 @@ A single handler serves `GET`, `POST`, `PATCH` and `DELETE` for every `/api/*` r
 **MERGE_PATHS** (reads only; Django's fields laid over the sample):
 `vault, settings, revocation, insureds, metrics, who-contact, readiness, leads, vendors, litigation, score, domains, actions, reports`
 
-**WRITE_PATHS** (writes on partly real pages that Django already saves): `who-contact, actions, reports`.
-Writes on any other MERGE page go to the **mock**. That covers `PATCH /settings/email/notifications` and `PATCH /setup/{id}`. (`setup` is in no list at all, so it is always mock.)
+**WRITE_PATHS** (writes on partly real pages that Django already saves): `who-contact, actions, reports, settings, setup`
+(alert email choices and Setup checklist ticks are saved per company since 2026-10-23).
 
-**Always mock** (even with `BACKEND_URL`): `POST /session/view-as`, `/setup/*`, `PATCH /settings/*`, and any path in no list.
+**Always mock** (even with `BACKEND_URL`): any path in no list. `POST /session/view-as` goes to Django (each person's own
+view). Real insurers' replies carry `x-civ-viewer: buyer` and get no sample. File downloads keep their name and privacy
+headers (`content-disposition`, `cache-control`) through the proxy.
 
 **`overlay(sample, real)`** (tested in `tests/lib/overlay.test.ts`):
 - Objects are merged key by key. Real values replace sample values, and keys the real object lacks keep their sample value.
@@ -3991,7 +4001,7 @@ Writes on any other MERGE page go to the **mock**. That covers `PATCH /settings/
 - **The "View as" switch** (account menu, shown only when `session.sampleData` is true): Owner ↔ Underwriter. It sends `POST /session/view-as {view}`, which is always mock, and then goes to `/portfolio` or `/`.
   - In the underwriter view the mock session becomes "J. Merchant, Falcon Risk Services, Underwriting pilot · 5 insureds" with `orgKind: insurer`.
   - The mock then refuses (403) every read outside `UNDERWRITER_READS = session, insureds, litigation, rating-engine, rulebook, reg-changes, search`, and every write except `rating-engine` and `session` ("The underwriter view is read-only.").
-  - The mock's `view-as` also accepts `role`, `isCounsel` and `engagementMode`, but the UI only sends `view`. The others are used by tests.
+  - The mock's `view-as` (demo only) also accepts `role` and `isCounsel`, used by tests. With the backend, `view-as` goes to Django and changes only the signed-in person's own view.
 
 ### 3.6 The mock (`src/mock/api.ts`)
 - `mockApi({method, path, query, body})` is a pure function shared by the dev route handler and by MSW in the tests. A mutable `db` is cloned from the fixtures, and `resetMock()` restores it.
@@ -4015,7 +4025,7 @@ Writes on any other MERGE page go to the **mock**. That covers `PATCH /settings/
 
 `(portal)/layout.tsx` → `PortalShell` does the following:
 - Loads `useSession`. While pending it shows "Loading…". On error it shows "The portal could not be loaded. {message}". When the user is signed out it does `router.push('/sign-in')`.
-- **Counsel-directed lock:** if `engagementMode === 'counsel_directed'` and `role === 'member'` and `!isCounsel`, every portal page shows `Locked`: "This engagement is counsel-directed. Findings and alerts are delivered to the company's lawyers only. Ask your Admin or lawyer for the items assigned to you."
+- **No lawyer-only lock** (removed 2026-10-22): every client user sees every page. **Admin-only pages:** Settings and Users & Access (`AdminOnly` wrapper: "Only an Admin can open this page"; hidden from others' account menu). **My account** (`/account`) is open to everyone, insurers too.
 - **View block:** `viewBlock(view, pathname)` (see §5) shows `ViewBlocked` instead of the page.
 - The layout is a `Sidebar` (fixed, 248px, a slide-in drawer on small screens), a `Topbar`, then `Banners`, the page, the `Disclaimer` and the `DrawerHost`.
 
@@ -4032,7 +4042,6 @@ Writes on any other MERGE page go to the **mock**. That covers `PATCH /settings/
 - A domain, metric or vendor opens that drawer.
 
 **Month picker (`PeriodSelect` + `PortalContext.period`):** the options are `session.periods`, and undefined means the latest. It drives `useScore`, `useDomains` and `useMetrics` (Overview, Scorecard, Conduct, the drawers) and the month label on Reports. `Banners` adds:
-- "Prepared at the direction of counsel. Findings and alerts are delivered to the company's lawyers only." when the engagement is counsel-directed.
 - "Showing **{month}** for scores, domains and metrics. Lists of contacts, actions and alerts always show the current state." when the chosen month is not the latest.
 - "This month was revised on **{date}** after late records or a rule change. The earlier version is kept." when `period.revisedOn` is set (Module 10).
 
@@ -4115,7 +4124,7 @@ Underwriter sidebar = `UNDERWRITER_NAV`. It is one group, titled "Falcon Risk ·
 | Proof request answer | the server says so through the `canAnswer` flag |
 | Rule update review (agree/disagree) and "Suggest a change" | `isCounsel` only, and not in the underwriter view |
 | Who You Contact lead-source switches | anyone except in the underwriter view |
-| Counsel-directed mode | Members without the lawyer mark see only `Locked` |
+| Settings, Users & Access | Admin only (others: "Only an Admin can open this page"; the server refuses them too) |
 
 ### Sign-in screen (`/sign-in`, outside the portal shell)
 `SignInScreen` shows the brand panel (`SignInBrand`) and one of four forms. The form is chosen by `modeFromLink(reset, invite)`: `?reset=<uid>.<token>` gives the new-password form and `?invite=<token>` gives the invite form.
@@ -4148,7 +4157,7 @@ Legend for data sources (with `BACKEND_URL` set):
 | `/` | `overview/OverviewScreen` | **AttentionBanner** (red "Needs attention · N"): High alerts not reviewed; any cap holding the grade; High open actions; stale sources; records completeness below the floor; proof requests waiting. Each item is a link. **Where you stand:** `ScoreCard` (Audit Score, grade, caps, evidence coverage, confirmed-rules score, projected score, checkpoints run) + `ScoreTrendCard` ("Score history" with dated events). **Data health:** `DataHealthCard` (sources Live/Stale/Not supplied bar, data access level "Level N of 4", last change received, "read every 2 minutes, hourly catch-up"). **Consent and domains:** `StatusMixCard` + `CompactFactors` (six factors). **Needs attention:** `UrgentAlertsCard` ("Alerts to review") + `TopActions` ("Things to fix", the top 3). **Key numbers:** six cards — Consent coverage (M01), Contacts after opt-out (M10), Median time to stop (M08), Opt-outs your dialer missed (from `conversationReview`; otherwise "Not yet measured"), Records completeness (otherwise "Not available" / "Not yet measured"), Not measured (count of metrics). | useScore(period) **M**, useMetrics(period) **M**, useActions **M**, useAlerts **B**, useConsent **B**, useHealth **B**, useInsured(sunpath) **M**, useSession | Click KPI cards (opens the metric drawer or navigates), click alerts and actions, follow banner links |
 | `/scorecard` | `scorecard/ScorecardScreen` | KPIs: Audit Score, Domains measured (of 25), Not measured (domain codes). `FactorMap` ("Six factors": a tile per factor with its 0–100 value, weight, points added to D, and metrics; measured vs modeled). Checkpoint legend. `DomainRegister` ("Factor register" table: Code / Domain / Factor / Score / Grade / 4 months; unscored domains sink to the bottom). | useDomains(period) **M**, useScore(period) **M**, useMetrics(period) **M**, useInsured **M** | Open the domain drawer from a row; open the metric drawer from a factor tile |
 | `/actions` | `actions/ActionsScreen` | `ProjectedScore` (Today → Projected "if the top N actions are completed"). KPIs: Open actions, Overdue, Unassigned, Contested. "Queue" table: # / Action (pills "Finding contested", "Found again") / Severity / Domain / Who (You/CiV) / Score impact / Assigned to / Due / Status. | useActions **M** (writes **B** through WRITE_PATHS), useScore **M**, useSession | Filter: Open / Assigned to me / Unassigned / Overdue / All. Row → action drawer (assign, due date, status, decision, contest) → `PATCH /actions/{id}` |
-| `/alerts` | `alerts/AlertsScreen` | KPIs: Not reviewed, Reviewed, Email delivery "Off · Alerts are shown in the portal only". "Inbox" sorted by severity then time. `AlertRow`: severity, title, detail, kind, time, domain chip, "Sent to lawyers" (`routedTo: legal`), "Resolved" (it went away by itself), "Reviewed by X". | useAlerts **B** | Filter: Not reviewed / All. "Mark as reviewed" → `POST /alerts/{id}/review` **B** |
+| `/alerts` | `alerts/AlertsScreen` | KPIs: Not reviewed, Reviewed, Email delivery. "Inbox" sorted by severity then time. `AlertRow`: severity, title, detail, kind, time, domain chip, "Resolved" (it went away by itself), "Reviewed by X". Admins are emailed the types chosen in Settings → Notifications. | useAlerts **B** | Filter: Not reviewed / All. "Mark as reviewed" → `POST /alerts/{id}/review` **B** |
 
 ### Evidence
 
@@ -4158,8 +4167,8 @@ Legend for data sources (with `BACKEND_URL` set):
 | `/ledger` | `ledger/LedgerScreen` | `StatusTiles` (one card per consent status for this month; a click filters the table). "Contacts" table: When (UTC) / Number / Channel / Where / Category / Status / Reason / Flags. There is no Evidence column (a test checks this). | useContacts(status,q) **B**, useConsent **B** | Search a number (full or last 4 digits). Status filter: All / No proof / Conflicting / Weak / Verified / Pending / Not checked yet. Row → contact drawer |
 | `/revocation` | `revocation/RevocationScreen` | `OptOutsCard` → `OptOutsTable` ("Opt-outs": Number / How / When / Deadline / Dialer marked / Contacted after; filters All / Open / Late / Contacted after STOP). KPIs: Median time to stop (→ M08 drawer), Slowest 10%, Not suppressed by deadline (deadline N business days), Contacted after deadline. `RevocationMatrix` ("Opt-out matrix": channel by system, hours / NEVER / not checked). "Time to stop" column chart (the "Never" column is flagged). `TestAuthorisation` ("Opt-out measurement": measured from the client's real opt-outs, no CiV test lines). `WordingCoverage` ("Opt-out wording coverage": Wording sent / Kind / Dialer / Messaging platform). | useRevocation **M**, useOptOuts **B** | Filter opt-outs; open the M08 drawer |
 | `/who-contact` | `who-contact/WhoContactScreen` | Four `AreaTile`s (DNC, internal list, reassigned numbers, litigation; each coloured by its worst check). `WhoCheckedWhat` ("Who checked what" table). Rows are grouped as Check services, Lead vendors and Uploaded lists; the columns are the four lists; the legend chips are provider / list / stated / none. Note: "Checked by you" is shown to your insurer and counts as not done until the provider's results are attached. `ChecksList` ("Checks", Failing → Passing). | useWhoContact **M** (writes **B**) | Tile or check → area drawer. Per lead vendor or list and per column, a toggle → `PATCH /who-contact/{sourceId} {column, checked}` (hidden in the underwriter view) |
-| `/vault` | `vault/VaultScreen` | KPIs: Records held (SHA-256 each), Daily anchors (last anchor time), Deleted under retention. "Coverage" `CoverageStrip` (12 months; engagement start date). `PositionLookup` ("Position lookup": phone + date → table Item / On record / Source; "Inside the covered period" or "Before the engagement · limited record"; a sample note and a link to an example evidence file). `LegalHolds` ("Legal holds" form + table: Hold on / Reason / Set by / Set / Status). The subtitle mentions "verify a file", but **no hash-check UI exists** (useHashCheck is unused). | useVault **M**, usePosition **B**, useLegalHolds **B**, useSession | Look up a position. Set a hold (scope: a number / a vendor / a date range; target; reason) → `POST /legal-holds` **B**. "Release" → `POST /legal-holds/{id}/release` **B** (Admin or lawyer) |
-| `/numbers/[phone]` | `evidence/EvidenceFileScreen` | The evidence file for one number (title = phone; subtitle = epoch and subscriber-period certainty). Pill "Under legal hold". "Came from: …". Cards: **Standing** (worst status chip + a bar by status), **List checks** (do-not-contact lists consulted: Listed / Not listed / Not measured), **Anchor** (Sealed / "Waiting for tonight's seal", records sealed x of y, time-stamped, sealed on, root fingerprint), `CallingWindowCard` (local calling window now; advice only), `OwnersCard` ("Owners of this number": Owner / From / To / Why CiV knows), `ConsentCard` (proofs on file for the current owner, needs, history, not yet measured), `ContactTimeline` (every contact oldest first, with opt-outs in sequence), `ProofElements` (eight elements: # / Element / On record / Source / Captured by / Captured (UTC) / Fingerprint). An unknown number shows the error with a link "Back to the Contact Ledger". | useEvidenceFile **B** (`/evidence/{phone}`), useSession | For real numbers (`p-…`) and Admin or lawyer: "Export this file" (downloads `/api/evidence-file/{phone}?format=pdf`), a "JSON" link (`?format=json`), and "Check again at the source" → `POST /evidence-file/{phone}/refetch` **B** (shows "Checked N records at the source: …"). Members see "Only an Admin or your lawyer can export this file." For sample numbers: "Export this file" → `POST /reports {name:'Evidence file export · …'}`. **Observed:** the code renders **two** "Check again at the source" buttons for real numbers (one bound to `send`, one to `refetch`). This looks like a leftover duplicate. |
+| `/vault` | `vault/VaultScreen` | KPIs: Records held (SHA-256 each), Daily anchors (last anchor time, or "No daily seal yet"), Deleted under retention (real count of files deleted after 4 years). "Coverage" `CoverageStrip` (12 months; engagement start date). `PositionLookup` ("Position lookup": phone + date → table Item / On record / Source; "Inside the covered period" or "Before the engagement · limited record"; a link to **that number's** evidence file when CiV has contacts with it, else "CiV has no contacts with this number…"; the sample note only in demo mode). `VerifyFile` ("Verify a file": the browser makes the file's SHA-256 and sends only that to `/api/hash-check` → **Matches** (a record read from a tool, a report or an evidence file/bundle CiV made, with its date) or **No match**; the file never leaves the browser). `LegalHolds` ("Legal holds" form + table: Hold on / Reason / Set by / Set / Status). | useVault **M**, usePosition **B**, useLegalHolds **B**, hash-check **B**, useSession | Look up a position. Verify a file. Set a hold (scope: a number / a vendor / a date range; target; reason) → `POST /legal-holds` **B**. "Release" → `POST /legal-holds/{id}/release` **B** (Admin or lawyer) |
+| `/numbers/[phone]` | `evidence/EvidenceFileScreen` | The evidence file for one number (title = phone; subtitle = epoch and subscriber-period certainty). Pill "Under legal hold". "Came from: …". Cards: **Standing** (worst status chip + a bar by status), **List checks** (do-not-contact lists consulted: Listed / Not listed / Not measured), **Anchor** (Sealed / "Waiting for tonight's seal", records sealed x of y, time-stamped, sealed on, root fingerprint), `CallingWindowCard` (local calling window now; advice only), `OwnersCard` ("Owners of this number": Owner / From / To / Why CiV knows), `ConsentCard` (proofs on file for the current owner, needs, history, not yet measured), `ContactTimeline` (every contact oldest first, with opt-outs in sequence), `ProofElements` (eight elements: # / Element / On record / Source / **Who holds it** (consent page: "CiV (page photo, kept privately)"; third-party proof: claimed in the client's account / being claimed / not claimed in time / provider does not have it) / Captured by / Captured (UTC) / Fingerprint). An unknown number shows the error with a link "Back to the Contact Ledger". | useEvidenceFile **B** (`/evidence/{phone}`), useSession | For real numbers (`p-…`) and Admin or lawyer: "Export this file" (downloads `/api/evidence-file/{phone}?format=pdf`), a "JSON" link (`?format=json`), and "Check again at the source" → `POST /evidence-file/{phone}/refetch` **B** (shows "Checked N records at the source: …"). Members see "Only an Admin or your lawyer can export this file." For sample numbers: "Export this file" → `POST /reports {name:'Evidence file export · …'}`. **Observed:** the code renders **two** "Check again at the source" buttons for real numbers (one bound to `send`, one to `refetch`). This looks like a leftover duplicate. |
 
 ### Intelligence
 
@@ -4174,7 +4183,7 @@ Legend for data sources (with `BACKEND_URL` set):
 | Route | Screen | Shows | Hooks → source | User can |
 |---|---|---|---|---|
 | `/sources` | `sources/SourcesScreen` | KPIs: Current (of N), Stale (names), Not supplied (what each blocks). "Sources by evidence tier" bar (Tier 1 = captured by CiV). "Sources" table: Source / Tier / Access / Last sync / Status / Feeds domains. `UploadCentre` ("Upload centre": each file fingerprinted on arrival and stored write-once; table File / Source / Received / Fingerprint / Rows read / Rows not read). | useSources **B**, useUploads **B** | Upload: choose a source that accepts uploads (CSV; "Policies, training, contracts" also takes pdf/doc/docx) → multipart `POST /uploads {source, file}` **B** |
-| `/reports` | `reports/ReportsScreen` | Subtitle "Downloads for {month}". A `ReportCard` per report type (name, description, format pill, add-on → "Request a quote"). `BulkExport` ("Bulk evidence export"). `ReportHistory` ("History": Report / Period / Requested by / When / Status Ready / Held for review (blocked by the wording check) / Not available yet / Queued + Download link). | useReports **M** (writes **B**), useSession | "Generate" → `POST /reports {name, period}` **B**. If the reply has a `url`, the file downloads. The `rulebook` report downloads at once from `/api/rulebook/snapshot?period=YYYY-MM` (**B**). Bulk export: paste up to 25 numbers → "Export N files" or "With certification pack" (raw `POST /api/evidence-bundle {numbers, pack}` → ZIP; the `X-Not-Found` header gives the count not found). On a 404 (no backend) it falls back to `POST /reports` (queued). |
+| `/reports` | `reports/ReportsScreen` | Subtitle "Downloads for {month}". A **"Download the {month} audit report (PDF)"** button (`QuickReportDownload` → `GET /api/reports/period?period=YYYY-MM` **B**: makes it if needed or sends the latest). A `ReportCard` per report type (name, description, format pill, add-on → "Request a quote"). `BulkExport` ("Bulk evidence export"). `ReportHistory` ("History": Report / Period / Requested by / When / Status Ready / Held for review (blocked by the wording check) / Not available yet / Queued + Download link). | useReports **M** (writes **B**), useSession | "Generate" → `POST /reports {name, period}` **B**. If the reply has a `url`, the file downloads. The `rulebook` report downloads at once from `/api/rulebook/snapshot?period=YYYY-MM` (**B**). Bulk export (Admin or lawyer; greyed out for Members): paste up to 25 numbers → "Export N files" or "With certification pack" (raw `POST /api/evidence-bundle {numbers, pack}` → ZIP; the `X-Not-Found` header gives the count not found). On a 404 (no backend) it falls back to `POST /reports` (queued). |
 
 ### Engagement
 
@@ -4189,8 +4198,8 @@ Legend for data sources (with `BACKEND_URL` set):
 |---|---|---|---|---|---|
 | `/integrity` | `insurer/IntegrityScreen` | both | Note "Unverified counts as worst case". KPIs: Evidence coverage (below 60% → grade capped at C), Records completeness (logs ÷ invoices; below 0.9 flags the period), Statement conflicts, Unknown caller IDs. `BasisMixCard` ("What the score rests on": Source grade / Share / Weight / Counts toward coverage). `ConflictsCard` ("Statements that conflict with observation"). `ReconciliationCard` ("Reconciliation against independent totals": What CiV was given / Checked against / Records / Independent total / Ratio / Result / Source of total). | useInsured(viewer id) **M** (for a real buyer, Django's data as it is) | Underwriter: `InsuredPicker` |
 | `/attestation` | `insurer/AttestationScreen` | both | KPIs: Evidence coverage, Fields at worst case, Sheet fingerprint (as-of date), Monitoring. **A. Frequency drivers** table (Field / Value / Source grade / Source): marketing contacts/month, prerecorded or AI voice share, purchased-lead share, manual-import share · evidence found, lead vendors · with signed indemnification, consent proof rate, opt-out median · not honored, contacts after opt-out · re-added, internal-list contacts, reassigned exposure, reassigned check before calling, unknown caller IDs, prior matters 3y (stated vs dockets). Worst-case notes: 20% prerecorded, 60% purchased, 60% consent. **B. Records integrity:** completeness, *theoretical statutory exposure 12 months ($500–$1,500 per unconsented contact) — underwriter only*, records fingerprinted, policy · training currency, opt-out tests in 90 days. A client sees "Dollar figures are not shown in your portal" (decision D36). **C. Insured states:** conflicts + statements, "Signed by …". For a client (when `statementRows` is present): `StatementForm`. | useInsured **M**, useSession | Client Admin or lawyer: add a statement (topics: dnc_checked, internal_list, optouts_honored, consent_all, other + text) → `POST /statements {topic,text}` **B** ("Sign and add"); "Withdraw" → `POST /statements/{id}/withdraw` **B**. Underwriter: picker |
-| `/uw-export` | `insurer/ExportScreen` | both | "Attestation payload" (`civ.attestation.v1`), shown in plain words (`PlainPayload`). The payload holds insured, as_of, sheet_sha256, frequency{…}, evidence{…}. The **underwriter only** also gets `exposure_indicator` (model v2.2, inside_out/outside_in, factors, defect term, multipliers, grade, capped) and `model_v0` (p_suit_12m, expected_cost, expected_annual_loss). The subtitle quotes the API shape `GET /v1/insureds/{id}/attestation?as_of=2026-09` (descriptive text; this frontend does not call it). `CoverageConditions` ("Conditions of coverage", draft for the carrier's counsel). "Monthly feed" (first business day; webhook on a 5-point change or a new open matter; history kept with fingerprints). Underwriter: `RatingEngineCard`. | useInsured **M**, useRatingEngine **B** (SAMPLE_WHEN_REFUSED), useSend | "Copy JSON" (clipboard). Underwriter: "Send to rating engine" → `POST /rating-engine/send {insured}`. Rating engine card: address (https), key (password field; "Saved, ends in XXXX"), "Send every month on its own (the 6th, after the month is locked)" → `POST /rating-engine {url,key,monthly}`; "Remove" → `DELETE /rating-engine`. A list of past sends. Text: "Each sheet is signed (HMAC-SHA256 with your key)". |
-| `/portfolio` | `insurer/PortfolioScreen` | underwriter only | KPIs: Insureds (monitored / outside-in only), Portfolio expected annual loss ("Loss model v0, uncalibrated"), Below 60% evidence coverage, Statement conflicts. "Insureds" table: Insured (industry, contacts/mo, monitoring) / Exposure Indicator / Evidence (coverage chip, records completeness) / Flags (conflicts, unknown caller IDs) / Consent proof (worst case 60%) / Chance of suit per year / Expected annual loss ("Not measured" when there are no contacts). | useInsureds **M** (sample for a client trying the view; Django's data as it is for a real buyer) | Row → set the insured and go to `/attestation` |
+| `/uw-export` | `insurer/ExportScreen` | both | "Attestation payload" (`civ.attestation.v1`), shown in plain words (`PlainPayload`). The payload holds insured, as_of, sheet_sha256, frequency{…}, evidence{…}. The **underwriter only** also gets `exposure_indicator` (model v2.2, inside_out/outside_in, factors, defect term, multipliers, grade, capped) and `model_v0` (p_suit_12m, expected_cost, expected_annual_loss). The subtitle quotes the API shape `GET /v1/insureds/{id}/attestation?as_of=2026-09` (descriptive text; this frontend does not call it). `CoverageConditions` ("Conditions of coverage", draft for the carrier's counsel). "Monthly feed" (first business day; webhook on a 5-point change or a new open matter; history kept with fingerprints). Underwriter: `RatingEngineCard`. | useInsured **M**, useRatingEngine **B** (SAMPLE_WHEN_REFUSED), useSend | "Copy JSON" (clipboard). Underwriter: "Send to rating engine" → `POST /rating-engine/send {insured}` (a refusal shows a plain message such as "That address does not accept the sheet…", never the other server's page; the send history refreshes after every send; a client previewing its insurer's view sees neither the button nor the card). Rating engine card: address (https), key (password field; "Saved, ends in XXXX"), "Send every month on its own (the 6th, after the month is locked)" → `POST /rating-engine {url,key,monthly}` ("Saved."); "Remove" → `DELETE /rating-engine` ("Removed."). A list of past sends. Text: "Each sheet is signed (HMAC-SHA256 with your key)". |
+| `/portfolio` | `insurer/PortfolioScreen` | underwriter only | KPIs: Insureds (monitored / outside-in only), Portfolio expected annual loss ("Loss model v0, uncalibrated"), Below 60% evidence coverage, Statement conflicts. "Insureds" table: Insured (industry, contacts/mo, monitoring) / Exposure Indicator / Evidence (coverage chip, records completeness) / Flags (conflicts, unknown caller IDs) / Consent proof (worst case 60%) / Chance of suit per year / Expected annual loss ("Not measured" when there are no contacts). | useInsureds (always asked afresh) — a real insurer gets only companies that share with it right now, a client in its own Underwriter view gets only its own company with real data; "No company shares with you yet" when empty; the top bar shows the real count | Row → set the insured and go to `/attestation` |
 | `/exposure` | `insurer/ExposureScreen` | underwriter only | Note "Proposed headline, pending sign-off. Shown in the insurer view only; clients keep the Audit Score (decision D1)". KPIs: Exposure Indicator (grade; measured or modeled; capped/raw), Defect term D, Pressure multipliers (×; venue / targeting / volume), Evidence coverage. `FactorTable` (Factor / Weight / Outside-in modeled / Inside-out measured). "No reading yet." when there is no reading. | useInsured **M** | Picker |
 | `/litigation` | `insurer/LitigationScreen` | underwriter only | Headline cards (label, value, note, status Verified / Estimate / Statute, source link). "Class actions filed in {month}, by year" columns (latest year flagged; source TCPAWorld by default). "What a suit costs". "What drives the filings" (Claim type / Legal hook / Direction since 2024 / Share and Median cost shown as "Study output" placeholders). "The litigation study: how it gets built" (Step / How / Cost and time; decision D29; federal only first). | useLitigation **M** (for a real buyer: overlay over the sample litigation) | Read only |
 
@@ -4198,9 +4207,9 @@ Legend for data sources (with `BACKEND_URL` set):
 
 | Route | Screen | Shows | Hooks → source | User can |
 |---|---|---|---|---|
-| `/setup` | `setup/SetupScreen` | Tabs. **Readiness report:** KPIs "Can the audit start?" (Yes / Not yet; test date, sample numbers), Checks ready (x of N; partial / missing), Recommended plan (numbers/month), Would be not measured (metrics). "Prerequisite checks" bar (Ready / Partial / Missing). "Preview on the sample" (status mix). "What each check found" (Check + how / Result / What was found / Fix). **Setup checklist:** a meter and the items, outstanding first (toggle, label, detail, count, Complete / Outstanding). | useReadiness **M** | Toggle an item → `PATCH /setup/{id} {done}` → **mock only, always** (not in any backend list) |
-| `/settings` | `settings/SettingsScreen` | Tabs. **Company:** name, industry, brands, states contacted, litigation forum, engagement mode, engaged since ("To change any of these, write to your CiV contact"); a Contacts list. **Notifications:** "Email notifications" toggles per alert kind (Emailed / Inbox only); "Slack and webhook delivery are planned for a later release." **Plan & usage:** "{plan} plan" ({price}/month), used of limit with a meter, % used, months over the limit, the move-up rule and next plan, "Download the list of billed numbers" (`/api/billed-numbers` CSV, **B**); "Numbers contacted by month" columns with a limit line. **Agreements:** Document / Status Signed or Pending / Date / Covers. **Insurer sharing:** `SharingTab`. | useSettings **M**, useSession, useBuyerLinks **B** | Notification toggle → `PATCH /settings/email/notifications {kind,email}` → **mock only** (settings is not in WRITE_PATHS). Sharing (Admin): Company, underwriter's email, their name, Insurer/Acquirer, Until (needed for an acquirer per the label; optional for an insurer) → `POST /buyer-links` **B** ("Shared. An invite to set a password was sent to them." when `invited`); a table Shared with / Since / Until / Status with "Stop sharing" → `POST /buyer-links/{id}/revoke` **B**. Text: the insurer sees attestation, data integrity and exposure, never contacts, numbers, findings or notes |
-| `/users` | `users/UsersScreen` | Tabs. **People:** `InviteForm` (Admin only: Name, Email, Role Admin/Member, "Is our lawyer" → "Send invitation"; explains the role and the lawyer-only mode) + `UserTable` ("People with access": Person / Role (select if Admin and active) / Lawyer checkbox / Status Active or Invited / Last seen / "Remove access" or "Cancel invite"). **Access log:** When / Who / Role / Did / What ("Every view of an evidence file, every export and every change"). | useUsers **B**, useAccessLog **B**, useSession | `POST /users`, `PATCH /users/{id} {role|isCounsel}`, `DELETE /users/{id}` — all **B**. Note from memory: invite emails are not yet delivered (console backend) — this is backend behaviour, not visible in the frontend. |
+| `/setup` | `setup/SetupScreen` | Tabs. **Readiness report:** KPIs "Can the audit start?" (Yes / Not yet; test date, sample numbers), Checks ready (x of N; partial / missing), Recommended plan (numbers/month), Would be not measured (metrics). "Prerequisite checks" bar (Ready / Partial / Missing). "Preview on the sample" (status mix). "What each check found" (Check + how / Result / What was found / Fix). **Setup checklist:** a meter and the items, outstanding first (toggle, label, detail, count, Complete / Outstanding). | useReadiness **M** | Toggle an item (Admin only; others see it greyed out) → `PATCH /setup/{id} {done}` **B**, saved per company; rows CiV counts itself fill in automatically, the rest say "Not marked yet" until ticked |
+| `/settings` | `settings/SettingsScreen` | Tabs. **Company:** name, industry, brands, states contacted, litigation forum, engaged since ("To change any of these, write to your CiV contact"); a Contacts list. **Notifications:** "Email notifications" toggles per alert kind (Emailed / Inbox only), emailed to the company's Admins; "Slack and webhook delivery are planned for a later release." **Plan & usage:** "{plan} plan" ({price}/month), used of limit with a meter, % used, months over the limit, the move-up rule and next plan, "Download the list of billed numbers" (`/api/billed-numbers` CSV, **B**); "Numbers contacted by month" columns with a limit line. **Agreements:** Document / Status Signed or Pending / Date / Covers. **Insurer sharing:** `SharingTab`. | useSettings **M**, useSession, useBuyerLinks **B** | The page is Admin only. Notification toggle → `PATCH /settings/email/notifications {kind,email}` **B** (saved per company). Sharing (Admin): Company, underwriter's email, their name, Insurer/Acquirer, Until (needed for an acquirer per the label; optional for an insurer) → `POST /buyer-links` **B** ("Shared. An invite to set a password was sent to them." when `invited`); a table Shared with / Since / Until / Status with "Stop sharing" → `POST /buyer-links/{id}/revoke` **B** (message "Stopped sharing with …"); an insurer who already has an account gets a "now shares with you" email instead of an invite. Text: the insurer sees attestation, data integrity and exposure, never contacts, numbers, findings or notes |
+| `/users` | `users/UsersScreen` | Tabs. **People:** `InviteForm` (Admin only: Name, Email, Role Admin/Member, "Is our lawyer" → "Send invitation"; explains the role; a lawyer can also review rule drafts, suggest law changes and sign statements) + `UserTable` ("People with access": Person / Role (select if Admin and active) / Lawyer checkbox / Status Active, Invited or Invite expired (with sent date) / Last seen / "Resend" or "Resend invite", "Remove access" or "Cancel invite"). **Access log:** When / Who / Role / Did / What ("Every view of an evidence file, every export and every change"). | useUsers **B**, useAccessLog **B**, useSession | `POST /users`, `PATCH /users/{id} {role|isCounsel}`, `DELETE /users/{id}` — all **B**. `POST /users/{id}/resend` **B**. The page is Admin only ("Only an Admin can open this page" for others). Emails go through Gmail once its login is in the server `.env`. |
 
 ### Not in the portal shell
 - `/sign-in` (see §5).
@@ -4254,7 +4263,7 @@ Kinds of tests:
   - Hash check.
   - Underwriter vs client data refusals.
 - **screens** (Testing Library + MSW; the backend is simulated by overriding MSW handlers in some tests):
-  - `portal.test.tsx` (42 tests): attention bar; a menu entry for every screen; shell (menu, disclaimer, badge count, account menu, redirect to sign-in when signed out, counsel-directed lock, a lawyer Member allowed in, search → domain drawer); interactions (domain drawer tabs, six factors → metric drawer, who-contact area and switch, assign action and contest, ledger filter, no Evidence column, mark alert reviewed, rulebook note and calendar tab, lawyer-only rule review and suggest, opt-outs with deadlines and the late filter, legal hold set and release, evidence file and unknown number, invite and remove user, rulebook impact never shown, sign in → overview).
+  - `portal.test.tsx` (42 tests): attention bar; a menu entry for every screen; shell (menu, disclaimer, badge count, account menu, redirect to sign-in when signed out, Admin-only Settings and Users, search → domain drawer); interactions (domain drawer tabs, six factors → metric drawer, who-contact area and switch, assign action and contest, ledger filter, no Evidence column, mark alert reviewed, rulebook note and calendar tab, lawyer-only rule review and suggest, opt-outs with deadlines and the late filter, legal hold set and release, evidence file and unknown number, invite and remove user, rulebook impact never shown, sign in → overview).
   - The module-specific files: insurer (view switch, menus, blocks, dollar figures only for the underwriter, the export leaves out estimates), realInsurer, ratingEngine, statementForm (+ plain payload), sharingTab, consent (status names, number-page consent card, Wording tab, ledger status cards), leads (proof requests), numbers (number page "Not checked yet", calling window, owners, "Can I call now?" stricter zone, opt-outs card filters), datahealth (not-yet-measured states, completeness box), decision and findings (Module 11 action decisions and findings), alertRow, reportHistory, banners (revised month), scoreLabels (partial score / draft bands), vendorPartial (partial rates, no vendors), contractForm, addContract, bulkExport, evidenceExport.
 
 Other commands: `npm run lint`, `npm run typecheck`, `npm run build`. I did not run these (they would only report; they were not needed for these notes).

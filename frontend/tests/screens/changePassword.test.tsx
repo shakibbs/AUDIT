@@ -19,14 +19,14 @@ describe('my account and change password (2026-10-22)', () => {
   });
 
   it('has no "Forgot your password?" on the sign-in form', () => {
-    renderScreen(<SignInForm sampleData={false} />);
+    renderScreen(<SignInForm />);
     expect(screen.queryByText(/Forgot your password/)).not.toBeInTheDocument();
   });
 });
 
 describe('Settings and Users & Access are Admin only (2026-10-23)', () => {
   it('shows a Member a short note instead of the page', async () => {
-    const { mockApi } = await import('@/mock/api');
+    const { mockApi } = await import('@fixtures/api');
     const { AdminOnly } = await import('@/components/ui/AdminOnly');
     mockApi({ method: 'POST', path: '/session/view-as', body: { role: 'member' } });
     renderScreen(<AdminOnly><p>secret settings</p></AdminOnly>);

@@ -53,7 +53,7 @@ export function ExportScreen() {
           const json = JSON.stringify(payload, null, 1);
           return (
             <div className="grid gap-5 xl:grid-cols-2">
-              <Card title="Attestation payload" sub="GET /v1/insureds/{id}/attestation?as_of=2026-09 · bearer token scoped to the carrier · every call logged in the insured’s access log">
+              <Card title="Attestation payload" sub={`GET /v1/insureds/{id}/attestation?as_of=${i.asOf ? i.asOf.slice(0, 7) : 'latest'} · bearer token scoped to the carrier · every call logged in the insured’s access log`}>
                 <PlainPayload payload={payload} />
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {underwriter && !preview && <button type="button" className="btn btn-primary btn-sm" disabled={send.isPending} onClick={() => send.mutate({ method: 'POST', path: '/rating-engine/send', body: { insured: i.id } }, { onSuccess: (r) => setSent(r.detail), onError: (e) => { setSent(e.message); void client.invalidateQueries({ queryKey: ['/rating-engine'] }); } })}>Send to rating engine</button>}

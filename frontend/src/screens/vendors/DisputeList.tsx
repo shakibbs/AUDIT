@@ -7,7 +7,7 @@ import { formatDate } from '@/lib/format';
 
 /** A vendor's dispute candidates: leads with a consent problem still inside the contract's dispute window. */
 export function DisputeList({ vendor }: { vendor: Vendor }) {
-  const disputes = useDisputes(vendor.name, vendor.contract !== undefined).data;  // sample vendors have no list
+  const disputes = useDisputes(vendor.name, vendor.contract !== undefined).data;  // only vendors with a contract have a dispute list
   if (!disputes) return null;
   const csv = `/api/vendor-disputes?vendor=${encodeURIComponent(vendor.name)}&csv=1`;
   return (

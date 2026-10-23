@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { PortalShell } from '@/components/shell/PortalShell';
 import { ACCOUNT_LINKS, NAV } from '@/components/shell/nav';
 import { findBannedWords } from '@/lib/wording';
-import { mockApi } from '@/mock/api';
+import { mockApi } from '@fixtures/api';
 import { ActionsScreen } from '@/screens/actions/ActionsScreen';
 import { AlertsScreen } from '@/screens/alerts/AlertsScreen';
 import { ConductScreen } from '@/screens/conduct/ConductScreen';

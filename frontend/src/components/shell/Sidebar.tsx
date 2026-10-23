@@ -11,8 +11,8 @@ import { NAV, SHARED_WITH_INSURER, UNDERWRITER_NAV } from './nav';
 export function Sidebar({ session, open, onNavigate }: { session: Session; open: boolean; onNavigate: () => void }) {
   const pathname = usePathname();
   const underwriter = session.view === 'underwriter';
-  // A real insurer's own name heads its menu; the sample keeps Falcon Risk.
-  const groups = underwriter ? UNDERWRITER_NAV.map((g, k) => (k === 0 && !session.sampleData ? { ...g, title: session.orgKind === 'client' ? `${session.clientName} · insurer view` : `${session.clientName} · underwriting` } : g)) : [...NAV, SHARED_WITH_INSURER];
+  // The insurer's (or the previewing company's) own name heads its menu.
+  const groups = underwriter ? UNDERWRITER_NAV.map((g, k) => (k === 0 ? { ...g, title: session.orgKind === 'client' ? `${session.clientName} · insurer view` : `${session.clientName} · underwriting` } : g)) : [...NAV, SHARED_WITH_INSURER];
   // Counts are client data; an underwriter never loads them.
   const actions = useActions(!underwriter);
   const alerts = useAlerts(!underwriter);

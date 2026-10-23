@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { ActionDrawer } from '@/components/drawers/ActionDrawer';
-import { actions } from '@/mock/data/work';
+import { actions } from '@fixtures/data/work';
 import { server } from '../msw';
 import { renderScreen } from '../utils';
 

@@ -42,8 +42,8 @@ export function LegalHolds() {
               <tbody>
                 {list.map((h) => (
                   <tr key={h.id}>
-                    <td><span className="font-semibold">{h.target}</span><div className="tiny">{h.scope}</div></td>
-                    <td>{h.reason}</td><td className="text-txt-2">{h.setBy}</td><td className="whitespace-nowrap">{formatDate(h.setOn)}</td>
+                    <td className="max-w-[220px] break-words"><span className="font-semibold">{h.target}</span><div className="tiny">{h.scope}</div></td>
+                    <td className="max-w-[320px] break-words">{h.reason}</td><td className="text-txt-2">{h.setBy}</td><td className="whitespace-nowrap">{formatDate(h.setOn)}</td>
                     <td>{h.releasedOn ? <span className="pill pill-gray">Released {formatDate(h.releasedOn)}</span> : <span className="pill pill-teal">Active</span>}</td>
                     <td className="text-right">{!h.releasedOn && canChange && <button type="button" className="btn btn-ghost btn-sm" onClick={() => send.mutate({ method: 'POST', path: `/legal-holds/${h.id}/release` })}>Release</button>}</td>
                   </tr>

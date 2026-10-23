@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Action, Domain, Metric, Rulebook, ScoreSummary, SearchHit, Session } from '@/api/types';
 import { assertNoBannedWordsDeep } from '@/lib/wording';
-import { mockApi } from '@/mock/api';
+import { mockApi } from '@fixtures/api';
 
 const get = <T,>(path: string, query: Record<string, string> = {}) => mockApi({ method: 'GET', path, query }).body as T;
 
@@ -37,7 +37,6 @@ describe('mock API', () => {
   it('never shows internal runs or rulebook impact in the portal, even to a client Admin', () => {
     for (const role of ['admin', 'member']) {
       mockApi({ method: 'POST', path: '/session/view-as', body: { role } });
-      expect(get<Session>('/session').runs).toHaveLength(1);
       expect(get<Rulebook>('/rulebook').impact).toHaveLength(0);
     }
   });
@@ -81,7 +80,7 @@ describe('mock API', () => {
 
   it('refuses client records to an underwriter and the insurer book to a client', () => {
     expect(mockApi({ method: 'GET', path: '/insureds' }).status).toBe(403);
-    expect(mockApi({ method: 'GET', path: '/insureds/sunpath' }).status).toBe(200);
+    expect(mockApi({ method: 'GET', path: '/insureds/own' }).status).toBe(200);
     expect(mockApi({ method: 'GET', path: '/insureds/meridian' }).status).toBe(403);
     expect(mockApi({ method: 'GET', path: '/litigation' }).status).toBe(403);
     mockApi({ method: 'POST', path: '/session/view-as', body: { view: 'underwriter' } });

@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { alerts } from '@/mock/data/work';
+import { alerts } from '@fixtures/data/work';
 import { AlertRow } from '@/screens/alerts/AlertRow';
 import { renderScreen } from '../utils';
 

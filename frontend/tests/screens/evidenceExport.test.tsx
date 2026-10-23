@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { evidenceFiles } from '@/mock/data/evidence';
+import { evidenceFiles } from '@fixtures/data/evidence';
 import { EvidenceFileScreen } from '@/screens/evidence/EvidenceFileScreen';
 import { server } from '../msw';
 import { renderScreen } from '../utils';

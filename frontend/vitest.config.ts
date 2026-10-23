@@ -4,7 +4,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  // @fixtures: the sample data, for tests only (never served by the portal).
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)), '@fixtures': fileURLToPath(new URL('./tests/fixtures', import.meta.url)) } },
   test: {
     environment: 'jsdom',
     globals: true,
