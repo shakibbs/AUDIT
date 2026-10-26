@@ -10,7 +10,10 @@ import { WhoCheckedWhat } from './WhoCheckedWhat';
 /** DNC, internal list, reassigned numbers and litigation signals, measured after the contact from the client's own check services. */
 export function WhoContactScreen() {
   const data = useWhoContact();
-  const readOnly = useSession().data?.view === 'underwriter';
+  const session = useSession().data;
+  const readOnly = session?.view === 'underwriter';
+  // Admins and the lawyer change the switches (the server checks too); a Member sees them greyed with a note.
+  const canChange = !session || session.role === 'admin' || session.isCounsel;
   return (
     <>
       <PageHead eyebrow="Evidence" title="Who You Contact" sub="Did you contact people you shouldn’t have? CiV runs no lookups of its own: it reads the results of the check services you use." />
@@ -18,7 +21,7 @@ export function WhoContactScreen() {
         {(d) => (
           <div className="flex flex-col gap-5">
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{d.areas.map((a) => <AreaTile key={a.id} area={a} />)}</div>
-            <WhoCheckedWhat data={d} readOnly={readOnly} />
+            <WhoCheckedWhat data={d} readOnly={readOnly} canChange={canChange} />
             <ChecksList areas={d.areas} />
           </div>
         )}

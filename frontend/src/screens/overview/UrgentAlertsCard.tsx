@@ -14,7 +14,7 @@ export function UrgentAlertsCard({ alerts }: { alerts: Alert[] }) {
   const open = alerts.filter((a) => !a.reviewed).sort((a, b) => ORDER[a.severity] - ORDER[b.severity] || b.at.localeCompare(a.at));
   return (
     <Card title="Alerts to review" sub={`${open.length} not reviewed`} flush right={<Link href="/alerts" className="text-[12.5px] font-semibold">All alerts</Link>}>
-      {open.length === 0 ? <Empty>Every alert has been reviewed.</Empty> : open.slice(0, 4).map((a) => (
+      {open.length === 0 ? <Empty>{alerts.length === 0 ? 'No alerts yet.' : 'Every alert has been reviewed.'}</Empty> : open.slice(0, 4).map((a) => (
         <Link key={a.id} href="/alerts" className="row-item text-txt no-underline hover:bg-surface-3 hover:no-underline">
           <SeverityPill severity={a.severity} />
           <span className="min-w-0 flex-1">

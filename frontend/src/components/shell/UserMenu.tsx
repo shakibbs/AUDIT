@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSend } from '@/api/queries';
 import type { Session } from '@/api/types';
 import { Icon } from '@/components/ui/Icon';
@@ -15,9 +15,19 @@ export function UserMenu({ session }: { session: Session }) {
   const [open, setOpen] = useState(false);
   const send = useSend();
   const underwriter = session.view === 'underwriter';
+  const box = useRef<HTMLDivElement>(null);
+  // Closes on Escape or a click anywhere outside the menu (QA 2026-10-23).
+  useEffect(() => {
+    if (!open) return;
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const click = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('keydown', key);
+    document.addEventListener('mousedown', click);
+    return () => { document.removeEventListener('keydown', key); document.removeEventListener('mousedown', click); };
+  }, [open]);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={box}>
       <button type="button" onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open} aria-label="Account menu"
         className="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface py-1 pl-1 pr-2.5 text-left hover:border-brand">
         <span className="grid h-[30px] w-[30px] place-items-center rounded-lg bg-brand-soft font-display text-[11.5px] font-bold text-brand-ink">{session.initials}</span>

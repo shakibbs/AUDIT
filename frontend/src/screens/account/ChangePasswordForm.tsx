@@ -11,7 +11,8 @@ export function ChangePasswordForm() {
   const [form, setForm] = useState(BLANK);
   const [done, setDone] = useState(false);
   const send = useSend();
-  const set = (k: keyof typeof BLANK) => (e: React.ChangeEvent<HTMLInputElement>) => { setDone(false); setForm({ ...form, [k]: e.target.value }); };
+  // Typing again clears the last answer, so an old error never stays under a new one (QA 2026-10-23).
+  const set = (k: keyof typeof BLANK) => (e: React.ChangeEvent<HTMLInputElement>) => { setDone(false); send.reset(); setForm({ ...form, [k]: e.target.value }); };
   const mismatch = form.again.length > 0 && form.again !== form.password;
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,7 +31,7 @@ export function ChangePasswordForm() {
         <input id="pw-again" type="password" required autoComplete="new-password" className="field" value={form.again} onChange={set('again')} />
         <p className="tiny mb-0 mt-2">At least 12 characters. Avoid common words and your name. Your other devices will be signed out.</p>
         {mismatch && <p className="tiny m-0 mt-1 text-bad">The two new passwords are not the same.</p>}
-        {send.isError && <p className="tiny m-0 mt-1 text-bad">{send.error.message}</p>}
+        {send.isError && !mismatch && <p className="tiny m-0 mt-1 text-bad">{send.error.message}</p>}
         {done && <p className="tiny m-0 mt-1" role="status">Your password is changed.</p>}
         <button type="submit" className="btn btn-primary btn-sm mt-3 self-start" disabled={send.isPending || mismatch}>Change password</button>
       </form>

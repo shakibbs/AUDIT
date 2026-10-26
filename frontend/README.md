@@ -187,3 +187,17 @@ menu → **My account** (`/account`, open to every user, insurers too): who is s
 browser; only that is sent), "No daily seal yet" before the first seal, the real deleted count, and the lookup links to
 that number's own evidence file. Reports & Exports has a **Download the <month> audit report (PDF)** button. A number's
 evidence file shows **Who holds it** for each consent proof.
+
+## Screen fixes (super test, 2026-10-23)
+
+- **Phones:** cards can shrink to the screen (`.card { min-width: 0 }`); wide tables scroll inside their card (Revocation
+  wording, report history, Data Integrity basis mix); the search box says "Search…" on a phone. No page scrolls sideways at 390 px.
+- **Keyboard:** the account menu closes on Escape or a click outside; Tab stays inside an open side panel and returns
+  where it was when it closes; search results take the arrow keys, Enter and Escape.
+- **Messages:** "Invitation sent to …", "A new invite was sent to …", "Saved for …", "Uploaded … rows read"; a new
+  password attempt clears the old error; Alerts says "No alerts yet" when there has never been one; the Email delivery
+  tile says Admins choose which alerts are emailed; a wrong address shows a styled "This page does not exist" page
+  (`app/not-found.tsx`) with a way back.
+- **Roles:** the Admin's own row shows "Admin · you" with no role change or "Remove access"; a Member sees the legal
+  hold form and the Who You Contact vendor switches greyed with "Only an Admin or your lawyer…".
+- Tests: `tests/screens/screenFixes.test.tsx`.

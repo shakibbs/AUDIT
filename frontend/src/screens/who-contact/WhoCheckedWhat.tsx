@@ -7,7 +7,7 @@ import { SourceChip } from './SourceChip';
 const GROUPS = [['vendor', 'Lead vendors'], ['upload', 'Uploaded lists']] as const;
 
 /** Rows = check services, lead vendors and uploaded lists; columns = the four lists a contact can be checked against. */
-export function WhoCheckedWhat({ data, readOnly }: { data: WhoContact; readOnly: boolean }) {
+export function WhoCheckedWhat({ data, readOnly, canChange = true }: { data: WhoContact; readOnly: boolean; canChange?: boolean }) {
   const legend = (['provider', 'list', 'stated', 'none'] as const).map((s) => <SourceChip key={s} source={s} />);
   const groupRow = (label: string, hint?: string) => (
     <tr key={label}><td colSpan={5} className="tiny !pb-1 !pt-4 font-semibold">{label}{hint && <span className="font-normal"> · {hint}</span>}</td></tr>
@@ -26,11 +26,11 @@ export function WhoCheckedWhat({ data, readOnly }: { data: WhoContact; readOnly:
               </tr>
             ))}
             {GROUPS.map(([group, label]) => [
-              groupRow(label, readOnly ? undefined : 'switch on what was checked before the leads reached you'),
+              groupRow(label, readOnly ? undefined : canChange ? 'switch on what was checked before the leads reached you' : 'only an Admin or your lawyer can change these'),
               ...data.leadSources.filter((l) => l.group === group).map((l) => (
                 <tr key={l.id}>
                   <td><div className="font-semibold">{l.name}</div>{l.note && <div className="tiny">{l.note}</div>}</td>
-                  {CHECK_COLUMNS.map(([key, colLabel]) => <td key={key}><LeadSourceSwitch source={l} column={key} label={colLabel} readOnly={readOnly} /></td>)}
+                  {CHECK_COLUMNS.map(([key, colLabel]) => <td key={key}><LeadSourceSwitch source={l} column={key} label={colLabel} readOnly={readOnly} disabled={!canChange} /></td>)}
                 </tr>
               )),
             ])}

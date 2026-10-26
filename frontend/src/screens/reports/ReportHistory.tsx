@@ -6,6 +6,7 @@ import { formatDateTime } from '@/lib/format';
 export function ReportHistory({ runs }: { runs: ReportRun[] }) {
   return (
     <Card title="History" sub="Every export is recorded in the access log" flush>
+      <div className="overflow-x-auto">
       <table className="tbl">
         <thead><tr><th>Report</th><th>Period</th><th>Requested by</th><th>When (UTC)</th><th>Status</th></tr></thead>
         <tbody>
@@ -19,6 +20,7 @@ export function ReportHistory({ runs }: { runs: ReportRun[] }) {
           ))}
         </tbody>
       </table>
+      </div>
     </Card>
   );
 }

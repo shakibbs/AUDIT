@@ -9,6 +9,7 @@ export function WordingCoverage({ revocation }: { revocation: Revocation }) {
   const both = tested.filter((w) => w.dialer && w.messaging).length;
   return (
     <Card title="Opt-out wording coverage" sub={`${both} of ${revocation.wording.length} wordings honoured by both systems`} flush>
+      <div className="overflow-x-auto">
       <table className="tbl">
         <thead><tr><th>Wording sent</th><th>Kind</th><th>Dialer</th><th>Messaging platform</th></tr></thead>
         <tbody>
@@ -22,6 +23,7 @@ export function WordingCoverage({ revocation }: { revocation: Revocation }) {
           ))}
         </tbody>
       </table>
+      </div>
     </Card>
   );
 }

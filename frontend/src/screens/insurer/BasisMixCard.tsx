@@ -11,6 +11,7 @@ export function BasisMixCard({ insured }: { insured: Insured }) {
   return (
     <Card title="What the score rests on" sub="Share of score inputs by source grade">
       <StackedBar legend={false} height={14} label="Score inputs by source grade" segments={insured.basisMix.map((m) => ({ label: `Source grade ${m.grade}`, value: m.share, color: COLOUR[m.grade], display: `${m.share}%` }))} />
+      <div className="overflow-x-auto">
       <table className="tbl mt-3">
         <thead><tr><th>Source grade</th><th>Share</th><th>Weight</th><th>Counts toward coverage</th></tr></thead>
         <tbody>
@@ -20,6 +21,7 @@ export function BasisMixCard({ insured }: { insured: Insured }) {
           <tr><td className="font-semibold">Evidence coverage</td><td /><td /><td className="mono font-semibold">{insured.basisMix.length ? `${coverage.toFixed(0)}%` : 'Not measured'}</td></tr>
         </tbody>
       </table>
+      </div>
       <p className="tiny mb-0 mt-3">A company export weighs 0.7 because a spreadsheet can be edited; a record CiV reads by API is fingerprinted when fetched. Statements and missing sources count for nothing.</p>
     </Card>
   );

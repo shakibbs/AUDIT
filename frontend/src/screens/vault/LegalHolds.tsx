@@ -24,15 +24,18 @@ export function LegalHolds() {
   }
   return (
     <Card title="Legal holds" sub="Records under a hold are kept past their retention date" flush>
-      {canChange && <form className="flex flex-wrap items-end gap-3 px-[22px] pb-4" onSubmit={submit}>
+      {!canChange && <p className="tiny m-0 px-[22px] pb-2">Only an Admin or your lawyer can place or release a hold.</p>}
+      <form className="flex flex-wrap items-end gap-3 px-[22px] pb-4" onSubmit={submit}>
+        <fieldset disabled={!canChange} className="contents">
         <div><label className="label" htmlFor="lh-scope">Hold on</label>
           <select id="lh-scope" className="field !w-[140px]" value={form.scope} onChange={(e) => setForm({ ...form, scope: e.target.value as LegalHold['scope'] })}>
             <option value="number">A number</option><option value="vendor">A vendor</option><option value="date range">A date range</option>
           </select></div>
         <div className="min-w-[160px] flex-1"><label className="label" htmlFor="lh-target">Which one</label><input id="lh-target" className="field" placeholder={HINT[form.scope]} value={form.target} onChange={(e) => setForm({ ...form, target: e.target.value })} /></div>
         <div className="min-w-[180px] flex-1"><label className="label" htmlFor="lh-reason">Reason</label><input id="lh-reason" className="field" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} /></div>
-        <button type="submit" className="btn btn-primary" disabled={!form.target.trim() || !form.reason.trim()}>Set hold</button>
-      </form>}
+        <button type="submit" className="btn btn-primary" disabled={!canChange || !form.target.trim() || !form.reason.trim()}>Set hold</button>
+        </fieldset>
+      </form>
       {send.isError && <p className="tiny m-0 px-[22px] pb-3 text-bad">{send.error.message}</p>}
       <Loader query={holds}>
         {(list) => (

@@ -24,6 +24,7 @@ export function UploadCentre({ sources }: { sources: Source[] }) {
   const client = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [done, setDone] = useState('');  // "Uploaded …" after each file (QA 2026-10-23)
 
   // The file itself goes to CiV, which fingerprints it, keeps it write-once and reads its rows.
   async function submit(e: React.FormEvent) {
@@ -31,13 +32,15 @@ export function UploadCentre({ sources }: { sources: Source[] }) {
     if (!file) return;
     setBusy(true);
     setError('');
+    setDone('');
     try {
       const form = new FormData();
       form.append('source', source);
       form.append('file', file);
-      await apiUpload('/uploads', form);
+      const saved = await apiUpload<{ fileName: string; rowsRead: number; rowsRejected: number }>('/uploads', form);
       await client.invalidateQueries();
       setFile(null);
+      setDone(`Uploaded ${saved.fileName}: ${saved.rowsRead} rows read${saved.rowsRejected ? `, ${saved.rowsRejected} not read` : ''}.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The file could not be uploaded.');
     } finally {
@@ -62,6 +65,7 @@ export function UploadCentre({ sources }: { sources: Source[] }) {
         <button type="submit" className="btn btn-primary" disabled={!file || busy || !canUpload}>{busy ? 'Uploading…' : 'Upload'}</button>
         {!canUpload && <span className="tiny">Only an Admin or your lawyer can upload.</span>}
         {error && <div className="tiny w-full" style={{ color: 'var(--bad-ink)' }}>{error}</div>}
+        {done && !error && <div className="tiny w-full" role="status">{done}</div>}
       </form>
       <Loader query={uploads}>
         {(list) => (

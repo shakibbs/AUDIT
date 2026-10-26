@@ -12,9 +12,11 @@ const BLANK = { name: '', email: '', role: 'member' as Role, isCounsel: false };
 export function InviteForm() {
   const [form, setForm] = useState(BLANK);
   const send = useSend();
+  const [sent, setSent] = useState('');
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    send.mutate({ method: 'POST', path: '/users', body: form }, { onSuccess: () => setForm(BLANK) });
+    setSent('');
+    send.mutate({ method: 'POST', path: '/users', body: form }, { onSuccess: () => { setSent(`Invitation sent to ${form.email}.`); setForm(BLANK); } });
   }
   return (
     <Card title="Invite someone" sub="They receive an email with a link to set a password">
@@ -30,6 +32,7 @@ export function InviteForm() {
       </form>
       <p className="tiny mb-0 mt-3">{ROLE_LABEL[form.role]}: {ROLE_CAN[form.role]}. A lawyer can also review rule drafts, suggest law changes and sign statements.</p>
       {send.isError && <p className="mb-0 mt-2 text-[12.5px]" role="alert">{send.error.message}</p>}
+      {sent && !send.isError && <p className="mb-0 mt-2 text-[12.5px]" role="status">{sent}</p>}
     </Card>
   );
 }
