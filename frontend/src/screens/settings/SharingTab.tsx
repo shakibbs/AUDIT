@@ -12,7 +12,7 @@ const BLANK = { name: '', email: '', person: '', kind: 'insurer' as BuyerLink['k
 /** Module 15: share the company's risk attestation with its insurer or acquirer, and stop at any time. */
 export function SharingTab() {
   const links = useBuyerLinks();
-  const send = useSend<BuyerLink & { invited: boolean }>();
+  const send = useSend<BuyerLink & { invited: boolean; message?: string }>();
   const session = useSession().data;
   const [form, setForm] = useState(BLANK);
   const stop = useSend();
@@ -35,7 +35,7 @@ export function SharingTab() {
         </form>
       )}
       {stopped && !send.isSuccess && <p className="tiny mb-0 mt-2" role="status">Stopped sharing with {stopped}.</p>}
-      {send.isSuccess && <p className="tiny mb-0 mt-2">{send.data?.invited ? 'Shared. An invite to set a password was sent to them.' : 'Shared.'}</p>}
+      {send.isSuccess && <p className="tiny mb-0 mt-2" role="status">{send.data?.message || (send.data?.invited ? 'Shared. An invite to set a password was sent to them.' : 'Shared.')}</p>}
       {send.isError && <p className="tiny mb-0 mt-2 text-bad">{send.error.message}</p>}
       {!isAdmin && <p className="tiny m-0">Only an Admin can share or stop sharing.</p>}
       <Loader query={links}>
