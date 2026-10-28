@@ -37,7 +37,6 @@ export function WhoCheckedWhat({ data, readOnly, canChange = true }: { data: Who
           </tbody>
         </table>
       </div>
-      <p className="tiny m-0 px-[22px] py-4">“Checked by you” is shown to your insurer and counts as not done until the provider’s results are attached.</p>
     </Card>
   );
 }

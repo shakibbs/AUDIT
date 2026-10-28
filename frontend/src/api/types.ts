@@ -41,6 +41,8 @@ export interface Session {
   canSwitchView?: boolean;
   /** The last time CiV read something new from the company's tools; null = nothing read yet. */
   updatedAt: string | null;
+  /** When the scores, findings and reports were last worked out; updating = a re-run after an upload is on its way. */
+  scoredAt?: string | null; updating?: boolean;
   periods: Period[];
 }
 

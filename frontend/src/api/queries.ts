@@ -13,7 +13,9 @@ function useGet<T>(path: string, query: Query = {}, enabled = true) {
   return useQuery({ queryKey: [path, query], queryFn: () => apiGet<T>(path, query), enabled });
 }
 
-export const useSession = () => useQuery({ queryKey: ['/session'], queryFn: () => apiGet<Session>('/session') });
+// While a re-run after an upload is on its way, the session is asked again every 15 seconds.
+export const useSession = () => useQuery({ queryKey: ['/session'], queryFn: () => apiGet<Session>('/session'),
+  refetchInterval: (query) => (query.state.data?.updating ? 15_000 : false) });
 export const useScore = (period?: string) => useGet<ScoreSummary>('/score', { period });
 export const useDomains = (period?: string) => useGet<Domain[]>('/domains', { period });
 export const useActions = (enabled = true) => useGet<Action[]>('/actions', {}, enabled);

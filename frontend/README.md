@@ -201,3 +201,9 @@ evidence file shows **Who holds it** for each consent proof.
 - **Roles:** the Admin's own row shows "Admin · you" with no role change or "Remove access"; a Member sees the legal
   hold form and the Who You Contact vendor switches greyed with "Only an Admin or your lawyer…".
 - Tests: `tests/screens/screenFixes.test.tsx`.
+
+## Bulk evidence export reads any number format (2026-10-24)
+
+Reports & Exports → Bulk evidence export splits the box by line (and by commas or semicolons), never by spaces, so
+"(512) 555-0701", "+1 512 555 0711" and "512.555.0701" all count (`parseNumbers` in `screens/reports/BulkExport.tsx`).
+Under the box: "4 numbers recognised · 1 line is not a phone number: “call back Tuesday”".
