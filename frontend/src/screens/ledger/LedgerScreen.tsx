@@ -8,6 +8,7 @@ import { PageHead } from '@/components/ui/PageHead';
 import { Seg } from '@/components/ui/Seg';
 import { ContactTable } from './ContactTable';
 import { StatusTiles } from './StatusTiles';
+import { usePortal } from '@/state/PortalContext';
 
 const FILTERS = [{ id: 'ALL', label: 'All' }, { id: 'NO_PROOF', label: 'No proof' }, { id: 'CONFLICTING', label: 'Conflicting' }, { id: 'WEAK', label: 'Weak' }, { id: 'VERIFIED', label: 'Verified' }, { id: 'PENDING', label: 'Pending' }, { id: 'NOT_CHECKED', label: 'Not checked yet' }] as const;
 
@@ -15,7 +16,7 @@ export function LedgerScreen() {
   const [status, setStatus] = useState<(typeof FILTERS)[number]['id']>('ALL');
   const [q, setQ] = useState('');
   const contacts = useContacts(status, q);
-  const consent = useConsent();
+  const consent = useConsent(usePortal().period);
   return (
     <>
       <PageHead eyebrow="Evidence" title="Contact Ledger" sub="Every call and text, with where the person probably is and the consent status the engine gave it. A contact seen in two tools is shown once." />

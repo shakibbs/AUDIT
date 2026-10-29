@@ -13,12 +13,13 @@ import { ReasonCodes } from './ReasonCodes';
 import { StatusMixCard } from './StatusMixCard';
 import { StatusTrendCard } from './StatusTrendCard';
 import { WordingTab } from './WordingTab';
+import { usePortal } from '@/state/PortalContext';
 
 const TABS = [{ id: 'summary', label: 'Summary' }, { id: 'expiry', label: 'Certificate expiry' }, { id: 'wording', label: 'Wording catalogue' }] as const;
 
 export function ConsentScreen() {
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('summary');
-  const consent = useConsent();
+  const consent = useConsent(usePortal().period);
   return (
     <>
       <PageHead eyebrow="Evidence" title="Consent Integrity" sub="Whether each contact had permission on record, and how strong that record is.">

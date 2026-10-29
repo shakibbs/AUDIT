@@ -11,9 +11,10 @@ import { OptOutsCard } from './OptOutsCard';
 import { RevocationMatrix } from './RevocationMatrix';
 import { TestAuthorisation } from './TestAuthorisation';
 import { WordingCoverage } from './WordingCoverage';
+import { useMonth } from '@/state/PortalContext';
 
 export function RevocationScreen() {
-  const revocation = useRevocation();
+  const revocation = useRevocation(useMonth());
   const { open } = useDrawer();
   return (
     <>

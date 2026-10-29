@@ -8,12 +8,12 @@ import { Card } from '@/components/ui/Card';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { formatCount } from '@/lib/format';
-import { usePortal } from '@/state/PortalContext';
+import { useMonth, usePortal } from '@/state/PortalContext';
 import { MetricTile } from './MetricTile';
 
 export function ConductScreen() {
   const { period } = usePortal();
-  const conduct = useConduct();
+  const conduct = useConduct(useMonth());  // the charts follow the month too (owner, 2026-10-30)
   const metrics = useMetrics(period);
   const months = useSession().data?.periods ?? [];
   const index = Math.max(0, months.findIndex((p) => p.id === period));

@@ -22,7 +22,7 @@ export function DomainDrawer({ id, onClose }: { id: string; onClose: () => void 
   const { period } = usePortal();
   const domain = useDomains(period).data?.find((d) => d.code === id);
   const metrics = useMetrics(period).data ?? [];
-  const actions = (useActions().data ?? []).filter((a) => a.domain === id && a.status !== 'resolved');
+  const actions = (useActions(true, usePortal().period).data ?? []).filter((a) => a.domain === id && a.status !== 'resolved');
   const months = monthLabels(useSession().data?.periods);
   if (!domain) return <Drawer eyebrow="Domain" title={id} onClose={onClose}><p className="tiny">Loading…</p></Drawer>;
 

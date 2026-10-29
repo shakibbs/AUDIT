@@ -6,10 +6,11 @@ import { PageHead } from '@/components/ui/PageHead';
 import { AreaTile } from './AreaTile';
 import { ChecksList } from './ChecksList';
 import { WhoCheckedWhat } from './WhoCheckedWhat';
+import { useMonth } from '@/state/PortalContext';
 
 /** DNC, internal list, reassigned numbers and litigation signals, measured after the contact from the client's own check services. */
 export function WhoContactScreen() {
-  const data = useWhoContact();
+  const data = useWhoContact(useMonth());
   const session = useSession().data;
   const readOnly = session?.view === 'underwriter';
   // Admins and the lawyer change the switches (the server checks too); a Member sees them greyed with a note.

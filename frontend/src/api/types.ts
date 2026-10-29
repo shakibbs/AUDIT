@@ -189,7 +189,7 @@ export interface ConsentPage {
 export interface RevocationCell { hours: number | null; tested: boolean; tests: number }
 
 export interface Revocation {
-  windowDays: number; tests: number; medianHours: number | null; p90: number | 'NEVER' | null;
+  windowDays: number; /** The chosen month ("Sep 2026"), when the page shows one month. */ windowLabel?: string | null; tests: number; medianHours: number | null; p90: number | 'NEVER' | null;
   notSuppressedByDeadline: number; contactedAfterDeadline: number; deadlineBusinessDays: number; minTestsPerCell: number;
   systems: { name: string; contacting: boolean }[];
   rows: { channel: string; cells: RevocationCell[] }[];
@@ -330,9 +330,17 @@ export interface Source {
 
 export interface Upload { artifactId: string; source: string; fileName: string; sha256: string; receivedAt: string; rowsRead: number; rowsRejected: number }
 
-export interface ReportType { id: string; name: string; description: string; format: string; addOn: boolean }
-/** Module 11: blocked = held back by the banned-word check; unavailable = that report type is not built yet; url downloads it. */
-export interface ReportRun { id: string; name: string; period: string; requestedBy: string; at: string; status: 'ready' | 'queued' | 'blocked' | 'unavailable'; url?: string | null; sha256?: string | null }
+/** The litigation package's steps: asked (CiV will contact the client) → accepted (the client types the numbers) →
+ * checking (CiV checks the package) → released (shown under `released`). */
+export interface QuoteStep { step: 'asked' | 'accepted' | 'checking'; at: string; madeAt?: string | null; found?: number; missing?: number }
+/** requestedAt / quote: an add-on with an open quote request; released: its last package, ready to download. */
+export interface ReportType {
+  id: string; name: string; description: string; format: string; addOn: boolean; requestedAt?: string | null;
+  quote?: QuoteStep | null; released?: { at: string; url: string } | null;
+}
+/** Module 11: blocked = held back by the banned-word check; unavailable = that report type is not built yet; requested,
+ * accepted, checking, closed = the steps of a quote request for an add-on; url downloads it. */
+export interface ReportRun { id: string; name: string; period: string; requestedBy: string; at: string; status: 'ready' | 'queued' | 'blocked' | 'unavailable' | 'requested' | 'accepted' | 'checking' | 'closed'; url?: string | null; sha256?: string | null }
 
 // ----- Engagement -----
 export type RuleStatus = 'set' | 'proposed' | 'tbd';

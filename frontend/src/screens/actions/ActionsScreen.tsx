@@ -7,6 +7,7 @@ import { Kpi } from '@/components/ui/Kpi';
 import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { Seg } from '@/components/ui/Seg';
+import { usePortal } from '@/state/PortalContext';
 import { ActionList } from './ActionList';
 import { ProjectedScore } from './ProjectedScore';
 
@@ -15,8 +16,9 @@ type Filter = (typeof FILTERS)[number]['id'];
 
 export function ActionsScreen() {
   const [filter, setFilter] = useState<Filter>('open');
-  const actions = useActions();
-  const score = useScore();
+  const { period } = usePortal();
+  const actions = useActions(true, period);  // both follow the month picker (owner, 2026-10-30)
+  const score = useScore(period);
   const me = useSession().data?.name;
   return (
     <>

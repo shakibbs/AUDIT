@@ -4,10 +4,11 @@ import { useWhoContact } from '@/api/queries';
 import { Drawer } from '@/components/ui/Drawer';
 import { SourceChip } from '@/screens/who-contact/SourceChip';
 import { StateDot } from '@/screens/who-contact/StateDot';
+import { useMonth } from '@/state/PortalContext';
 
 /** One Who You Contact area: each check with its reason, and the masked contacts behind it. */
 export function WhoAreaDrawer({ id, onClose }: { id: string; onClose: () => void }) {
-  const area = useWhoContact().data?.areas.find((a) => a.id === id);
+  const area = useWhoContact(useMonth()).data?.areas.find((a) => a.id === id);
   if (!area) return <Drawer eyebrow="Who you contact" title="Area" onClose={onClose}><p className="tiny">Loading…</p></Drawer>;
   return (
     <Drawer eyebrow={area.law} title={area.title} onClose={onClose}>

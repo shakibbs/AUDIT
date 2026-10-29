@@ -4,10 +4,11 @@ import { useConsentPages } from '@/api/queries';
 import { Empty } from '@/components/ui/Empty';
 import { Loader } from '@/components/ui/Loader';
 import { ConsentPageCard } from './ConsentPageCard';
+import { usePortal } from '@/state/PortalContext';
 
 /** Every consent form page your certificates came from, with CiV's own photos and the checklist read from them. */
 export function WordingTab() {
-  const pages = useConsentPages();
+  const pages = useConsentPages(usePortal().period);
   return (
     <Loader query={pages}>
       {(list) => list.length === 0 ? <Empty>No consent pages yet: they appear once CiV claims a certificate that names its page.</Empty> : (

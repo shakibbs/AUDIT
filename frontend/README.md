@@ -207,3 +207,37 @@ evidence file shows **Who holds it** for each consent proof.
 Reports & Exports → Bulk evidence export splits the box by line (and by commas or semicolons), never by spaces, so
 "(512) 555-0701", "+1 512 555 0711" and "512.555.0701" all count (`parseNumbers` in `screens/reports/BulkExport.tsx`).
 Under the box: "4 numbers recognised · 1 line is not a phone number: “call back Tuesday”".
+
+## Report cards: bulk export and quote requests (2026-10-30)
+
+On Reports & Exports, **Generate** on the Evidence file export and Certification pack cards scrolls to the Bulk evidence
+export box, puts the cursor in it and says which button to press (those files need the phone numbers). **Request a
+quote** on the Litigation evidence package tells CiV (staff panel → Quote requests, and an email); the card then says
+"Requested on 30 Oct 2026. CiV will contact you." and keeps saying so after a reload (`requestedAt` from the backend),
+and the history shows "Quote requested" (`screens/reports/ReportCard.tsx`, `ReportHistory.tsx`).
+Test: `tests/screens/reportCards.test.tsx`.
+
+The Litigation card follows the request: "Requested" → after CiV accepts, "Accepted" with a box to type up to 25 numbers
+and **Make the package** (`screens/reports/PackageNumbers.tsx`; Admins and the lawyer) → "Being checked" with how many
+numbers were found → once CiV releases it, "Your package from … is ready. Download", and the button offers another quote.
+
+
+## Legal hold dates on calendars (2026-10-30)
+
+Evidence Vault → Legal holds: with "A date range" chosen, **From** and **To** date pickers take the place of the text
+box (sent as "2026-09-10 to 2026-09-20"); Set hold waits until both are picked and From is not after To.
+Test: `tests/screens/legalHoldDates.test.tsx`.
+
+## One month for every page (2026-10-30)
+
+The month picker stays in the top bar of every page and is one choice for all of them (owner, option A). The chosen
+month is kept in this browser (`civ-period` in localStorage, `state/PortalContext.tsx`), so a reload keeps it; a month
+the company does not have goes back to the latest. Settings, Users & Access, My account and Setup & Readiness say "This
+page is the same for every month". Pages are being moved to the chosen month one at a time: **1. Contact Conduct**
+(its charts now ask `/api/conduct?period=`, like its metric cards); **2. Action Queue** (the score and the findings of
+that month, `/api/actions?period=`; also Overview's actions and the domain and metric drawers; the sidebar count and a
+finding's own drawer still use all findings); **3. Consent Integrity** (the summary, certificates found by the end of
+that month and consent pages seen in it; Overview's and the Contact Ledger's consent figures too); **4. Revocation Integrity** (opt-outs received in that month,
+the matrix says "Sep 2026" instead of "last 90 days"). `useMonth()` gives the month the picker shows, so a page never
+shows "the last 30 or 90 days" while the picker says a month (Contact Conduct's charts use it too); **5. Who You Contact** (the four areas and their pop-up panel cover that month's
+contacts; "Who checked what" stays the company's standing statements). Test: `tests/screens/monthEverywhere.test.tsx`.

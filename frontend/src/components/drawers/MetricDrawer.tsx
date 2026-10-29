@@ -20,7 +20,7 @@ export function MetricDrawer({ id, onClose }: { id: string; onClose: () => void 
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('result');
   const { period } = usePortal();
   const metric = useMetrics(period).data?.find((m) => m.code === id);
-  const allActions = useActions().data ?? [];
+  const allActions = useActions(true, usePortal().period).data ?? [];
   const months = monthLabels(useSession().data?.periods);
   if (!metric) return <Drawer eyebrow="Metric" title={id} onClose={onClose}><p className="tiny">Loading…</p></Drawer>;
 

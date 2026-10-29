@@ -263,6 +263,13 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       return ok(upload);
     }
     case 'POST reports': {
+      if (['Evidence file export', 'Certification pack'].includes(String(body.name))) return fail(400, 'Paste the numbers in the bulk evidence export below the cards.');
+      if (String(body.name) === 'Litigation evidence package') {
+        const quote = { id: `quote-${db.reportRuns.length}`, name: String(body.name), period: String(body.period), requestedBy: db.session.name, at: '2026-09-30T09:00:00Z', status: 'requested' as const };
+        db.reportRuns.unshift(quote);
+        log('Asked for a quote', quote.name);
+        return ok(quote);
+      }
       const run = { id: `r-${32 + db.reportRuns.length}`, name: String(body.name), period: String(body.period), requestedBy: db.session.name, at: '2026-09-30T09:00:00Z', status: 'queued' as const };
       db.reportRuns.unshift(run);
       log('Requested', run.name);

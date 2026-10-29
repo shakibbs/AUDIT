@@ -20,9 +20,9 @@ export function OverviewScreen() {
   const { period, insuredId } = usePortal();
   const score = useScore(period);
   const metrics = useMetrics(period);
-  const actions = useActions();
+  const actions = useActions(true, period);
   const alerts = useAlerts();
-  const consent = useConsent();
+  const consent = useConsent(period);
   const health = useHealth();
   const insured = useInsured(insuredId);
   const months = useSession().data?.periods ?? [];

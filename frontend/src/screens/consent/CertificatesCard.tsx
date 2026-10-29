@@ -6,13 +6,14 @@ import { Card } from '@/components/ui/Card';
 import { Empty } from '@/components/ui/Empty';
 import { Loader } from '@/components/ui/Loader';
 import { formatDate } from '@/lib/format';
+import { usePortal } from '@/state/PortalContext';
 
 const PILL: Record<Certificate['state'], string> = { claimed: 'pill-green', waiting: 'pill-gray', no_key: 'pill-amber', lost: 'pill-red' };
 
 /** Every consent certificate CiV found in your records: whether it was claimed in time, its dates, and how many
  * contacts' results used it. Only the start of each certificate ID is shown. */
 export function CertificatesCard() {
-  const certificates = useCertificates();
+  const certificates = useCertificates(usePortal().period);
   return (
     <Card title="Your certificates" sub="TrustedForm and Jornaya certificates found in your records, newest first" flush>
       <Loader query={certificates}>

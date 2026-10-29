@@ -12,7 +12,7 @@ function reading(cell: RevocationCell, deadlineHours: number): { text: string; c
 /** Opt-out channel by system: how long each system took to stop contacting after an opt-out. */
 export function RevocationMatrix({ revocation }: { revocation: Revocation }) {
   return (
-    <Card title="Opt-out matrix" sub={`Median time to stop, by where the opt-out was sent and which system had to honour it · last ${revocation.windowDays} days`} flush>
+    <Card title="Opt-out matrix" sub={`Median time to stop, by where the opt-out was sent and which system had to honour it · ${revocation.windowLabel ?? `last ${revocation.windowDays} days`}`} flush>
       <div className="overflow-x-auto">
         <table className="tbl">
           <thead>
