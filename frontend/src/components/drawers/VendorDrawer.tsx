@@ -10,10 +10,11 @@ import { formatCount, formatScore } from '@/lib/format';
 import { monthLabels } from '@/lib/months';
 import { ContractForm } from '@/screens/vendors/ContractForm';
 import { DisputeList } from '@/screens/vendors/DisputeList';
+import { useMonth } from '@/state/PortalContext';
 
 /** One lead vendor: score, the six rates behind it, and its history. */
 export function VendorDrawer({ id, onClose }: { id: string; onClose: () => void }) {
-  const vendor = useVendors().data?.vendors.find((v) => v.id === id);
+  const vendor = useVendors(useMonth()).data?.vendors.find((v) => v.id === id);
   const months = monthLabels(useSession().data?.periods);
   if (!vendor) return <Drawer eyebrow="Vendor" title="Vendor" onClose={onClose}><p className="tiny">Loading…</p></Drawer>;
 

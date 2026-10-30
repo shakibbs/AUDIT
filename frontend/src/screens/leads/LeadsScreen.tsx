@@ -15,10 +15,12 @@ import { ProofRequestsCard } from './ProofRequestsCard';
 import { TopSourcesCard } from './TopSourcesCard';
 import { UntracedCard } from './UntracedCard';
 import { UploadsCard } from './UploadsCard';
+import { useMonth } from '@/state/PortalContext';
 
 export function LeadsScreen() {
-  const leads = useLeads();
-  const provenance = useProvenance();
+  const month = useMonth();  // every card follows the month picker (owner, 2026-10-30)
+  const leads = useLeads(month);
+  const provenance = useProvenance(month);
   const { open } = useDrawer();
   return (
     <>

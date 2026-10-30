@@ -8,7 +8,7 @@ import { formatCount } from '@/lib/format';
 export function TopSourcesCard({ page }: { page: ProvenancePage }) {
   return (
     <Card title="Top sources" sub="Vendors named in your CRM and websites in your certificates, as written">
-      {page.topSources.length === 0 ? <Empty>No named source this month.</Empty> : (
+      {page.topSources.length === 0 ? <Empty>No named source in {page.period}.</Empty> : (
         <BarList labelWidth={240} rows={page.topSources.map((s) => ({ key: `${s.basis}-${s.name}`, label: `${s.name} · ${s.basis}`, value: s.count, display: formatCount(s.count) }))} />
       )}
     </Card>

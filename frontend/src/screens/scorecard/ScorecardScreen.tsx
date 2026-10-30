@@ -17,7 +17,7 @@ export function ScorecardScreen() {
   const score = useScore(period);
   const metrics = useMetrics(period);
   const { insuredId } = useViewer();
-  const insured = useInsured(insuredId).data;
+  const insured = useInsured(insuredId, true, period).data;
   const reading = insured?.exposure.inside ?? insured?.exposure.outside ?? null;
   const known = new Set((metrics.data ?? []).map((m) => m.code));
   return (

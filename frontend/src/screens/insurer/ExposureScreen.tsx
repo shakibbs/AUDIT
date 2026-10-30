@@ -11,11 +11,12 @@ import { FactorTable } from './FactorTable';
 import { InsuredPicker } from './InsuredPicker';
 import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
+import { usePortal } from '@/state/PortalContext';
 
 /** Exposure Indicator v2.2: six factors measure what the company does wrong; three multipliers measure the pressure on it. */
 export function ExposureScreen() {
   const { insuredId, eyebrow, empty, ready } = useViewer();
-  const insured = useInsured(insuredId, ready);
+  const insured = useInsured(insuredId, ready, usePortal().period);
   return (
     <>
       <PageHead eyebrow={eyebrow} title="Exposure Indicator" sub="Six factors measure what the company does wrong; three multipliers measure the pressure on it. Higher means more exposed. The same factors are scored from public evidence before connection and from the company’s records after.">

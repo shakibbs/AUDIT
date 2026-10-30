@@ -10,7 +10,7 @@ export function LadderCard({ page }: { page: ProvenancePage }) {
   const shown = page.ladder.filter((r) => r.available);
   return (
     <Card title="Where your called numbers came from" sub={`${formatCount(page.numbers)} numbers first called in ${page.period}, strongest source first`}>
-      {page.numbers === 0 ? <p className="tiny m-0">No numbers called this month yet.</p> : (
+      {page.numbers === 0 ? <p className="tiny m-0">No numbers called in {page.period}.</p> : (
         <StackedBar height={22} label="Called numbers by source" segments={shown.map((r) => ({
           label: r.label, value: r.count, color: COLOR[r.basis] ?? 'var(--series-muted)', display: `${formatCount(r.count)} · ${r.share.toFixed(0)}%`,
         }))} />

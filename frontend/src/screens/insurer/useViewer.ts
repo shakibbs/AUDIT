@@ -8,9 +8,9 @@ const OWN_COMPANY = 'own';
 /** Who is looking and which insured they look at. A client always sees its own company. */
 export function useViewer() {
   const session = useSession().data;
-  const { insuredId } = usePortal();
+  const { insuredId, period } = usePortal();
   const underwriter = session?.view === 'underwriter';
-  const list = useInsureds(underwriter).data;
+  const list = useInsureds(underwriter, period).data;
   // A real insurer's companies have their own ids: open the first one until another is picked.
   const chosen = list && list.length && !list.some((i) => i.id === insuredId) ? list[0].id : insuredId;
   const org = session?.clientName ?? '';

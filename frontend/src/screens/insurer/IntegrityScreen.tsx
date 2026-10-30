@@ -11,11 +11,12 @@ import { InsuredPicker } from './InsuredPicker';
 import { ReconciliationCard } from './ReconciliationCard';
 import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
+import { usePortal } from '@/state/PortalContext';
 
 /** Can these numbers be trusted? Evidence coverage, completeness, conflicts and unknown calling systems. */
 export function IntegrityScreen() {
   const { insuredId, eyebrow, empty, ready } = useViewer();
-  const insured = useInsured(insuredId, ready);
+  const insured = useInsured(insuredId, ready, usePortal().period);
   return (
     <>
       <PageHead eyebrow={eyebrow} title="Data Integrity" sub="Can these numbers be trusted? CiV never takes a statement as a measurement, and checks totals against sources the company does not control.">

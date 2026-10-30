@@ -5,9 +5,10 @@ import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { ChangeCard } from './ChangeCard';
 import { SuggestChange } from './SuggestChange';
+import { useMonth } from '@/state/PortalContext';
 
 export function RegulatoryScreen() {
-  const changes = useRegChanges();
+  const changes = useRegChanges(useMonth());
   const session = useSession().data;
   const readOnly = session?.view === 'underwriter';
   // Only the company's lawyer reviews drafts and suggests changes; CiV alone approves.

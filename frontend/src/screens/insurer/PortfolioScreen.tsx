@@ -18,7 +18,7 @@ const pct = (v: number | null) => (v === null ? '—' : `${Math.round(v * 100)}%
 
 /** Every insured on one scale, with how much of each figure rests on evidence. */
 export function PortfolioScreen() {
-  const insureds = useInsureds();
+  const insureds = useInsureds(true, usePortal().period);
   const { eyebrow } = useViewer();
   const { setInsuredId } = usePortal();
   const router = useRouter();

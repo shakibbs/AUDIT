@@ -6,7 +6,7 @@ import type { Period } from '@/api/types';
 import { usePortal } from '@/state/PortalContext';
 
 // Pages that are the same for every month (owner, 2026-10-30): the picker stays, with a note.
-const SAME_EVERY_MONTH = ['/settings', '/users', '/account', '/setup'];
+const SAME_EVERY_MONTH = ['/settings', '/users', '/account', '/setup', '/litigation'];
 
 /** One month for every page: changing it here changes it everywhere. */
 export function PeriodSelect({ periods }: { periods: Period[] }) {

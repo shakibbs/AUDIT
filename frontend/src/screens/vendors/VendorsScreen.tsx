@@ -10,9 +10,10 @@ import { formatCount, formatScore, gradeOf } from '@/lib/format';
 import { useDrawer } from '@/state/DrawerContext';
 import { AddContractCard } from './AddContractCard';
 import { VendorTable } from './VendorTable';
+import { useMonth } from '@/state/PortalContext';
 
 export function VendorsScreen() {
-  const vendors = useVendors();
+  const vendors = useVendors(useMonth());
   const { open } = useDrawer();
   return (
     <>

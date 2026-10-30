@@ -5,11 +5,12 @@ import { Card } from '@/components/ui/Card';
 import { Empty } from '@/components/ui/Empty';
 import { Loader } from '@/components/ui/Loader';
 import { ProofRequestRow } from './ProofRequestRow';
+import { useMonth } from '@/state/PortalContext';
 
 /** Numbers from uploaded lists CiV asks you to prove: a fixed sample per list. Attach proof or say you have none
  * within 30 days. CiV keeps the file privately and checks it; until then those calls stay "Weak". */
 export function ProofRequestsCard() {
-  const requests = useProofRequests();
+  const requests = useProofRequests(useMonth());
   return (
     <Loader query={requests}>
       {(data) => (

@@ -7,11 +7,13 @@ import { PageHead } from '@/components/ui/PageHead';
 import { Seg } from '@/components/ui/Seg';
 import { CalendarTab } from './CalendarTab';
 import { SettingsTab } from './SettingsTab';
+import { useMonth } from '@/state/PortalContext';
+import { formatDate } from '@/lib/format';
 
 const TABS = [{ id: 'settings', label: 'Settings' }, { id: 'calendar', label: 'Calendar & hours' }] as const;
 
 export function RulebookScreen() {
-  const rulebook = useRulebook();
+  const rulebook = useRulebook(useMonth());
   const [tab, setTab] = useState<(typeof TABS)[number]['id']>('settings');
   return (
     <>
@@ -22,6 +24,7 @@ export function RulebookScreen() {
         {(r) => (
           <div className="flex flex-col gap-5">
             {r.note && <p className="note-box m-0">{r.note}</p>}
+            {r.asOf && tab === 'settings' && <p className="tiny m-0">Rules in force on {formatDate(r.asOf)}.</p>}
             {tab === 'settings' ? <SettingsTab rulebook={r} /> : <CalendarTab thisYear={new Date().getFullYear()} />}
           </div>
         )}

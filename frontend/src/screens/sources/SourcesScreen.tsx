@@ -1,6 +1,6 @@
 'use client';
 
-import { useSources } from '@/api/queries';
+import { useSession, useSources } from '@/api/queries';
 import { StackedBar } from '@/components/charts/StackedBar';
 import { Card } from '@/components/ui/Card';
 import { Kpi } from '@/components/ui/Kpi';
@@ -10,11 +10,14 @@ import { TIER_LABEL } from '@/lib/format';
 import type { Tier } from '@/api/types';
 import { SourceTable } from './SourceTable';
 import { UploadCentre } from './UploadCentre';
+import { useMonth } from '@/state/PortalContext';
 
 const TIER_COLOR: Record<Tier, string> = { 1: 'var(--series-1)', 2: 'var(--series-2)', 3: 'var(--series-3)', 4: 'var(--series-muted)' };
 
 export function SourcesScreen() {
-  const sources = useSources();
+  const month = useMonth();  // the month picker (owner, 2026-10-30)
+  const label = useSession().data?.periods.find((p) => p.id === month)?.label;
+  const sources = useSources(month);
   return (
     <>
       <PageHead eyebrow="Disclosure" title="Source Registry" sub="Where every figure in this portal comes from, who captured it, and how fresh it is." />
@@ -31,7 +34,7 @@ export function SourcesScreen() {
               <Card title="Sources by evidence tier" sub="Tier 1 is strongest: captured by CiV itself">
                 <StackedBar height={20} label="Sources by evidence tier" segments={([1, 2, 3, 4] as Tier[]).map((t) => ({ label: TIER_LABEL[t], value: list.filter((s) => s.tier === t).length, color: TIER_COLOR[t] }))} />
               </Card>
-              <Card title="Sources" sub="Items needing attention first" flush><SourceTable sources={list} /></Card>
+              <Card title="Sources" sub="Items needing attention first" flush><SourceTable sources={list} month={label} /></Card>
               <UploadCentre sources={list} />
             </div>
           );

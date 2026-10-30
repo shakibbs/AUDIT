@@ -240,4 +240,16 @@ finding's own drawer still use all findings); **3. Consent Integrity** (the summ
 that month and consent pages seen in it; Overview's and the Contact Ledger's consent figures too); **4. Revocation Integrity** (opt-outs received in that month,
 the matrix says "Sep 2026" instead of "last 90 days"). `useMonth()` gives the month the picker shows, so a page never
 shows "the last 30 or 90 days" while the picker says a month (Contact Conduct's charts use it too); **5. Who You Contact** (the four areas and their pop-up panel cover that month's
-contacts; "Who checked what" stays the company's standing statements). Test: `tests/screens/monthEverywhere.test.tsx`.
+contacts; "Who checked what" stays the company's standing statements); **6. Contact Ledger** (the list and its status tiles show
+that month; a number search says "Searching Sep 2026 only"); **7. Lead Provenance** (every card, proof requests sent that month; "this
+month" in its card texts now names the month, e.g. "Untraced in September 2026"); **8. Vendor Ledger** (scores, grades, drops and dispute candidates as of the end of
+that month, and the vendor panel; the contracts list stays all contracts); **9. Alerts** (the alerts open at some point in that month,
+on the Alerts page and Overview; the sidebar count stays every open alert); **10. Evidence Vault** (records read and days
+sealed in that month, "Read in Sep 2026", and the coverage strip ending with it; Position lookup, Verify a file and
+legal holds are not monthly); **11. Source Registry** (a new "In Sep 2026" column: records read from each tool and files
+uploaded for each Upload centre source that month; the Upload centre list shows that month's files; status and last sync
+are always now, and the top bar's freshness asks without a month); **12. Rulebook and Regulatory Changes** ("Rules in force
+on 30 Sep 2026"; changes announced by the end of that month; the Calendar & hours tab stays by year). **Insurer side (owner, option B):**
+the underwriter view has its own month picker (the months listed in its session); Portfolio, Exposure, Data Integrity,
+Risk Attestation and Underwriting Export show that month's sheets; the client's "Shared with your insurer" pages follow
+the client's picker; Litigation Intelligence says it is the same for every month. Test: `tests/screens/monthEverywhere.test.tsx`.

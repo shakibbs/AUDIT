@@ -6,12 +6,13 @@ const STATUS: Record<SourceStatus, [string, string]> = { current: ['pill-green',
 const ORDER: Record<SourceStatus, number> = { stale: 0, revoked: 0, not_supplied: 1, current: 2 };
 
 /** Every source of data, with who captured it, how CiV reads it and how fresh it is. Items needing attention come first. */
-export function SourceTable({ sources }: { sources: Source[] }) {
+export function SourceTable({ sources, month }: { sources: Source[]; month?: string }) {
+  const monthly = Boolean(month) && sources.some((s) => s.inMonth !== undefined);
   const rows = [...sources].sort((a, b) => ORDER[a.status] - ORDER[b.status]);
   return (
     <div className="overflow-x-auto">
       <table className="tbl">
-        <thead><tr><th>Source</th><th>Tier</th><th>Access</th><th>Last sync</th><th>Status</th><th>Feeds domains</th></tr></thead>
+        <thead><tr><th>Source</th><th>Tier</th><th>Access</th><th>Last sync</th>{monthly && <th>In {month}</th>}<th>Status</th><th>Feeds domains</th></tr></thead>
         <tbody>
           {rows.map((s) => (
             <tr key={s.id}>
@@ -19,6 +20,7 @@ export function SourceTable({ sources }: { sources: Source[] }) {
               <td><TierChip tier={s.tier} /></td>
               <td className="text-txt-2">{s.access}{s.revocable && <div className="tiny">You can revoke this at any time</div>}</td>
               <td className="whitespace-nowrap">{s.lastSync}</td>
+              {monthly && <td className="mono">{(s.inMonth ?? 0).toLocaleString()} {s.acceptsUpload ? ((s.inMonth ?? 0) === 1 ? 'file' : 'files') : ((s.inMonth ?? 0) === 1 ? 'record' : 'records')}</td>}
               <td><span className={`pill ${STATUS[s.status][0]}`}>{STATUS[s.status][1]}</span></td>
               <td><span className="flex flex-wrap gap-1">{s.feeds.map((d) => <DomainCode key={d} code={d} />)}</span></td>
             </tr>

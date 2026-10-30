@@ -20,24 +20,25 @@ export const useScore = (period?: string) => useGet<ScoreSummary>('/score', { pe
 export const useDomains = (period?: string) => useGet<Domain[]>('/domains', { period });
 /** The findings of the chosen month (all of them without one: the sidebar count and a finding's own drawer). */
 export const useActions = (enabled = true, period?: string) => useGet<Action[]>('/actions', { period }, enabled);
-export const useAlerts = (enabled = true) => useGet<Alert[]>('/alerts', {}, enabled);
-export const useContacts = (status: string, q: string) => useGet<Contact[]>('/contacts', { status, q });
+/** The alerts of the chosen month (all of them without one: the sidebar count). */
+export const useAlerts = (enabled = true, period?: string) => useGet<Alert[]>('/alerts', { period }, enabled);
+export const useContacts = (status: string, q: string, period?: string) => useGet<Contact[]>('/contacts', { status, q, period });
 export const useConsent = (period?: string) => useGet<ConsentSummary>('/consent', { period });
 export const useContact = (id: string) => useGet<Contact>(`/contacts/${encodeURIComponent(id)}`);
 export const useConsentPages = (period?: string) => useGet<ConsentPage[]>('/consent-pages', { period });
 export const useCertificates = (period?: string) => useGet<Certificate[]>('/certificates', { period });
 export const useRevocation = (period?: string) => useGet<Revocation>('/revocation', { period });
 export const useWhoContact = (period?: string) => useGet<WhoContact>('/who-contact', { period });
-export const useVault = () => useGet<VaultStats>('/vault');
+export const useVault = (period?: string) => useGet<VaultStats>('/vault', { period });
 export const usePosition = (phone: string, date: string) => useGet<Position>('/position', { phone, date }, Boolean(phone && date));
 export const useHashCheck = (hash: string) => useGet<HashCheck>('/hash-check', { hash }, hash.length > 0);
 export const useLegalHolds = () => useGet<LegalHold[]>('/legal-holds');
 export const useEvidenceFile = (phone: string) => useGet<EvidenceFile>(`/evidence/${encodeURIComponent(phone)}`);
 export const useMetrics = (period?: string) => useGet<Metric[]>('/metrics', { period });
 export const useConduct = (period?: string) => useGet<Conduct>('/conduct', { period });
-export const useLeads = () => useGet<Leads>('/leads');
-export const useProvenance = () => useGet<ProvenancePage>('/provenance');
-export const useProofRequests = () => useGet<ProofRequests>('/proof-requests');
+export const useLeads = (period?: string) => useGet<Leads>('/leads', { period });
+export const useProvenance = (period?: string) => useGet<ProvenancePage>('/provenance', { period });
+export const useProofRequests = (period?: string) => useGet<ProofRequests>('/proof-requests', { period });
 /** Module 12: a vendor's dispute candidates (only when the vendor came from the backend). */
 export const useDisputes = (vendor: string, enabled: boolean) => useGet<VendorDisputes>('/vendor-disputes', { vendor }, enabled);
 /** Module 12: every vendor contract the company uploaded. */
@@ -45,14 +46,15 @@ export const useDisputes = (vendor: string, enabled: boolean) => useGet<VendorDi
 export const useRatingEngine = (enabled = true) => useGet<RatingEngine>('/rating-engine', {}, enabled);
 export const useBuyerLinks = () => useGet<{ links: BuyerLink[] }>('/buyer-links');
 export const useVendorContracts = () => useGet<VendorContract[]>('/vendor-contracts');
-export const useVendors = () => useGet<VendorSummary>('/vendors');
-export const useSources = () => useGet<Source[]>('/sources');
-export const useUploads = () => useGet<Upload[]>('/uploads');
+export const useVendors = (period?: string) => useGet<VendorSummary>('/vendors', { period });
+/** With a month: each row also says how much it gave CiV then (the top bar's freshness asks without one). */
+export const useSources = (period?: string) => useGet<Source[]>('/sources', { period });
+export const useUploads = (period?: string) => useGet<Upload[]>('/uploads', { period });
 export const useReports = () => useGet<{ types: ReportType[]; runs: ReportRun[] }>('/reports');
-export const useRulebook = () => useGet<Rulebook>('/rulebook');
+export const useRulebook = (period?: string) => useGet<Rulebook>('/rulebook', { period });
 export const useRulebookCalendar = (year: number) => useGet<RulebookCalendar>('/rulebook/calendar', { year: String(year) });
 export const useOptOuts = (period?: string) => useGet<OptOut[]>('/optouts', { period });
-export const useRegChanges = () => useGet<RegChange[]>('/reg-changes');
+export const useRegChanges = (period?: string) => useGet<RegChange[]>('/reg-changes', { period });
 export const useReadiness = () => useGet<Readiness>('/readiness');
 export const useSettings = () => useGet<Settings>('/settings');
 export const useUsers = () => useGet<User[]>('/users');
@@ -61,8 +63,9 @@ export const useHealth = () => useGet<DataHealth>('/data-health');
 // Insurer pages always ask afresh (on opening and when the tab comes back), so a company that stopped sharing
 // disappears at once instead of after the usual 30 seconds.
 const FRESH = { staleTime: 0, refetchOnWindowFocus: true } as const;
-export const useInsureds = (enabled = true) => useQuery({ queryKey: ['/insureds', {}], queryFn: () => apiGet<Insured[]>('/insureds', {}), enabled, ...FRESH });
-export const useInsured = (id: string, enabled = true) => useQuery({ queryKey: [`/insureds/${id}`, {}], queryFn: () => apiGet<Insured>(`/insureds/${id}`, {}), enabled, ...FRESH });
+/** With a month (the month picker; an insurer only gets months from when each company started sharing): that month's sheets. */
+export const useInsureds = (enabled = true, period?: string) => useQuery({ queryKey: ['/insureds', { period }], queryFn: () => apiGet<Insured[]>('/insureds', { period }), enabled, ...FRESH });
+export const useInsured = (id: string, enabled = true, period?: string) => useQuery({ queryKey: [`/insureds/${id}`, { period }], queryFn: () => apiGet<Insured>(`/insureds/${id}`, { period }), enabled, ...FRESH });
 export const useLitigation = () => useGet<LitigationStats>('/litigation');
 export const useSearch = (q: string) => useGet<SearchHit[]>('/search', { q }, q.trim().length >= 2);
 

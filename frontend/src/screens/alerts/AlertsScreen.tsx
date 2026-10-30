@@ -9,13 +9,14 @@ import { Loader } from '@/components/ui/Loader';
 import { PageHead } from '@/components/ui/PageHead';
 import { Seg } from '@/components/ui/Seg';
 import { AlertRow } from './AlertRow';
+import { useMonth } from '@/state/PortalContext';
 
 const FILTERS = [{ id: 'new', label: 'Not reviewed' }, { id: 'all', label: 'All' }] as const;
 const ORDER = { High: 0, Medium: 1, Low: 2 };
 
 export function AlertsScreen() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['id']>('new');
-  const alerts = useAlerts();
+  const alerts = useAlerts(true, useMonth());
   return (
     <>
       <PageHead eyebrow="Your position" title="Alerts" sub="Things that changed since the last run and need someone to look. Alerts put your company on notice; what to do about them is your decision." />

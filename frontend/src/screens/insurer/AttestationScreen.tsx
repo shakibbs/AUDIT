@@ -14,6 +14,7 @@ import { InsuredPicker } from './InsuredPicker';
 import { StatementForm } from './StatementForm';
 import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
+import { usePortal } from '@/state/PortalContext';
 
 // Small shares keep one decimal so 1.5% does not read as 2%.
 const pct = (v: number | null) => (v === null ? '—' : v < 0.2 && v > 0 ? `${(v * 100).toFixed(1)}%` : `${Math.round(v * 100)}%`);
@@ -24,7 +25,7 @@ const g = (i: Insured, measured: SourceGrade, value: unknown): SourceGrade => (v
 /** The standard underwriting data sheet. The client sees its own sheet without dollar figures (decision D36). */
 export function AttestationScreen() {
   const { underwriter, insuredId, eyebrow, empty, ready } = useViewer();
-  const insured = useInsured(insuredId, ready);
+  const insured = useInsured(insuredId, ready, usePortal().period);
   return (
     <>
       <PageHead eyebrow={eyebrow} title="Risk Attestation" sub="The standard underwriting data sheet. Every field states where it came from. Statements by the insured are signed and shown as statements; they never raise a score.">

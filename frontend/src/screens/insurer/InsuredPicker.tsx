@@ -7,7 +7,7 @@ import { useViewer } from './useViewer';
 /** Underwriter only: choose which insured company the page shows. */
 export function InsuredPicker() {
   const { underwriter, insuredId } = useViewer();
-  const list = useInsureds(underwriter).data ?? [];
+  const list = useInsureds(underwriter, usePortal().period).data ?? [];
   const { setInsuredId } = usePortal();
   if (!underwriter) return null;
   return (

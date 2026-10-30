@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { Loader } from '@/components/ui/Loader';
 import { formatCount, formatDateTime, truncateHash } from '@/lib/format';
+import { useMonth } from '@/state/PortalContext';
 
 // Policies and contracts may also be documents; every other source is a CSV of rows.
 const DOCUMENTS_OK = 'Policies, training, contracts';
@@ -20,7 +21,7 @@ export function UploadCentre({ sources }: { sources: Source[] }) {
   const canUpload = Boolean(session && (session.role === 'admin' || session.isCounsel));  // Admins and the lawyer (owner, 2026-10-22)
   const [source, setSource] = useState(accepting.find((s) => s.status === 'not_supplied')?.name ?? accepting[0]?.name ?? '');
   const [file, setFile] = useState<File | null>(null);
-  const uploads = useUploads();
+  const uploads = useUploads(useMonth());
   const client = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');

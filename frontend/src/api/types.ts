@@ -210,6 +210,8 @@ export interface OptOut {
 }
 
 export interface VaultStats {
+  /** The chosen month ("Sep 2026"): records and seals are counted in it. */
+  period?: string | null;
   artifacts: string; anchors: number; deletedUnderRetention: number; lastAnchor: string | null; engagedSince: string;
   coverage: { label: string; state: 'covered' | 'partial' | 'before' }[];
 }
@@ -326,6 +328,8 @@ export type SourceStatus = 'current' | 'stale' | 'not_supplied' | 'revoked';
 export interface Source {
   id: string; name: string; tier: Tier; access: string; lastSync: string; status: SourceStatus;
   feeds: string[]; revocable: boolean; acceptsUpload: boolean; blocks: string | null;
+  /** Records read (a tool) or files uploaded (an Upload centre source) in the chosen month. */
+  inMonth?: number;
 }
 
 export interface Upload { artifactId: string; source: string; fileName: string; sha256: string; receivedAt: string; rowsRead: number; rowsRejected: number }
@@ -351,6 +355,8 @@ export interface RulebookSetting {
 }
 export interface ImpactRow { key: string; counselItem: string; strict: string; lenient: string; contacts: number; changing: number }
 export interface Rulebook {
+  /** The day the rules shown were in force (the last day of the chosen month, or today). */
+  asOf?: string;
   version: string; set: number; proposed: number; tbd: number; settings: RulebookSetting[]; impact: ImpactRow[];
   /** 'provisional' until a lawyer-confirmed version exists; `note` then says so. */
   versionStatus?: 'draft' | 'provisional' | 'approved'; note?: string | null;

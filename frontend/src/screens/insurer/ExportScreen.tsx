@@ -15,6 +15,7 @@ import { PlainPayload } from './PlainPayload';
 import { RatingEngineCard } from './RatingEngineCard';
 import { NoShares } from './NoShares';
 import { useViewer } from './useViewer';
+import { usePortal } from '@/state/PortalContext';
 
 /** The civ.attestation.v1 payload. The client's copy leaves out the insurer's own risk estimates (decision D36). */
 function payloadFor(i: Insured, underwriter: boolean) {
@@ -38,7 +39,7 @@ function payloadFor(i: Insured, underwriter: boolean) {
 /** What a rating engine ingests, and the conditions that make the score part of the policy. */
 export function ExportScreen() {
   const { underwriter, preview, insuredId, eyebrow, empty, ready } = useViewer();
-  const insured = useInsured(insuredId, ready);
+  const insured = useInsured(insuredId, ready, usePortal().period);
   const [sent, setSent] = useState('');
   const send = useSend<{ ok: boolean; detail: string }>();
   const client = useQueryClient();  // a failed send still refreshes the send history (2026-10-23)
