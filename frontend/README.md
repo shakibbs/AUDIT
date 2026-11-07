@@ -253,3 +253,20 @@ on 30 Sep 2026"; changes announced by the end of that month; the Calendar & hour
 the underwriter view has its own month picker (the months listed in its session); Portfolio, Exposure, Data Integrity,
 Risk Attestation and Underwriting Export show that month's sheets; the client's "Shared with your insurer" pages follow
 the client's picker; Litigation Intelligence says it is the same for every month. Test: `tests/screens/monthEverywhere.test.tsx`.
+
+## Browser tab icon (2026-11-07)
+
+The tab icon is the teal "iV" square from the menu (`src/app/icon.svg`); Next.js's default triangle icon
+(`favicon.ico`) is gone. The staff panel uses the same icon. A test sample's due date moved to 2030 so the Lead
+Provenance test does not depend on today's date.
+
+## Faster pages (2026-11-07)
+
+Far from the server (e.g. Bangladesh to Boston, about 0.3 s each way) every trip counts, so:
+1. **Who is signed in** is asked by the portal server, next to Django, while it sends the page (`app/(portal)/layout.tsx`
+   → `PortalShell initialSession`): the page asks for its own data at once instead of after one more trip.
+2. **Sign-in** keeps its answer as the session (`SignInForm`), so the first page does not ask again.
+3. **The remembered month** is read at once (`PortalContext`), so a page no longer asks for the latest month and then
+   again for the remembered one.
+4. **Pointing at a menu link** starts that page's data (`api/prefetch.ts`, `Sidebar`), so it is often in by the click.
+Test: `tests/screens/fasterLoading.test.tsx`.

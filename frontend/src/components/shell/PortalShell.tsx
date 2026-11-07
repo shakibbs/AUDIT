@@ -1,8 +1,10 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSession } from '@/api/queries';
+import type { Session } from '@/api/types';
 import { viewBlock } from '@/lib/views';
 import { DrawerProvider } from '@/state/DrawerContext';
 import { PortalProvider } from '@/state/PortalContext';
@@ -14,7 +16,17 @@ import { Topbar } from './Topbar';
 import { ViewBlocked } from './ViewBlocked';
 
 /** Frame around every signed-in page. Sends signed-out visitors to the sign-in page. */
-export function PortalShell({ children }: { children: React.ReactNode }) {
+export function PortalShell({ children, initialSession }: { children: React.ReactNode; initialSession?: Session }) {
+  // The answer the portal server already had: no wait for "who is signed in?" before the page asks for its data.
+  const client = useQueryClient();
+  useState(() => {
+    if (initialSession && !client.getQueryData(['/session'])) client.setQueryData(['/session'], initialSession);
+    return null;
+  });
+  // Drawn in the browser only (it reads the remembered month), right after the first paint: no waiting on the network.
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- the browser-only parts start after the first paint
+  useEffect(() => setMounted(true), []);
   const session = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -25,7 +37,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
     if (signedOut) router.push('/sign-in');
   }, [signedOut, router]);
 
-  if (session.isPending) return <div className="p-10 tiny" role="status">Loading…</div>;
+  if (!mounted || session.isPending) return <div className="p-10 tiny" role="status">Loading…</div>;
   if (session.isError) return <div className="p-10 text-[13px]" role="alert">The portal could not be loaded. {session.error.message}</div>;
   if (signedOut) return null;
 

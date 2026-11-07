@@ -1,10 +1,13 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { prefetchPage } from '@/api/prefetch';
 import { useActions, useAlerts } from '@/api/queries';
 import type { Session } from '@/api/types';
 import { Icon } from '@/components/ui/Icon';
+import { useMonth, usePortal } from '@/state/PortalContext';
 import { NAV, SHARED_WITH_INSURER, UNDERWRITER_NAV } from './nav';
 
 /** Fixed left menu. The client sees its own pages plus what is shared with its insurer; the underwriter sees insurer pages only. */
@@ -15,6 +18,11 @@ export function Sidebar({ session, open, onNavigate }: { session: Session; open:
   const groups = underwriter ? UNDERWRITER_NAV.map((g, k) => (k === 0 ? { ...g, title: session.orgKind === 'client' ? `${session.clientName} · insurer view` : `${session.clientName} · underwriting` } : g)) : [...NAV, SHARED_WITH_INSURER];
   // Counts are client data; an underwriter never loads them.
   const actions = useActions(!underwriter);
+  const client = useQueryClient();
+  const { period } = usePortal();
+  const month = useMonth();
+  // The page's data starts while the mouse rests on its link (client pages; insurer pages ask afresh anyway).
+  const warm = (href: string) => { if (!underwriter) prefetchPage(client, href, period, month); };
   const alerts = useAlerts(!underwriter);
   const counts = {
     actions: underwriter ? 0 : actions.data?.filter((a) => a.status !== 'resolved').length ?? 0,
@@ -38,7 +46,7 @@ export function Sidebar({ session, open, onNavigate }: { session: Session; open:
               const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
               const count = item.badge ? counts[item.badge] : 0;
               return (
-                <Link key={item.href} href={item.href} onClick={onNavigate} aria-current={active ? 'page' : undefined}
+                <Link key={item.href} href={item.href} onClick={onNavigate} onMouseEnter={() => warm(item.href)} onFocus={() => warm(item.href)} aria-current={active ? 'page' : undefined}
                   className={`mb-0.5 flex items-center gap-3 rounded-[9px] px-3 py-2 text-[13px] font-medium no-underline hover:no-underline ${active ? 'bg-white/10 text-white' : 'text-[#c8d6d8] hover:bg-white/5 hover:text-white'}`}>
                   <Icon name={item.icon} size={16} className={active ? 'text-[#3fd6c4]' : 'text-[#7f9a9c]'} />
                   <span className="flex-1">{item.label}</span>

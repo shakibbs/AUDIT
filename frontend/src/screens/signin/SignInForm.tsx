@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useSend } from '@/api/queries';
 import type { Session } from '@/api/types';
@@ -12,11 +13,16 @@ export function SignInForm() {
   const [password, setPassword] = useState('');
   const send = useSend<Session>();
   const router = useRouter();
+  const client = useQueryClient();
   function submit(e: React.FormEvent) {
     e.preventDefault();
     send.mutate({ method: 'POST', path: '/session/sign-in', body: { email, password } }, {
       // An insurer, or a client user in the Underwriter view, opens on the Portfolio (client pages are blocked for them).
-      onSuccess: (session) => router.push(session?.view === 'underwriter' ? '/portfolio' : '/'),
+      // The sign-in answer is the session: kept, so the first page does not ask for it again (owner, 2026-11-07).
+      onSuccess: (session) => {
+        if (session) client.setQueryData(['/session'], session);
+        router.push(session?.view === 'underwriter' ? '/portfolio' : '/');
+      },
     });
   }
   return (
