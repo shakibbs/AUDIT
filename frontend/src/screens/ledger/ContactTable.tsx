@@ -5,6 +5,7 @@ import { Empty } from '@/components/ui/Empty';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { formatDateTime } from '@/lib/format';
 import { useDrawer } from '@/state/DrawerContext';
+import { Icon } from '@/components/ui/Icon';
 
 /** Calls and texts, newest first. Selecting a row opens the contact panel. */
 export function ContactTable({ contacts }: { contacts: Contact[] }) {
@@ -17,7 +18,8 @@ export function ContactTable({ contacts }: { contacts: Contact[] }) {
         <tbody>
           {contacts.map((c) => (
             <tr key={c.id} className="clickrow" onClick={() => open('contact', c.id)}>
-              <td className="mono whitespace-nowrap text-[12px]">{formatDateTime(c.occurredAt)}</td>
+              <td className="mono whitespace-nowrap text-[12px]">{formatDateTime(c.occurredAt)}
+                {c.timeNote && <span className="ml-1.5 inline-flex align-middle text-warn" title={c.timeNote} aria-label={c.timeNote}><Icon name="clock" size={13} /></span>}</td>
               <td><button type="button" className="mono whitespace-nowrap border-0 bg-transparent p-0 text-[12.5px] font-semibold text-txt">{c.phoneDisplay}</button></td>
               <td>{c.channel}{c.direction && <div className="tiny">{c.direction}{c.tool ? ` · ${c.tool}` : ''}</div>}</td>
               <td className="whitespace-nowrap text-txt-2">{c.where ?? '—'}</td>

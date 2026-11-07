@@ -139,6 +139,8 @@ export interface Contact {
   checks: CheckState[]; proof: string; tiers: Tier[]; flags: string[]; hash: string | null;
   /** Real contacts only: direction, where the person probably is, the tool's own result code, which tool. */
   direction?: 'outbound' | 'inbound' | 'unknown'; where?: string; result?: string; tool?: string;
+  /** A call in the clock-change hour (Convoso, Five9): why its time could be an hour off. */
+  timeNote?: string | null;
 }
 
 export interface ConsentSummary {

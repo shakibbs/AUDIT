@@ -10,6 +10,7 @@ import { StatusChip } from '@/components/ui/StatusChip';
 import { TierChip } from '@/components/ui/TierChip';
 import { formatDateTime, truncateHash } from '@/lib/format';
 import { CHECK_NAMES, STATUS_MEANING } from '@/lib/status';
+import { Icon } from '@/components/ui/Icon';
 
 const TABS = [{ id: 'result', label: 'Result' }, { id: 'evidence', label: 'Evidence' }, { id: 'definition', label: 'Definition' }] as const;
 const CHECK_PILL: Record<CheckState, [string, string]> = { pass: ['pill-green', 'Pass'], fails: ['pill-red', 'Fails'], gap: ['pill-amber', 'Gap'], not_reached: ['pill-gray', 'Not reached'], not_measured: ['pill-gray', 'Not yet measured'] };
@@ -22,6 +23,7 @@ export function ContactDrawer({ id, onClose }: { id: string; onClose: () => void
 
   return (
     <Drawer eyebrow={`${contact.channel} · ${formatDateTime(contact.occurredAt)} UTC`} title={contact.phoneDisplay} onClose={onClose}>
+      {contact.timeNote && <p className="tiny m-0 mb-3 flex items-center gap-1.5"><Icon name="clock" size={13} /> {contact.timeNote}</p>}
       <Seg label="Sections" options={TABS} value={tab} onChange={setTab} />
       <div className="mt-5 flex flex-col gap-5">
         {tab === 'result' && (

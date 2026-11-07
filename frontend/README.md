@@ -270,3 +270,9 @@ Far from the server (e.g. Bangladesh to Boston, about 0.3 s each way) every trip
    again for the remembered one.
 4. **Pointing at a menu link** starts that page's data (`api/prefetch.ts`, `Sidebar`), so it is often in by the click.
 Test: `tests/screens/fasterLoading.test.tsx`.
+
+## Clock-change note shown (2026-11-07)
+
+A Convoso or Five9 call in the clock-change hour shows a small clock next to its time in the Contact Ledger (pointing at
+it shows the note, e.g. "Clock-change hour: could be 1 hour later") and the note under the title of its details panel.
+Test: `tests/screens/clockChangeNote.test.tsx`.
