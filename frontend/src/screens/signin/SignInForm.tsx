@@ -7,6 +7,7 @@ import { prefetchPage } from '@/api/prefetch';
 import { useSend } from '@/api/queries';
 import type { Session } from '@/api/types';
 import { FormError } from './FormError';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 /** Email and password. No "Forgot your password?" (owner, 2026-10-22): a new password comes from a link CiV sends. */
 export function SignInForm() {
@@ -41,7 +42,7 @@ export function SignInForm() {
       <label className="label" htmlFor="email">Email</label>
       <input id="email" type="email" required autoComplete="username" className="field" value={email} onChange={(e) => setEmail(e.target.value.toLowerCase())} />
       <label className="label mt-4" htmlFor="password">Password</label>
-      <input id="password" type="password" required autoComplete="current-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <PasswordInput id="password" required autoComplete="current-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
       {send.isError && <FormError message={send.error.message} />}
       <button type="submit" className="btn btn-primary mt-5 w-full justify-center" disabled={send.isPending}>Sign in</button>
     </form>

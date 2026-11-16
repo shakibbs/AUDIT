@@ -7,6 +7,7 @@ import { apiGet } from '@/api/client';
 import { useSend } from '@/api/queries';
 import type { Session } from '@/api/types';
 import { FormError } from './FormError';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface InviteInfo { email: string; name: string; clientName: string }
 
@@ -28,7 +29,7 @@ export function AcceptInviteForm({ token }: { token: string }) {
         {info.data ? <>Choose a password for <strong>{info.data.email}</strong> at {info.data.clientName}.</> : 'Checking your invite…'}
       </p>
       <label className="label" htmlFor="invite-password">Password</label>
-      <input id="invite-password" type="password" required minLength={12} autoComplete="new-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <PasswordInput id="invite-password" required minLength={12} autoComplete="new-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
       <p className="tiny mb-0 mt-2">At least 12 characters. Avoid common words and your name.</p>
       {send.isError && <FormError message={send.error.message} />}
       <button type="submit" className="btn btn-primary mt-5 w-full justify-center" disabled={send.isPending || !info.data}>Set password and sign in</button>

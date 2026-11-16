@@ -14,8 +14,10 @@ import { NAV, SHARED_WITH_INSURER, UNDERWRITER_NAV } from './nav';
 export function Sidebar({ session, open, onNavigate }: { session: Session; open: boolean; onNavigate: () => void }) {
   const pathname = usePathname();
   const underwriter = session.view === 'underwriter';
+  // A client looking at its own company through View as → Underwriter, not a real insurer (owner 2026-11-16).
+  const preview = underwriter && session.orgKind === 'client';
   // The insurer's (or the previewing company's) own name heads its menu.
-  const groups = underwriter ? UNDERWRITER_NAV.map((g, k) => (k === 0 ? { ...g, title: session.orgKind === 'client' ? `${session.clientName} · insurer view` : `${session.clientName} · underwriting` } : g)) : [...NAV, SHARED_WITH_INSURER];
+  const groups = underwriter ? UNDERWRITER_NAV.map((g, k) => (k === 0 ? { ...g, title: session.orgKind === 'client' ? `${session.clientName} · underwriter view` : `${session.clientName} · underwriting` } : g)) : [...NAV, SHARED_WITH_INSURER];
   // Counts are client data; an underwriter never loads them.
   const actions = useActions(!underwriter);
   const client = useQueryClient();
@@ -35,7 +37,7 @@ export function Sidebar({ session, open, onNavigate }: { session: Session; open:
         <span className="grid h-9 w-9 place-items-center rounded-[10px] font-display text-[13px] font-extrabold text-white" style={{ background: 'linear-gradient(135deg, #13b5a2, #0e8c7f)' }}>iV</span>
         <span>
           <span className="block font-display text-[15px] font-bold text-white">Comply iV</span>
-          <span className="block text-[10.5px] uppercase tracking-[0.14em] text-[#7f9a9c]">{underwriter ? 'Insurer portal' : 'Client portal'}</span>
+          <span className="block text-[10.5px] uppercase tracking-[0.14em] text-[#7f9a9c]">{underwriter ? (preview ? 'Underwriter view · Client portal' : 'Insurer portal') : 'Client portal'}</span>
         </span>
       </div>
       <div className="flex-1 overflow-y-auto px-3 pb-4">

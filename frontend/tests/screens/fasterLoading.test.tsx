@@ -34,7 +34,7 @@ describe('sign-in starts the first page\'s data (owner 2026-11-16)', () => {
     renderScreen(<SignInForm />);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), 'dana.reyes@sunpath.example');
-    await user.type(screen.getByLabelText(/password/i), 'any-password-123');
+    await user.type(screen.getByLabelText('Password'), 'any-password-123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
     await waitFor(() => expect(fetching.mock.calls.some(([url]) => String(url).includes('/api/score'))).toBe(true));
     fetching.mockRestore();

@@ -5,6 +5,7 @@ import { useRatingEngine, useSend } from '@/api/queries';
 import type { RatingEngine } from '@/api/types';
 import { Card } from '@/components/ui/Card';
 import { formatDate } from '@/lib/format';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 /** Module 15: the insurer types where its pricing software takes the sheet, and its key (locked, never shown again). */
 export function RatingEngineCard() {
@@ -23,7 +24,7 @@ export function RatingEngineCard() {
         <label className="label" htmlFor="re-url">Address (https)</label>
         <input id="re-url" className="field" placeholder="https://rating.yourcompany.com/civ" value={shownUrl} onChange={(e) => { setUrl(e.target.value); setDone(''); }} />
         <label className="label" htmlFor="re-key">Key</label>
-        <input id="re-key" type="password" autoComplete="off" className="field" placeholder={engine.keyHint ? `Saved, ends in ${engine.keyHint}. Type a new one to replace it.` : 'The key your rating engine gave you'} value={key} onChange={(e) => { setKey(e.target.value); setDone(''); }} />
+        <PasswordInput id="re-key" what="key" autoComplete="off" className="field" placeholder={engine.keyHint ? `Saved, ends in ${engine.keyHint}. Type a new one to replace it.` : 'The key your rating engine gave you'} value={key} onChange={(e) => { setKey(e.target.value); setDone(''); }} />
         <label className="flex items-center gap-2 text-[12.5px]"><input type="checkbox" checked={shownMonthly} onChange={(e) => setMonthly(e.target.checked)} /> Send every month on its own (the 6th, after the month is locked)</label>
         <div className="flex flex-wrap gap-2">
           <button type="submit" className="btn btn-primary btn-sm" disabled={send.isPending}>Save</button>

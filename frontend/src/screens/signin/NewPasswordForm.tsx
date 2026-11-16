@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useSend } from '@/api/queries';
 import { FormError } from './FormError';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 /** Choose a new password from a reset link (link = "<uid>.<token>"). */
 export function NewPasswordForm({ link, onDone }: { link: string; onDone: () => void }) {
@@ -28,9 +29,9 @@ export function NewPasswordForm({ link, onDone }: { link: string; onDone: () => 
       <h2 className="text-[21px]">Choose a new password</h2>
       <p className="mb-5 mt-1.5 text-[13px] text-txt-2">At least 12 characters. Avoid common words and your name.</p>
       <label className="label" htmlFor="new-password">New password</label>
-      <input id="new-password" type="password" required minLength={12} autoComplete="new-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <PasswordInput id="new-password" required minLength={12} autoComplete="new-password" className="field" value={password} onChange={(e) => setPassword(e.target.value)} />
       <label className="label mt-4" htmlFor="new-password-again">Type it again</label>
-      <input id="new-password-again" type="password" required autoComplete="new-password" className="field" value={again} onChange={(e) => setAgain(e.target.value)} />
+      <PasswordInput id="new-password-again" required autoComplete="new-password" className="field" value={again} onChange={(e) => setAgain(e.target.value)} />
       {mismatch && <FormError message="The two passwords do not match." />}
       {send.isError && <FormError message={send.error.message} />}
       <button type="submit" className="btn btn-primary mt-5 w-full justify-center" disabled={send.isPending || mismatch}>Save new password</button>

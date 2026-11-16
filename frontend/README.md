@@ -304,3 +304,12 @@ Each of the six factors explains itself (2026-11-16): what it means, which measu
 to. On the Audit Scorecard the whole factor box answers (its name is underlined); on Overview's Six factors table and
 the insurer Exposure table, the factor name. The law note moved from the browser's plain tooltip into this box
 (`data-law` keeps it on the element).
+
+## Password eye button and the Underwriter view label (2026-11-16)
+
+- Every password box uses `src/components/ui/PasswordInput.tsx`: an eye button shows or hides what was typed (starts
+  hidden). Sign-in, invite, password link, Change password, and the Rating engine key ("Show key").
+  Test: `tests/screens/passwordEye.test.tsx`.
+- A client in View as → Underwriter sees "Underwriter view · Client portal" at the top of the menu, "· underwriter
+  view" on the menu heading and "Underwriter view · …" under the name; only a real insurer sees "Insurer portal"
+  (`Sidebar.tsx`, `UserMenu.tsx`). Test: `tests/screens/underwriterLabel.test.tsx`.
