@@ -29,7 +29,7 @@ export function ScorecardScreen() {
           return (
             <div className="flex flex-col gap-5">
               <div className="grid gap-4 sm:grid-cols-3">
-                <Kpi tag="Audit Score" value={score.data ? formatScore(score.data.score) : '—'} foot={score.data ? `Grade ${score.data.grade}` : ''} />
+                <Kpi tag="Audit Score" value={score.data ? formatScore(score.data.score) : '—'} foot={score.data ? (score.data.grade ? `Grade ${score.data.grade}` : 'No grade yet') : ''} />
                 <Kpi tag="Domains measured" value={score.data ? String(score.data.domainsMeasured) : '—'} unit="of 25" foot="Only measured domains count toward the score" />
                 <Kpi tag="Not measured" value={String(notMeasured.length)} unit={notMeasured.length === 1 ? "domain" : "domains"} foot={notMeasured.map((d) => d.code).join(', ') || 'None'} />
               </div>

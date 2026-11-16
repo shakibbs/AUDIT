@@ -276,3 +276,7 @@ Test: `tests/screens/fasterLoading.test.tsx`.
 A Convoso or Five9 call in the clock-change hour shows a small clock next to its time in the Contact Ledger (pointing at
 it shows the note, e.g. "Clock-change hour: could be 1 hour later") and the note under the title of its details panel.
 Test: `tests/screens/clockChangeNote.test.tsx`.
+
+## "No grade yet" (2026-11-16)
+
+The Audit Scorecard's Audit Score tile says "No grade yet" instead of "Grade null" when the month has no grade.
