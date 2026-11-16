@@ -280,3 +280,27 @@ Test: `tests/screens/clockChangeNote.test.tsx`.
 ## "No grade yet" (2026-11-16)
 
 The Audit Scorecard's Audit Score tile says "No grade yet" instead of "Grade null" when the month has no grade.
+
+## Hover to explain (2026-11-16)
+
+Rest the mouse on a card, tile, label, column heading or grade for half a second and a short plain-words explanation
+appears; on a phone, tap a title. Titles that have one get a faint dotted underline. Tried first in the demo artifact,
+then moved here unchanged.
+- `src/lib/explain.ts`: every explanation, by page (`overview`, `vault`… or `*` for all pages) and the title exactly as
+  it reads on screen; a `/pattern/` key matches titles that change with the data. The two grade scales (scores: higher
+  is better; risk: higher is worse) are shown on grades, the Six factors and the Exposure Indicator.
+- `src/components/shell/ExplainHost.tsx` (in `PortalShell`): finds `[data-explain]`, grade letters, `th`, `.kv dt`,
+  labels inside cards and card titles; no page component needs changing, except `data-explain="Grade key"` on the
+  Six factors colour key. Styles at the end of `globals.css`.
+- To explain something new, add its title to `explain.ts`. Test: `tests/screens/hoverExplain.test.tsx`.
+
+## Sign-in starts the first page's data (2026-11-16)
+
+When sign-in succeeds, the Overview's data is asked for at once (`prefetchPage` in `SignInForm`, with the remembered
+month), alongside the page itself: one trip to the server instead of two in a row. Test: `tests/screens/fasterLoading.test.tsx`.
+A big card (one with a heading, like Six factors) is explained only when the mouse is on its title words; small tiles
+(like Records held) from anywhere on the tile (2026-11-16).
+Each of the six factors explains itself (2026-11-16): what it means, which measurements make it and the law it relates
+to. On the Audit Scorecard the whole factor box answers (its name is underlined); on Overview's Six factors table and
+the insurer Exposure table, the factor name. The law note moved from the browser's plain tooltip into this box
+(`data-law` keeps it on the element).

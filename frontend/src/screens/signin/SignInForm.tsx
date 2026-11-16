@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { prefetchPage } from '@/api/prefetch';
 import { useSend } from '@/api/queries';
 import type { Session } from '@/api/types';
 import { FormError } from './FormError';
@@ -21,7 +22,15 @@ export function SignInForm() {
       // The sign-in answer is the session: kept, so the first page does not ask for it again (owner, 2026-11-07).
       onSuccess: (session) => {
         if (session) client.setQueryData(['/session'], session);
-        router.push(session?.view === 'underwriter' ? '/portfolio' : '/');
+        const home = session?.view === 'underwriter' ? '/portfolio' : '/';
+        // The first page's data starts now, alongside the page itself: one trip to the server instead of two in a row
+        // (owner, 2026-11-16).
+        let remembered: string | undefined;
+        try { remembered = localStorage.getItem('civ-period') ?? undefined; } catch { /* storage unavailable */ }
+        const months = session?.periods?.map((p) => p.id) ?? [];
+        const period = remembered && months.includes(remembered) ? remembered : undefined;  // as the Overview will ask
+        prefetchPage(client, home, period, period ?? months[0]);
+        router.push(home);
       },
     });
   }

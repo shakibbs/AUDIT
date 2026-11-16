@@ -17,8 +17,8 @@ export function CompactFactors({ insured, className = '' }: { insured: Insured; 
             const max = Math.round(FACTOR_WEIGHTS[k] * 100);
             const colour = f >= 67 ? 'var(--bad)' : f >= 40 ? 'var(--warn)' : 'var(--ok)';
             return (
-              <tr key={name} title={FACTOR_LAW[k]}>
-                <td className="whitespace-nowrap font-semibold">{name}</td>
+              <tr key={name} data-law={FACTOR_LAW[k]}>
+                <td className="whitespace-nowrap font-semibold"><span data-explain={name}>{name}</span></td>
                 <td className="mono text-right">{max}%</td>
                 <td className="mono text-right text-txt-2">{fo ?? '—'}</td>
                 <td className="mono text-right font-semibold">{fi ?? '—'}</td>

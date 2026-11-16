@@ -11,6 +11,7 @@ import { PortalProvider } from '@/state/PortalContext';
 import { Banners } from './Banners';
 import { Disclaimer } from './Disclaimer';
 import { DrawerHost } from './DrawerHost';
+import { ExplainHost } from './ExplainHost';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { ViewBlocked } from './ViewBlocked';
@@ -57,6 +58,7 @@ export function PortalShell({ children, initialSession }: { children: React.Reac
           </main>
         </div>
         <DrawerHost />
+        <ExplainHost />
       </DrawerProvider>
     </PortalProvider>
   );

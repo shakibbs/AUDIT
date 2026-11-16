@@ -15,7 +15,7 @@ export function FactorTile({ code, name, law, value, grade, weight, metrics, kno
   const points = value === null ? null : value * weight;
   const colour = value === null ? 'var(--series-muted)' : value >= 67 ? 'var(--bad)' : value >= 40 ? 'var(--warn)' : 'var(--ok)';
   return (
-    <section className={`flex flex-col gap-2 rounded-[12px] border border-transparent p-4 ${grade ? TINT[grade] : 'b-n'}`} title={law}>
+    <section className={`flex flex-col gap-2 rounded-[12px] border border-transparent p-4 ${grade ? TINT[grade] : 'b-n'}`} data-explain={name} data-law={law}>
       <div className="flex items-center justify-between">
         <span className="mono text-[11px] font-semibold">{code}</span>
         <span className="text-[11px] font-semibold">weight {max}%</span>
@@ -24,7 +24,7 @@ export function FactorTile({ code, name, law, value, grade, weight, metrics, kno
         <span className="font-display text-[26px] font-extrabold leading-none text-txt">{value === null ? 'Pending' : Math.round(value)}</span>
         {grade && <span className="font-display text-[13px] font-extrabold">{grade}</span>}
       </div>
-      <div className="text-[13px] font-semibold leading-snug text-txt">{name}</div>
+      <div className="text-[13px] font-semibold leading-snug text-txt" data-explain-title>{name}</div>
       <div className="h-2 overflow-hidden rounded-[4px] bg-surface/70">
         <div className="h-full rounded-r-[4px]" style={{ width: `${value ?? 0}%`, background: colour }} />
       </div>

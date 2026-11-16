@@ -24,3 +24,19 @@ describe('faster loading (owner 2026-11-07)', () => {
     fetching.mockRestore();
   });
 });
+
+describe('sign-in starts the first page\'s data (owner 2026-11-16)', () => {
+  it('asks for the Overview data as soon as sign-in succeeds', async () => {
+    const { SignInForm } = await import('@/screens/signin/SignInForm');
+    const { renderScreen } = await import('../utils');
+    const { default: userEvent } = await import('@testing-library/user-event');
+    const fetching = vi.spyOn(globalThis, 'fetch');
+    renderScreen(<SignInForm />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/email/i), 'dana.reyes@sunpath.example');
+    await user.type(screen.getByLabelText(/password/i), 'any-password-123');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+    await waitFor(() => expect(fetching.mock.calls.some(([url]) => String(url).includes('/api/score'))).toBe(true));
+    fetching.mockRestore();
+  });
+});

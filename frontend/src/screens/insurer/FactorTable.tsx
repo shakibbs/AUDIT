@@ -21,7 +21,7 @@ export function FactorTable({ insured }: { insured: Insured }) {
               const colour = f >= 67 ? 'var(--bad)' : f >= 40 ? 'var(--warn)' : 'var(--ok)';
               return (
                 <tr key={name}>
-                  <td><span className="font-semibold">{name}</span><div className="tiny mono">{FACTOR_LAW[k]}</div></td>
+                  <td><span className="font-semibold" data-explain={name}>{name}</span><div className="tiny mono">{FACTOR_LAW[k]}</div></td>
                   <td className="mono">{Math.round(FACTOR_WEIGHTS[k] * 100)}%</td>
                   <td className="mono">{fo ?? '—'}</td>
                   <td className="mono font-semibold">{fi ?? '—'}{diff !== null && diff !== 0 && <span className="ml-1.5 text-[11px]" style={{ color: diff > 0 ? 'var(--bad-ink)' : 'var(--ok-ink)' }}>{diff > 0 ? '+' : ''}{diff}</span>}</td>

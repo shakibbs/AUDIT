@@ -134,3 +134,14 @@ button { font-family: inherit; }
 }
 
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+/* Hover to explain (owner, 2026-11-13): a faint dotted line under titles that have an explanation, and its box. */
+.has-explain { text-decoration: underline dotted var(--txt-3); text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: help; }
+.explain-box {
+  position: fixed; z-index: 60; width: min(300px, calc(100vw - 32px)); padding: 10px 12px; border-radius: 10px;
+  background: var(--surface); color: var(--txt); border: 1px solid var(--line); box-shadow: var(--shadow-lg);
+  font-family: var(--body); font-size: 12.5px; font-weight: 500; line-height: 1.55; text-transform: none; letter-spacing: 0;
+  white-space: pre-line; pointer-events: none; animation: explain-in 0.12s ease-out;
+}
+@keyframes explain-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .explain-box { animation: none; } }

@@ -13,7 +13,7 @@ export function FactorMap({ reading, measured, knownMetrics }: { reading: Exposu
   return (
     <Card title="Six factors" sub={`${measured ? 'Measured from your records' : 'Modeled from public evidence'} · each 0–100, higher is worse · select a metric code for its detail`}
       right={
-        <div className="hidden flex-wrap items-center gap-1.5 md:flex" aria-label="Level colours">
+        <div className="hidden flex-wrap items-center gap-1.5 md:flex" aria-label="Level colours" data-explain="Grade key">
           {LEGEND.map(([label, cls]) => <span key={label} className={`rounded-md px-2 py-0.5 font-display text-[11px] font-bold ${cls}`}>{label}</span>)}
         </div>
       }>
