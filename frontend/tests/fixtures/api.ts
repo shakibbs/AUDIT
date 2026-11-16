@@ -113,7 +113,20 @@ function read(path: string, q: Record<string, string>): MockResponse {
     case 'proof-requests': return ok(db.proofRequests);
     case 'revocation': return ok(revocation);
     case 'optouts': return ok(optOuts);
-    case 'who-contact': return ok(db.whoContact);
+    case 'who-contact': {
+      if (seg[1] !== 'numbers') return ok(db.whoContact);
+      // Sample numbers behind a count (masked), like the backend: at most 100, with the total.
+      const all = q.source === 'all' || !q.source;
+      const row = db.whoContact.leadSources.find((l) => l.id === q.source);
+      if (!all && !row) return fail(404, 'Lead source not found.');
+      const source = all ? 'All sources' : row!.name;
+      const column = q.column as CheckColumn;
+      // As many as the count that was clicked (the glance counts contacts; close enough for sample numbers).
+      const total = (all ? db.whoContact.glance?.lists.find((x) => x.col === column)?.count?.n : row!.found?.[column]?.count?.n) ?? 0;
+      const rows = Array.from({ length: Math.min(total, 100) }, (_, k) => ({ number: `(480) •••-${String(1000 + k * 37).slice(-4)}`, firstContact: `${k + 2} Sep 2026`, channel: k % 3 ? 'Call' : 'Text',
+        why: q.column === 'internal' ? 'On your list since 1 Aug 2026' : 'No national do-not-call check in the 31 days before' }));
+      return ok({ source, column, total, words: 'in Sep 2026', rows });
+    }
     case 'vault': return ok(vault);
     case 'position': return ok({ ...position, sample: true, ref: '+14805550923', phone: q.phone || position.phone, date: q.date || position.date, insideCoverage: (q.date || position.date) >= '2026-05-01' });
     case 'hash-check': {
@@ -320,6 +333,7 @@ function write(method: string, path: string, body: Record<string, unknown>): Moc
       const column = body.column as CheckColumn;
       if (!source || !(column in source.checked)) return fail(404, 'Lead source not found.');
       source.checked[column] = Boolean(body.checked);
+      source.markedBy = { ...(source.markedBy ?? { national: null, state: null, internal: null, reassigned: null }), [column]: source.checked[column] ? `${db.session.name} (Admin) · 16 Nov 2026` : null };
       log(source.checked[column] ? 'Checked' : 'Unchecked', `${source.name} · ${column}`);
       return ok(source);
     }

@@ -74,3 +74,11 @@ describe('each of the six factors explains itself (owner 2026-11-16)', () => {
     expect(explanationFor('/exposure', 'F6 Call integrity')).toMatch(/caller IDs/);
   });
 });
+
+describe('Who You Contact labels explain themselves (owner 2026-11-16)', () => {
+  it('has an explanation for every new label', async () => {
+    const { explanationFor } = await import('@/lib/explain');
+    for (const t of ['Each list at a glance', 'CiV found', 'Checked', 'Partly', 'Not checked', "Can't tell", 'Checked · confirmed', 'Checked · marked by you', 'Marked checked · CiV disagrees'])
+      expect(explanationFor('/who-contact', t), t).toBeTruthy();
+  });
+});

@@ -1,7 +1,19 @@
-import type { WhoContact } from '@/api/types';
+import type { CheckColumn, WhoContact, WhoFound } from '@/api/types';
 
 // Same sample client as the other pages: DNC check records and reassigned query logs not supplied, M14 informational,
 // vendors A–G, internal list uploaded 28 Sep, 3 acquired lists. Our M38 is "Missed opt-outs", so the stale-registry check is M49.
+// What CiV found for a vendor or list in this sample: no DNC check file or query logs, internal list compared.
+function found(stillCalled: number): Record<CheckColumn, WhoFound> {
+  return {
+    national: { tone: 'gray', text: "Can't tell · no DNC check file" },
+    state: { tone: 'gray', text: "Can't tell · no DNC check file" },
+    internal: stillCalled ? { tone: 'bad', text: 'on your list still called', count: { n: stillCalled, label: 'on your list still called' } } : { tone: 'ok', text: 'None on your list called' },
+    reassigned: { tone: 'gray', text: "Can't tell · no query logs" },
+  };
+}
+
+const by = 'Dana Reyes (Admin) · 2 Oct 2026';
+
 export const whoContact: WhoContact = {
   areas: [
     { id: 'dnc', title: 'National & state DNC', law: '47 C.F.R. §64.1200(c)(2)', checks: [
@@ -9,7 +21,7 @@ export const whoContact: WhoContact = {
       { state: 'unverified', name: 'National registry checked', result: 'Not measured', source: 'none', metric: 'M13', why: 'Your DNC check records are not supplied. Upload them on the Source Registry.' },
       { state: 'unverified', name: 'Called after your provider flagged the number', result: 'Not measured', source: 'none', metric: 'M39', why: 'Needs your DNC check records.' },
       { state: 'unverified', name: 'Registry copy older than 31 days', result: 'Not measured', source: 'none', metric: 'M49', why: 'Needs your DNC check records. The law allows a copy no more than 31 days old.' },
-      { state: 'unverified', name: 'State lists checked (CA, AZ, TX, FL, NV)', result: 'Checked by you', source: 'stated', metric: 'M13', why: 'Shown to your insurer, but counted as not done until your provider’s state results are attached.' },
+      { state: 'unverified', name: 'State lists checked', result: 'Not measured', source: 'none', metric: 'M13', why: 'Needs your DNC check records.' },
     ], flags: [] },
     { id: 'idn', title: 'Internal do-not-call', law: '47 C.F.R. §64.1200(d)', checks: [
       { state: 'fail', name: 'Called after joining your list', result: '22 contacts', source: 'list', metric: 'M12', why: '11 numbers were contacted after they joined your list (uploaded 28 Sep).' },
@@ -40,22 +52,28 @@ export const whoContact: WhoContact = {
       { number: '(480) •••-1964', known: 'On your litigator list', from: 'Your uploaded list', flaggedOn: 'Sep 2', contactedOn: 'Sep 21', channel: 'Call' },
     ] },
   ],
+  glance: { contacts: 7120, words: 'in Sep 2026', lists: [
+    { col: 'national', list: 'National DNC', tone: 'gray', verdict: "Can't tell", text: 'Your DNC check records are not uploaded, so CiV cannot see this check.', count: null, upload: { label: 'Upload DNC check records', source: 'dnc_checks' } },
+    { col: 'state', list: 'State DNC', tone: 'gray', verdict: "Can't tell", text: 'Your DNC check records are not uploaded, so CiV cannot see this check.', count: null, upload: { label: 'Upload DNC check records', source: 'dnc_checks' } },
+    { col: 'internal', list: 'Internal DNC', tone: 'bad', verdict: 'Checked, 4 called anyway', text: 'Every contact was compared with your list (4,120 numbers, uploaded 28 Sep). 4 numbers on it were still contacted.', count: { n: 4, label: 'called anyway' }, upload: null },
+    { col: 'reassigned', list: 'Reassigned', tone: 'gray', verdict: "Can't tell", text: 'Your reassigned-number query logs are not uploaded, so CiV cannot see these checks.', count: null, upload: { label: 'Upload query logs', source: 'rnd_queries' } },
+  ] },
   services: [
-    { name: 'DNC check records', note: 'Not supplied · blocks M13', covers: { national: 'none', state: 'stated' } },
+    { name: 'DNC check records', note: 'Not supplied · blocks M13', covers: { national: 'none', state: 'none' } },
     { name: 'Internal do-not-contact list', note: 'Uploaded 28 Sep · 4,120 numbers', covers: { internal: 'list' } },
     { name: 'Somos reassigned numbers', note: 'Synced 6 h ago', covers: { reassigned: 'provider' } },
     { name: 'Reassigned-number query logs', note: 'Not supplied · blocks M11', covers: { reassigned: 'none' } },
   ],
   leadSources: [
-    { id: 'ls-a', group: 'vendor', name: 'Vendor A', note: 'Sub-ID 114 · 1,420 leads', checked: { national: true, state: true, internal: false, reassigned: false } },
-    { id: 'ls-b', group: 'vendor', name: 'Vendor B', note: 'Sub-ID 22 · 1,000 leads', checked: { national: true, state: false, internal: false, reassigned: false } },
-    { id: 'ls-c', group: 'vendor', name: 'Vendor C', note: '860 leads', checked: { national: false, state: false, internal: false, reassigned: false } },
-    { id: 'ls-d', group: 'vendor', name: 'Vendor D', note: '640 leads', checked: { national: true, state: true, internal: true, reassigned: true } },
-    { id: 'ls-e', group: 'vendor', name: 'Vendor E', note: 'Sub-ID 7 · 520 leads', checked: { national: false, state: false, internal: false, reassigned: false } },
-    { id: 'ls-f', group: 'vendor', name: 'Vendor F', note: '480 leads', checked: { national: true, state: false, internal: false, reassigned: false } },
-    { id: 'ls-g', group: 'vendor', name: 'Vendor G', note: '80 leads', checked: { national: false, state: false, internal: false, reassigned: false } },
-    { id: 'ls-1', group: 'upload', name: 'Acquired list 1', note: '1,240 numbers', checked: { national: true, state: false, internal: false, reassigned: false } },
-    { id: 'ls-2', group: 'upload', name: 'Acquired list 2', note: '860 numbers', checked: { national: true, state: true, internal: false, reassigned: false } },
-    { id: 'ls-3', group: 'upload', name: 'Acquired list 3', note: '312 numbers', checked: { national: false, state: false, internal: false, reassigned: false } },
+    { id: 'ls-a', group: 'vendor', name: 'Vendor A', note: 'Sub-ID 114 · 1,420 leads', checked: { national: true, state: true, internal: false, reassigned: false }, markedBy: { national: by, state: by, internal: null, reassigned: null }, found: found(3) },
+    { id: 'ls-b', group: 'vendor', name: 'Vendor B', note: 'Sub-ID 22 · 1,000 leads', checked: { national: true, state: false, internal: false, reassigned: false }, markedBy: { national: by, state: null, internal: null, reassigned: null }, found: found(0) },
+    { id: 'ls-c', group: 'vendor', name: 'Vendor C', note: '860 leads', checked: { national: false, state: false, internal: false, reassigned: false }, markedBy: { national: null, state: null, internal: null, reassigned: null }, found: found(1) },
+    { id: 'ls-d', group: 'vendor', name: 'Vendor D', note: '640 leads', checked: { national: true, state: true, internal: true, reassigned: true }, markedBy: { national: by, state: by, internal: by, reassigned: by }, found: found(0) },
+    { id: 'ls-e', group: 'vendor', name: 'Vendor E', note: 'Sub-ID 7 · 520 leads', checked: { national: false, state: false, internal: false, reassigned: false }, markedBy: { national: null, state: null, internal: null, reassigned: null }, found: found(0) },
+    { id: 'ls-f', group: 'vendor', name: 'Vendor F', note: '480 leads', checked: { national: true, state: false, internal: false, reassigned: false }, markedBy: { national: by, state: null, internal: null, reassigned: null }, found: found(0) },
+    { id: 'ls-g', group: 'vendor', name: 'Vendor G', note: '80 leads', checked: { national: false, state: false, internal: false, reassigned: false }, markedBy: { national: null, state: null, internal: null, reassigned: null }, found: found(0) },
+    { id: 'ls-1', group: 'upload', name: 'Acquired list 1', note: '1,240 numbers', checked: { national: true, state: false, internal: false, reassigned: false }, markedBy: { national: by, state: null, internal: null, reassigned: null }, found: found(0) },
+    { id: 'ls-2', group: 'upload', name: 'Acquired list 2', note: '860 numbers', checked: { national: true, state: true, internal: false, reassigned: false }, markedBy: { national: by, state: by, internal: null, reassigned: null }, found: found(0) },
+    { id: 'ls-3', group: 'upload', name: 'Acquired list 3', note: '312 numbers', checked: { national: false, state: false, internal: false, reassigned: false }, markedBy: { national: null, state: null, internal: null, reassigned: null }, found: found(0) },
   ],
 };

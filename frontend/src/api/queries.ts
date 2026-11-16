@@ -4,7 +4,7 @@ import { apiGet, apiSend } from './client';
 import type {
   BuyerLink, RatingEngine, VendorContract, VendorDisputes, AccessEntry, Action, DataHealth, Alert, Insured, LitigationStats, Conduct, ConsentPage, ConsentSummary, Contact, Domain, EvidenceFile, HashCheck, Leads, LegalHold,
   Metric, Position, Readiness, RegChange, ReportRun, ReportType, Revocation, Rulebook, ScoreSummary, SearchHit, Session, Settings,
-  Source, Upload, User, VaultStats, VendorSummary, WhoContact, RulebookCalendar, CanCall, OptOut, Certificate, ProvenancePage, ProofRequests,
+  Source, Upload, User, VaultStats, VendorSummary, WhoContact, WhoNumbers, RulebookCalendar, CanCall, OptOut, Certificate, ProvenancePage, ProofRequests,
 } from './types';
 
 type Query = Record<string, string | undefined>;
@@ -29,6 +29,7 @@ export const useConsentPages = (period?: string) => useGet<ConsentPage[]>('/cons
 export const useCertificates = (period?: string) => useGet<Certificate[]>('/certificates', { period });
 export const useRevocation = (period?: string) => useGet<Revocation>('/revocation', { period });
 export const useWhoContact = (period?: string) => useGet<WhoContact>('/who-contact', { period });
+export const useWhoNumbers = (source: string, column: string, period?: string) => useGet<WhoNumbers>('/who-contact/numbers', { source, column, period });
 export const useVault = (period?: string) => useGet<VaultStats>('/vault', { period });
 export const usePosition = (phone: string, date: string) => useGet<Position>('/position', { phone, date }, Boolean(phone && date));
 export const useHashCheck = (hash: string) => useGet<HashCheck>('/hash-check', { hash }, hash.length > 0);

@@ -313,3 +313,16 @@ the insurer Exposure table, the factor name. The law note moved from the browser
 - A client in View as → Underwriter sees "Underwriter view · Client portal" at the top of the menu, "· underwriter
   view" on the menu heading and "Underwriter view · …" under the name; only a real insurer sees "Insurer portal"
   (`Sidebar.tsx`, `UserMenu.tsx`). Test: `tests/screens/underwriterLabel.test.tsx`.
+
+## Who You Contact: what CiV found, per list, vendor and file (2026-11-16)
+
+- **Each list at a glance** (`GlanceCard.tsx`): one answer per list for the month from the backend (`glance` in
+  `/api/who-contact`): Checked, Partly checked, Not checked (the file shows it was not done), Can't tell (no file, with an
+  Upload link), or "Checked, N called anyway" for the internal list.
+- **Who checked what**: every vendor and uploaded list shows what CiV found per list (`FoundCell.tsx`: label, "1,210 of
+  1,380 numbers called were checked", bar, count), then the client's switch as before (`LeadSourceSwitch.tsx`: "List as
+  checked", "by Dana Reyes (Admin) · 2 Oct 2026"). Switched on, the label compares: "Checked · confirmed", "Checked · marked
+  by you" (no file), "Marked checked · CiV disagrees" with "records don't match".
+- Click a count (`CountButton.tsx`) to open the masked phone numbers behind it (`NumbersDrawer.tsx`,
+  `/api/who-contact/numbers`); not in the underwriter view.
+- Every new label has a hover explanation in `explain.ts`. Tests: `glanceCard`, `foundCell`, `whoNumbers`, `hoverExplain`.

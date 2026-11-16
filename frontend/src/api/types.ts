@@ -129,8 +129,16 @@ export interface WhoCheck { state: WhoState; name: string; result: string; sourc
 export interface WhoFlag { number: string; known: string; from: string; flaggedOn: string; contactedOn: string; channel: 'Call' | 'Text' }
 export interface WhoArea { id: string; title: string; law: string; checks: WhoCheck[]; flags: WhoFlag[] }
 export interface WhoService { name: string; note: string; covers: Partial<Record<CheckColumn, CheckSource>> }
-export interface WhoLeadSource { id: string; group: 'vendor' | 'upload'; name: string; note?: string; checked: Record<CheckColumn, boolean> }
-export interface WhoContact { areas: WhoArea[]; services: WhoService[]; leadSources: WhoLeadSource[] }
+/** What CiV found for one source and one list (owner 2026-11-16); "checked of total" when it can count. */
+export interface WhoFound { tone: GlanceTone; text: string; checked?: number; total?: number; count?: { n: number; label: string } }
+export interface WhoLeadSource { id: string; group: 'vendor' | 'upload'; name: string; note?: string; checked: Record<CheckColumn, boolean>; markedBy?: Record<CheckColumn, string | null>; found?: Record<CheckColumn, WhoFound> | null }
+export type GlanceTone = 'ok' | 'warn' | 'bad' | 'gray';
+/** One plain answer per list for the month (owner 2026-11-16). "Can't tell" = no file; "Not checked" = the file shows it was not done. */
+export interface WhoGlanceList { col: CheckColumn; list: string; tone: GlanceTone; verdict: string; text: string; count: { n: number; label: string } | null; upload: { label: string; source: string } | null }
+export interface WhoGlance { contacts: number; words: string; lists: WhoGlanceList[] }
+/** The phone numbers behind a count (owner 2026-11-16): masked, at most 100, with the total. */
+export interface WhoNumbers { source: string; column: CheckColumn; total: number; words: string; rows: { number: string; firstContact: string; channel: 'Call' | 'Text'; why: string }[] }
+export interface WhoContact { areas: WhoArea[]; glance?: WhoGlance; services: WhoService[]; leadSources: WhoLeadSource[] }
 
 export interface Contact {
   id: string; occurredAt: string; phoneDisplay: string; phoneE164: string;

@@ -1,13 +1,15 @@
 import type { WhoContact } from '@/api/types';
 import { Card } from '@/components/ui/Card';
 import { CHECK_COLUMNS } from '@/lib/whoContact';
+import { FoundCell } from './FoundCell';
 import { LeadSourceSwitch } from './LeadSourceSwitch';
+import type { OpenNumbers } from './NumbersDrawer';
 import { SourceChip } from './SourceChip';
 
 const GROUPS = [['vendor', 'Lead vendors'], ['upload', 'Uploaded lists']] as const;
 
 /** Rows = check services, lead vendors and uploaded lists; columns = the four lists a contact can be checked against. */
-export function WhoCheckedWhat({ data, readOnly, canChange = true }: { data: WhoContact; readOnly: boolean; canChange?: boolean }) {
+export function WhoCheckedWhat({ data, readOnly, canChange = true, onOpen }: { data: WhoContact; readOnly: boolean; canChange?: boolean; onOpen?: (o: OpenNumbers) => void }) {
   const legend = (['provider', 'list', 'stated', 'none'] as const).map((s) => <SourceChip key={s} source={s} />);
   const groupRow = (label: string, hint?: string) => (
     <tr key={label}><td colSpan={5} className="tiny !pb-1 !pt-4 font-semibold">{label}{hint && <span className="font-normal"> · {hint}</span>}</td></tr>
@@ -30,7 +32,13 @@ export function WhoCheckedWhat({ data, readOnly, canChange = true }: { data: Who
               ...data.leadSources.filter((l) => l.group === group).map((l) => (
                 <tr key={l.id}>
                   <td><div className="font-semibold">{l.name}</div>{l.note && <div className="tiny">{l.note}</div>}</td>
-                  {CHECK_COLUMNS.map(([key, colLabel]) => <td key={key}><LeadSourceSwitch source={l} column={key} label={colLabel} readOnly={readOnly} disabled={!canChange} /></td>)}
+                  {CHECK_COLUMNS.map(([key, colLabel]) => (
+                    <td key={key} className={l.found ? '!align-top' : undefined}>
+                      {/* What CiV found (owner 2026-11-16), then the client's own switch as before. */}
+                      {l.found && <div className="mb-2"><FoundCell found={l.found[key]} listed={l.checked[key]} onOpen={onOpen && ((label) => onOpen({ source: l.id, name: l.name, column: key, label }))} /></div>}
+                      <LeadSourceSwitch source={l} column={key} label={colLabel} readOnly={readOnly} disabled={!canChange} found={l.found?.[key]} />
+                    </td>
+                  ))}
                 </tr>
               )),
             ])}
